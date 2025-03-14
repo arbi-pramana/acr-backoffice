@@ -2,7 +2,7 @@ import axios from "axios";
 import { storage } from "./local-storage";
 import { notification } from "antd";
 
-const http = axios.create({ baseURL: "" });
+const http = axios.create({ baseURL: import.meta.env.VITE_BASEURL });
 
 axios.defaults.headers.common.Authorization = `Bearer ${storage.getItem(
   "token"
@@ -13,10 +13,11 @@ http.interceptors.response.use(
     return response;
   },
   (error) => {
-    console.log("response error", error);
+    console.log("response error", error.message);
 
-    notification.error({
-      message: error.response.data.message,
+    notification.success({
+      message: error.message ?? "Unknown Error",
+      placement: "bottomLeft",
     });
   }
 );
