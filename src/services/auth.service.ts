@@ -1,9 +1,3 @@
-import {
-  useMutation,
-  UseMutationOptions,
-  //   useQuery,
-  //   UseQueryOptions,
-} from "@tanstack/react-query";
 import http from "../helper/http";
 
 export const authService = {

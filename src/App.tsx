@@ -1,16 +1,7 @@
 // import { useState } from "react";
 // import reactLogo from "./assets/react.svg";
 // import viteLogo from "/vite.svg";
-import { Avatar, Layout, Menu } from "antd";
 // import "./App.css";
-import Sider from "antd/es/layout/Sider";
-import {
-  AppstoreOutlined,
-  FileTextOutlined,
-  HistoryOutlined,
-  UserOutlined,
-} from "@ant-design/icons";
-import { Content, Header } from "antd/es/layout/layout";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Login from "./pages/login";
 
