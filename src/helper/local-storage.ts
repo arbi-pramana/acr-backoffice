@@ -1,24 +1,20 @@
 import CryptoJS from "crypto-js";
+const secret = "very-secret-key";
 
 export const storage = {
-  getItem: (key: string) => {
+  getItem: (key: string, isJson: boolean) => {
     const encryptedData = localStorage.getItem(key);
     if (!encryptedData) return null;
 
-    const decryptedData = CryptoJS.AES.decrypt(
-      encryptedData,
-      CryptoJS.enc.Utf8.parse("very-secret-key")
-    );
+    const decryptedData = CryptoJS.AES.decrypt(encryptedData, secret);
 
-    return JSON.parse(decryptedData.toString(CryptoJS.enc.Utf8));
+    return isJson
+      ? JSON.parse(decryptedData.toString(CryptoJS.enc.Utf8))
+      : decryptedData.toString(CryptoJS.enc.Utf8);
   },
-  setItem: (key: string, data: unknown, isJson: boolean) => {
-    const encrypted = (isJson ? JSON.stringify(data) : data) as string;
-    const encryptedData = CryptoJS.AES.encrypt(
-      encrypted,
-      CryptoJS.enc.Utf8.parse("very-secret-key")
-    );
+  setItem: (key: string, data: string) => {
+    const encryptedData = CryptoJS.AES.encrypt(data, secret).toString();
 
-    localStorage.setItem(key, encryptedData.toString());
+    localStorage.setItem(key, encryptedData);
   },
 };
