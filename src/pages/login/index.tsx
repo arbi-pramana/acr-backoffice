@@ -1,4 +1,4 @@
-import { App, Button, Form, Input } from "antd";
+import { Button, Form, Input } from "antd";
 import { useLogin } from "../../services/auth.service";
 import { storage } from "../../helper/local-storage";
 import { useNavigate } from "react-router-dom";
@@ -8,7 +8,6 @@ import { isAuthenticated } from "../../helper/is-authenticated";
 const Login = () => {
   const navigate = useNavigate();
   const [form] = Form.useForm();
-  const { notification } = App.useApp();
 
   const { mutate, isPending } = useLogin();
 
@@ -16,7 +15,6 @@ const Login = () => {
     mutate(values, {
       onSuccess(data) {
         if (data.status === 401) {
-          notification.error({ message: "Invalid email or password" });
           return;
         }
         storage.setItem("session", JSON.stringify(data));
