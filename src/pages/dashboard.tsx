@@ -4,19 +4,9 @@ import { LogoutOutlined, UserOutlined } from "@ant-design/icons";
 import { Content, Header } from "antd/es/layout/layout";
 import React, { useState } from "react";
 import { ItemType, MenuItemType } from "antd/es/menu/interface";
-import { useQuery } from "@tanstack/react-query";
-import http from "../helper/http";
 
 const Dashboard = () => {
   const [activeMenu, setActiveMenu] = useState(1);
-
-  const data = useQuery({
-    queryKey: ["sdf"],
-    queryFn: () => {
-      const data = http.get("/v1/catalogs/public");
-      return data;
-    },
-  });
 
   const items: ItemType<MenuItemType>[] = [
     {
