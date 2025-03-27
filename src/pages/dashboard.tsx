@@ -1,101 +1,135 @@
-import { Avatar, Dropdown, Layout, Menu } from "antd";
+import { Avatar, Divider, Dropdown, Layout, Menu, Typography } from "antd";
 import Sider from "antd/es/layout/Sider";
-import { LogoutOutlined, UserOutlined } from "@ant-design/icons";
+import { SettingOutlined, DownOutlined } from "@ant-design/icons";
 import { Content, Header } from "antd/es/layout/layout";
 import React, { useState } from "react";
 import { ItemType, MenuItemType } from "antd/es/menu/interface";
+import VoucherManagement from "./voucher-management";
+import KYCManagement from "./kyc-management";
 
 const Dashboard = () => {
-  const [activeMenu, setActiveMenu] = useState(1);
+  const [activeMenu, setActiveMenu] = useState(0);
+  const [collapse, setCollapse] = useState(false);
 
-  const items: ItemType<MenuItemType>[] = [
+  const menus = [
     {
-      label: "KYC Management",
-      type: "item",
-      key: 1,
-      onClick: (v: { key: string }) => setActiveMenu(parseInt(v.key)),
+      title: "KYC Management",
+      iconWhite: "/kyc-white.svg",
+      iconGrey: "/kyc-grey.svg",
     },
     {
-      label: "Account Management",
-      type: "item",
-      key: 2,
-      onClick: (v: { key: string }) => setActiveMenu(parseInt(v.key)),
-    },
-    {
-      label: "Catalog",
-      type: "item",
-      key: 3,
-      onClick: (v: { key: string }) => setActiveMenu(parseInt(v.key)),
-    },
-    {
-      label: "Transaction History",
-      type: "item",
-      key: 4,
-      onClick: (v: { key: string }) => setActiveMenu(parseInt(v.key)),
+      title: "Voucher Management",
+      iconWhite: "/voucher-white.svg",
+      iconGrey: "/voucher-grey.svg",
     },
   ];
 
+  const generateMenus = () => {
+    return menus.map((v, key) => ({
+      icon:
+        activeMenu == key ? (
+          <img src={v.iconWhite} alt="" />
+        ) : (
+          <img src={v.iconGrey} alt="" />
+        ),
+      label: v.title,
+      type: "item",
+      className:
+        activeMenu == key
+          ? "bg-linear-to-r from-primary-400 to-primary-600"
+          : "",
+      style: activeMenu == key ? { color: "white" } : {},
+      key: key,
+      onClick: (v: { key: string }) => setActiveMenu(parseInt(v.key)),
+    })) as ItemType<MenuItemType>[];
+  };
+
+  const items = generateMenus();
+
   const children: Record<number, React.ReactNode> = {
-    1: "kyc",
-    2: "account",
-    3: "catalog",
-    4: "transaction",
+    0: <KYCManagement />,
+    1: <VoucherManagement />,
   };
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
-      <Sider theme="dark">
+      <Sider
+        collapsible
+        collapsed={collapse}
+        onCollapse={(val) => setCollapse(val)}
+        theme="light"
+        width={"18%"}
+      >
         <Header
           style={{
-            background: "#364153",
-            padding: 0,
+            background: "white",
+            padding: 20,
             textAlign: "center",
-            color: "white",
             fontWeight: "bold",
+            display: "flex",
+            alignItems: "center",
+            lineHeight: "16px",
           }}
         >
-          Admin Dashboard
+          {collapse ? (
+            <img src="/acr-logo.svg" alt="Logo" width={40} />
+          ) : (
+            <>
+              <img src="/acr-logo.svg" alt="Logo" width={40} />
+              <div className="ml-2 text-primary-600">ACR Digital</div>
+            </>
+          )}
         </Header>
 
-        <div className="flex items-center justify-center p-4 gap-2">
+        <div className="h-[91%] flex justify-between flex-col">
+          <Menu
+            mode="inline"
+            defaultSelectedKeys={[activeMenu.toString()]}
+            items={items}
+            style={{ padding: 12 }}
+          />
           <div>
-            <img src="/vite.svg" alt="Vite Logo" width={28} />
-          </div>
-          <div className="flex flex-col items-center w-full">
-            <div className="text-left w-full">Admin User</div>
-            <div className="text-left w-full">admin@gmail.com</div>
+            <Menu>
+              <Menu.Item icon={<SettingOutlined />} className="font-semibold">
+                Settings Account
+              </Menu.Item>
+            </Menu>
+            <Divider style={{ marginTop: 12 }} />
+            {collapse ? (
+              <div className="flex justify-center items-center cursor-pointer p-3">
+                <Avatar
+                  src="https://i.pravatar.cc/50" // Replace with your image URL
+                  size={40}
+                />
+              </div>
+            ) : (
+              <div className="mx-5 border border-solid border-gray-400 rounded-lg p-3 cursor-pointer max-h-[70px]">
+                <div className="flex flex-row items-center">
+                  <Avatar
+                    src="https://i.pravatar.cc/50" // Replace with your image URL
+                    size={40}
+                  />
+                  <div className="ml-1 grow">
+                    <Typography.Text strong>Olivia Rhye</Typography.Text>
+                    <br />
+                    <Typography.Text
+                      type="secondary"
+                      style={{ fontSize: "12px" }}
+                    >
+                      Oliviaacr@gmail.com
+                    </Typography.Text>
+                  </div>
+                  <Dropdown menu={{ items: [] }}>
+                    <DownOutlined style={{ fontSize: "14px", color: "#aaa" }} />
+                  </Dropdown>
+                </div>
+              </div>
+            )}
           </div>
         </div>
-        <Menu
-          theme="dark"
-          mode="inline"
-          defaultSelectedKeys={[activeMenu.toString()]}
-          items={items}
-        />
       </Sider>
-      <Layout>
-        <Header style={{ background: "#fff", padding: 0 }}>
-          <div className="flex items-center justify-end h-full">
-            <Dropdown
-              trigger={["click"]}
-              menu={{
-                items: [
-                  {
-                    key: "1",
-                    label: "Log out",
-                    extra: <LogoutOutlined />,
-                  },
-                ],
-              }}
-            >
-              <div className="flex items-center justify-end h-full p-4 cursor-pointer">
-                <Avatar icon={<UserOutlined />} />
-                <span style={{ marginLeft: 8 }}>Admin User</span>
-              </div>
-            </Dropdown>
-          </div>
-        </Header>
-        <Content style={{ margin: "16px" }}>{children[activeMenu]}</Content>
+      <Layout className="border border-solid border-l border-gray-300">
+        <Content className="p-4 bg-white">{children[activeMenu]}</Content>
       </Layout>
     </Layout>
   );

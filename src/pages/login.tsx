@@ -1,9 +1,9 @@
 import { Button, Form, Input } from "antd";
-import { useLogin } from "../../services/auth.service";
-import { storage } from "../../helper/local-storage";
+import { useLogin } from "../services/auth.service";
+import { storage } from "../helper/local-storage";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
-import { isAuthenticated } from "../../helper/is-authenticated";
+import { isAuthenticated } from "../helper/is-authenticated";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -60,7 +60,7 @@ const Login = () => {
                   { required: true, message: "Please input your username!" },
                 ]}
               >
-                <Input placeholder="Password" />
+                <Input placeholder="Password" type="password" />
               </Form.Item>
             </Form.Item>
             <Button

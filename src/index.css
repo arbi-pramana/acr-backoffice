@@ -1,5 +1,75 @@
 @import "tailwindcss";
 
+@theme {
+  --color-primary-100: #fbddfa;
+  --color-primary-200: #f5bcf8;
+  --color-primary-300: #e195ea;
+  --color-primary-400: #c475d6;
+  --color-primary-500: #9f4abc;
+  --color-primary-600: #7e36a1;
+  --color-primary-700: #602587;
+  --color-primary-800: #45176d;
+  --color-primary-900: #310e5a;
+
+  --color-success-100: #f4fccd;
+  --color-success-200: #e8f99c;
+  --color-success-300: #d2ee69;
+  --color-success-400: #b9de43;
+  --color-success-500: #97c90e;
+  --color-success-600: #7cac0a;
+  --color-success-700: #649007;
+  --color-success-800: #4d7404;
+  --color-success-900: #3d6002;
+
+  --color-info-100: #ccf2ff;
+  --color-info-200: #99dfff;
+  --color-info-300: #66c7ff;
+  --color-info-400: #3fafff;
+  --color-info-500: #0088ff;
+  --color-info-600: #0069db;
+  --color-info-700: #004eb7;
+  --color-info-800: #003793;
+  --color-info-900: #00277a;
+
+  --color-warning-100: #fff7cc;
+  --color-warning-200: #ffec99;
+  --color-warning-300: #ffde66;
+  --color-warning-400: #ffd13f;
+  --color-warning-500: #ffbb00;
+  --color-warning-600: #db9a00;
+  --color-warning-700: #b77c00;
+  --color-warning-800: #936000;
+  --color-warning-900: #7a4c00;
+
+  --color-danger-100: #ffe4d9;
+  --color-danger-200: #ffc4b4;
+  --color-danger-300: #ff9c8e;
+  --color-danger-400: #ff7772;
+  --color-danger-500: #ff444e;
+  --color-danger-600: #db3149;
+  --color-danger-700: #b72244;
+  --color-danger-800: #93153e;
+  --color-danger-900: #7a0d39;
+
+  --color-basic-0: #ffffff;
+  --color-basic-100: #eeeeef;
+  --color-basic-200: #dadadd;
+  --color-basic-300: #b9b9c0;
+  --color-basic-400: #93939d;
+  --color-basic-500: #6e6e78;
+  --color-basic-600: #606069;
+  --color-basic-700: #4f4e56;
+  --color-basic-800: #434349;
+  --color-basic-900: #3b3b3f;
+  --color-basic-1000: #000000;
+}
+
+.placeholder-black {
+  ::placeholder {
+    color: black;
+  }
+}
+
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -36,7 +106,7 @@ a:hover {
   min-height: 100vh;
 } */
 
-h1 {
+/* h1 {
   font-size: 3.2em;
   line-height: 1.1;
 }
@@ -58,7 +128,7 @@ button:hover {
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
-}
+} */
 
 @media (prefers-color-scheme: light) {
   :root {

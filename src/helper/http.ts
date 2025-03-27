@@ -9,10 +9,11 @@ const http = axios.create({ baseURL: import.meta.env.VITE_APP_BASE_URL });
 // }`;
 
 http.interceptors.request.use((req) => {
-  console.log("masukk?");
-  req.headers.Authorization = `Bearer ${
-    storage.getItem("token", true)?.bearerToken
-  }`;
+  if (storage.getItem("token", true)?.bearerToken) {
+    req.headers.Authorization = `Bearer ${
+      storage.getItem("token", true)?.bearerToken
+    }`;
+  }
   return req;
 });
 
