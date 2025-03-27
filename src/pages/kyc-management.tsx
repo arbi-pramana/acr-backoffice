@@ -3,7 +3,7 @@ import {
   FileSearchOutlined,
   SearchOutlined,
 } from "@ant-design/icons";
-import { Button, Input, Table } from "antd";
+import { Button, DatePicker, Input, Table } from "antd";
 import Select from "../components/select";
 import Chip from "../components/chip";
 import Pagination from "../components/pagination";
@@ -134,13 +134,10 @@ const KYCManagement = () => {
               { value: "level2", label: "Level 2" },
             ]}
           />
-          <Select
-            placeholder="Tanggal Submit"
-            options={[{ label: "option 1", value: 1 }]}
-          />
+          <DatePicker placeholder="Tanggal Submit" />
         </div>
         <div>
-          <Input addonBefore={<SearchOutlined />} />
+          <Input addonBefore={<SearchOutlined />} placeholder="Cari data" />
         </div>
       </div>
       <Table columns={columns} dataSource={data} pagination={false} />
