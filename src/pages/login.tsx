@@ -60,7 +60,7 @@ const Login = () => {
                   { required: true, message: "Please input your username!" },
                 ]}
               >
-                <Input placeholder="Password" type="password" />
+                <Input.Password placeholder="Password" />
               </Form.Item>
             </Form.Item>
             <Button
