@@ -75,8 +75,8 @@ const Login = () => {
           </Form>
         </div>
       </div>
-      <div className="w-1/2 h-full flex items-center justify-center bg-black">
-        <img src="/vite.svg" alt="Vite Logo" width={128} />
+      <div className="w-1/2 h-full flex items-center justify-center bg-primary-100">
+        <img src="/acr-logo.svg" alt="Vite Logo" width={128} />
       </div>
     </div>
   );
