@@ -7,6 +7,7 @@ import { Button, DatePicker, Input, Table } from "antd";
 import Select from "../components/select";
 import Chip from "../components/chip";
 import Pagination from "../components/pagination";
+import { useNavigate } from "react-router-dom";
 
 const data = [
   {
@@ -41,7 +42,7 @@ const data = [
   },
 ];
 
-const columns = [
+const columns = (props: { navigate: (url: string) => void }) => [
   {
     title: "Name",
     dataIndex: "user",
@@ -104,7 +105,10 @@ const columns = [
     title: "Action",
     key: "actions",
     render: () => (
-      <button className="bg-primary-100 px-4 py-2 rounded-full text-primary-600 cursor-pointer hover:bg-primary-200 active:bg-primary-300">
+      <button
+        onClick={() => props.navigate("/kyc-form")}
+        className="bg-primary-100 px-4 py-2 rounded-full text-primary-600 cursor-pointer hover:bg-primary-200 active:bg-primary-300"
+      >
         Proses <FileSearchOutlined />
       </button>
     ),
@@ -112,6 +116,8 @@ const columns = [
 ];
 
 const KYCManagement = () => {
+  const navigate = useNavigate();
+
   return (
     <>
       <div className="bg-white flex justify-between items-center">
@@ -140,7 +146,11 @@ const KYCManagement = () => {
           <Input addonBefore={<SearchOutlined />} placeholder="Cari data" />
         </div>
       </div>
-      <Table columns={columns} dataSource={data} pagination={false} />
+      <Table
+        columns={columns({ navigate })}
+        dataSource={data}
+        pagination={false}
+      />
       <div className="mt-4">
         <Pagination />
       </div>

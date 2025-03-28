@@ -9,15 +9,17 @@ import ToggleSwitch from "../components/switch";
 import OCRGuide from "../components/ocr-guide";
 import Select from "../components/select";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const KYCStep1 = () => {
+  const navigate = useNavigate();
   const [form] = Form.useForm();
   const [step, setStep] = useState(1);
 
   return (
     <>
       <div className="w-full flex justify-between p-3 text-primary-500 font-semibold bg-white">
-        <div className="flex gap-3">
+        <div className="flex gap-3 cursor-pointer" onClick={() => navigate(-1)}>
           <ArrowLeftOutlined /> Process Detail
         </div>
         <div>Langkah {step} dari 2</div>
