@@ -20,6 +20,17 @@ createRoot(document.getElementById("root")!).render(
             colorPrimaryActive: "#7e36a1",
             colorPrimaryBg: "#fbddfa",
           },
+          components: {
+            Input: {
+              borderRadius: 20,
+            },
+            DatePicker: {
+              borderRadius: 20,
+            },
+            Button: {
+              borderRadius: 20,
+            },
+          },
         }}
       >
         <AppAntd>

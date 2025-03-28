@@ -3,6 +3,7 @@ import Login from "./pages/login";
 import { notification } from "antd";
 import Dashboard from "./pages/dashboard";
 import ProtectedRoute from "./helper/protected-route";
+import KYCForm from "./pages/kyc-form";
 
 function App() {
   notification.config({
@@ -19,6 +20,14 @@ function App() {
           element={
             <ProtectedRoute>
               <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/kyc-form"
+          element={
+            <ProtectedRoute>
+              <KYCForm />
             </ProtectedRoute>
           }
         />
