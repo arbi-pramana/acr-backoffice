@@ -64,6 +64,10 @@
   --color-basic-1000: #000000;
 }
 
+.ant-form-item-label > label {
+  @apply font-semibold;
+}
+
 .placeholder-black {
   ::placeholder {
     color: black;

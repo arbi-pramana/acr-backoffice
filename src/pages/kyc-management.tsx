@@ -3,11 +3,10 @@ import {
   FileSearchOutlined,
   SearchOutlined,
 } from "@ant-design/icons";
-import { Button, DatePicker, Input, Table } from "antd";
-import Select from "../components/select";
+import { Button, DatePicker, Input, Select, Table } from "antd";
+import { useNavigate } from "react-router-dom";
 import Chip from "../components/chip";
 import Pagination from "../components/pagination";
-import { useNavigate } from "react-router-dom";
 
 const data = [
   {
@@ -107,7 +106,7 @@ const columns = (props: { navigate: (url: string) => void }) => [
     render: () => (
       <button
         onClick={() => props.navigate("/kyc-form")}
-        className="bg-primary-100 px-4 py-2 rounded-full text-primary-600 cursor-pointer hover:bg-primary-200 active:bg-primary-300"
+        className="px-4 py-2 rounded-full text-primary-500 cursor-pointer hover:bg-primary-100 active:bg-primary-200 border border-solid font-semibold"
       >
         Proses <FileSearchOutlined />
       </button>
@@ -117,6 +116,7 @@ const columns = (props: { navigate: (url: string) => void }) => [
 
 const KYCManagement = () => {
   const navigate = useNavigate();
+  //lanjut kloter
 
   return (
     <>
@@ -152,7 +152,12 @@ const KYCManagement = () => {
         pagination={false}
       />
       <div className="mt-4">
-        <Pagination />
+        <Pagination
+          pageNumber={0}
+          totalPages={0}
+          pageSize={10}
+          onChange={() => {}}
+        />
       </div>
     </>
   );

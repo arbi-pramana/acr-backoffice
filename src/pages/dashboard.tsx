@@ -4,30 +4,34 @@ import { SettingOutlined, DownOutlined } from "@ant-design/icons";
 import { Content, Header } from "antd/es/layout/layout";
 import React, { useState } from "react";
 import { ItemType, MenuItemType } from "antd/es/menu/interface";
-import VoucherManagement from "./voucher-management";
+import KloterManagement from "./kloter-management";
 import KYCManagement from "./kyc-management";
+import { useSearchParams } from "react-router-dom";
 
 const Dashboard = () => {
-  const [activeMenu, setActiveMenu] = useState(0);
+  const [searchParams, setSearchParams] = useSearchParams();
   const [collapse, setCollapse] = useState(false);
+  const currentTab = searchParams.get("tab") ?? "kyc";
 
   const menus = [
     {
       title: "KYC Management",
       iconWhite: "/kyc-white.svg",
       iconGrey: "/kyc-grey.svg",
+      tab: "kyc",
     },
     {
-      title: "Voucher Management",
+      title: "Kloter Management",
       iconWhite: "/voucher-white.svg",
       iconGrey: "/voucher-grey.svg",
+      tab: "kloter",
     },
   ];
 
   const generateMenus = () => {
     return menus.map((v, key) => ({
       icon:
-        activeMenu == key ? (
+        currentTab == v.tab ? (
           <img src={v.iconWhite} alt="" />
         ) : (
           <img src={v.iconGrey} alt="" />
@@ -35,20 +39,22 @@ const Dashboard = () => {
       label: v.title,
       type: "item",
       className:
-        activeMenu == key
+        currentTab == v.tab
           ? "bg-linear-to-r from-primary-400 to-primary-600"
           : "",
-      style: activeMenu == key ? { color: "white" } : {},
+      style: currentTab == v.tab ? { color: "white" } : {},
       key: key,
-      onClick: (v: { key: string }) => setActiveMenu(parseInt(v.key)),
-    })) as ItemType<MenuItemType>[];
+      onClick: () => {
+        setSearchParams({ tab: v.tab });
+      },
+    }));
   };
 
   const items = generateMenus();
 
-  const children: Record<number, React.ReactNode> = {
-    0: <KYCManagement />,
-    1: <VoucherManagement />,
+  const children: Record<string, React.ReactNode> = {
+    kyc: <KYCManagement />,
+    kloter: <KloterManagement />,
   };
 
   return (
@@ -84,16 +90,21 @@ const Dashboard = () => {
         <div className="h-[91%] flex justify-between flex-col">
           <Menu
             mode="inline"
-            defaultSelectedKeys={[activeMenu.toString()]}
-            items={items}
+            defaultSelectedKeys={[currentTab]}
+            items={items as ItemType<MenuItemType>[]}
             style={{ padding: 12 }}
           />
           <div>
-            <Menu>
-              <Menu.Item icon={<SettingOutlined />} className="font-semibold">
-                Settings Account
-              </Menu.Item>
-            </Menu>
+            <Menu
+              items={[
+                {
+                  key: 1,
+                  label: "Settings Account",
+                  icon: <SettingOutlined />,
+                  className: "font-semibold",
+                },
+              ]}
+            />
             <Divider style={{ marginTop: 12 }} />
             {collapse ? (
               <div className="flex justify-center items-center cursor-pointer p-3">
@@ -129,7 +140,7 @@ const Dashboard = () => {
         </div>
       </Sider>
       <Layout className="border border-solid border-l border-gray-300">
-        <Content className="p-4 bg-white">{children[activeMenu]}</Content>
+        <Content className="p-4 bg-white">{children[currentTab]}</Content>
       </Layout>
     </Layout>
   );

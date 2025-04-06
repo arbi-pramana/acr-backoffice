@@ -18,14 +18,14 @@ const Login = () => {
           return;
         }
         storage.setItem("session", JSON.stringify(data));
-        navigate("/dashboard");
+        navigate("/dashboard?tab=kyc");
       },
     });
   };
 
   useEffect(() => {
     const auth = isAuthenticated();
-    if (auth) navigate("/dashboard");
+    if (auth) navigate("/dashboard?tab=kyc");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

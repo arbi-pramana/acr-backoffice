@@ -4,14 +4,10 @@ import { notification } from "antd";
 
 const http = axios.create({ baseURL: import.meta.env.VITE_APP_BASE_URL });
 
-// axios.defaults.headers.common.Authorization = `Bearer ${
-//   storage.getItem("token", true)?.bearerToken
-// }`;
-
 http.interceptors.request.use((req) => {
-  if (storage.getItem("token", true)?.bearerToken) {
+  if (storage.getItem("session", true)?.bearerToken) {
     req.headers.Authorization = `Bearer ${
-      storage.getItem("token", true)?.bearerToken
+      storage.getItem("session", true)?.bearerToken
     }`;
   }
   return req;
@@ -23,7 +19,7 @@ http.interceptors.response.use(
   },
   (error) => {
     notification.error({
-      message: error.message ?? "Unknown Error",
+      message: error.response.data.message ?? "Unknown Error",
       placement: "bottomRight",
     });
     if (

@@ -4,10 +4,9 @@ import {
   FileOutlined,
   InfoCircleFilled,
 } from "@ant-design/icons";
-import { Alert, Button, Divider, Form, Input, Progress } from "antd";
-import ToggleSwitch from "../components/switch";
+import { Alert, Button, Divider, Form, Input, Progress, Select } from "antd";
+import Switch from "../components/switch";
 import OCRGuide from "../components/ocr-guide";
-import Select from "../components/select";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -130,43 +129,43 @@ const KYCStep1 = () => {
                       <Form.Item label="NIK">
                         <div className="flex items-center gap-1 w-full">
                           <Input />
-                          <ToggleSwitch />
+                          <Switch />
                         </div>
                       </Form.Item>
                       <Form.Item label="Nama Lengkap">
                         <div className="flex items-center gap-1 w-full">
                           <Input />
-                          <ToggleSwitch />
+                          <Switch />
                         </div>
                       </Form.Item>
                       <Form.Item label="Tempat Lahir">
                         <div className="flex items-center gap-1 w-full">
                           <Input />
-                          <ToggleSwitch />
+                          <Switch />
                         </div>
                       </Form.Item>
                       <Form.Item label="Tanggal Lahir">
                         <div className="flex items-center gap-1 w-full">
                           <Input />
-                          <ToggleSwitch />
+                          <Switch />
                         </div>
                       </Form.Item>
                       <Form.Item label="Jenis Kelamin">
                         <div className="flex items-center gap-1 w-full">
                           <Input />
-                          <ToggleSwitch />
+                          <Switch />
                         </div>
                       </Form.Item>
                       <Form.Item label="Golongan Darah">
                         <div className="flex items-center gap-1 w-full">
                           <Input />
-                          <ToggleSwitch />
+                          <Switch />
                         </div>
                       </Form.Item>
                       <Form.Item label="Alamat Sesuai KTP">
                         <div className="flex items-center gap-1 w-full">
                           <Input />
-                          <ToggleSwitch />
+                          <Switch />
                         </div>
                       </Form.Item>
                     </div>
@@ -174,55 +173,55 @@ const KYCStep1 = () => {
                       <Form.Item label="RT">
                         <div className="flex items-center gap-1 w-full">
                           <Input />
-                          <ToggleSwitch />
+                          <Switch />
                         </div>
                       </Form.Item>
                       <Form.Item label="RW">
                         <div className="flex items-center gap-1 w-full">
                           <Input />
-                          <ToggleSwitch />
+                          <Switch />
                         </div>
                       </Form.Item>
                       <Form.Item label="Provinsi">
                         <div className="flex items-center gap-1 w-full">
                           <Input />
-                          <ToggleSwitch />
+                          <Switch />
                         </div>
                       </Form.Item>
                       <Form.Item label="Kota">
                         <div className="flex items-center gap-1 w-full">
                           <Input />
-                          <ToggleSwitch />
+                          <Switch />
                         </div>
                       </Form.Item>
                       <Form.Item label="Kecamatan">
                         <div className="flex items-center gap-1 w-full">
                           <Input />
-                          <ToggleSwitch />
+                          <Switch />
                         </div>
                       </Form.Item>
                       <Form.Item label="Kelurahan">
                         <div className="flex items-center gap-1 w-full">
                           <Input />
-                          <ToggleSwitch />
+                          <Switch />
                         </div>
                       </Form.Item>
                       <Form.Item label="Agama">
                         <div className="flex items-center gap-1 w-full">
                           <Input />
-                          <ToggleSwitch />
+                          <Switch />
                         </div>
                       </Form.Item>
                       <Form.Item label="Status">
                         <div className="flex items-center gap-1 w-full">
                           <Input />
-                          <ToggleSwitch />
+                          <Switch />
                         </div>
                       </Form.Item>
                       <Form.Item label="Pekerjaan">
                         <div className="flex items-center gap-1 w-full">
                           <Input />
-                          <ToggleSwitch />
+                          <Switch />
                         </div>
                       </Form.Item>
                     </div>
@@ -384,7 +383,7 @@ const KYCStep1 = () => {
                   </label>
                   <div className="flex items-center gap-3">
                     <Input defaultValue="004" />
-                    <ToggleSwitch />
+                    <Switch />
                   </div>
                 </div>
 

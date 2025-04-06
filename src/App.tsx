@@ -1,13 +1,14 @@
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import Login from "./pages/login";
 import { notification } from "antd";
-import Dashboard from "./pages/dashboard";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import ProtectedRoute from "./helper/protected-route";
+import Dashboard from "./pages/dashboard";
+import KloterForm from "./pages/kloter-form";
 import KYCForm from "./pages/kyc-form";
+import Login from "./pages/login";
 
 function App() {
   notification.config({
-    placement: "bottomRight",
+    placement: "topRight",
   });
 
   return (
@@ -28,6 +29,22 @@ function App() {
           element={
             <ProtectedRoute>
               <KYCForm />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/kloter-form"
+          element={
+            <ProtectedRoute>
+              <KloterForm />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/kloter-form/:id"
+          element={
+            <ProtectedRoute>
+              <KloterForm />
             </ProtectedRoute>
           }
         />
