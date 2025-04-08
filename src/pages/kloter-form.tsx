@@ -1,5 +1,5 @@
 import { ArrowLeftOutlined } from "@ant-design/icons";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Button,
   Col,
@@ -14,53 +14,73 @@ import {
   Space,
   Switch,
   Table,
+  TableColumnsType,
 } from "antd";
 import dayjs from "dayjs";
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { constants } from "../helper/constant";
 import { kloterService } from "../services/kloter.service";
 import { slotService } from "../services/slot.service";
 import {
   createKloterParams,
   createSlotParams,
+  Slot,
   updateKloterByIdParams,
 } from "../types";
 
-const columns = (props: { setSlotModal: (val: boolean) => void }) => [
+const emptySlotItem = {
+  id: "-",
+  catalogId: "-",
+  payoutAt: "",
+  contribution: "-",
+  status: "inactive",
+  isPayoutAllowed: false,
+};
+
+const columnsSlot = (props: {
+  setSlotModal: (val: boolean) => void;
+  removeModal: (id: number) => void;
+}): TableColumnsType<Slot> => [
   {
     title: "Urutan",
-    dataIndex: "urutan",
-    key: "urutan",
+    dataIndex: "id",
+    key: "id",
   },
   {
     title: "Tanggal Pencairan",
-    dataIndex: "tanggalPencairan",
-    key: "tanggalPencairan",
+    dataIndex: "payoutAt",
+    key: "payoutAt",
+    render: (val) => {
+      return (
+        <span>{val ? dayjs(val).format("DD MMM YYYY HH:MM:ss") : "-"} </span>
+      );
+    },
   },
   {
     title: "Nama",
-    dataIndex: "nama",
-    key: "nama",
+    dataIndex: "id",
+    key: "id",
   },
   {
     title: "Kontribusi",
-    dataIndex: "kontribusi",
-    key: "kontribusi",
+    dataIndex: "contribution",
+    key: "contribution",
   },
   {
     title: "Aksi Pencairan",
-    dataIndex: "aksiPencairan",
-    key: "aksiPencairan",
-    render: () => <Switch />,
+    dataIndex: "isPayoutAllowed",
+    key: "isPayoutAllowed",
+    render: (val) => <Switch value={val} disabled />,
   },
   {
     title: "Action",
     dataIndex: "action",
     key: "action",
     width: 100,
-    render: () => (
+    render: (_, record) => (
       <Space>
-        <Button>Hapus</Button>
+        <Button onClick={() => props.removeModal(record.id)}>Hapus</Button>
         <Button type="primary" onClick={() => props.setSlotModal(true)}>
           Isi Data
         </Button>
@@ -77,20 +97,14 @@ const KloterForm = () => {
   const [formAddSlot] = Form.useForm();
   const [slotModal, setSlotModal] = useState(false);
   const [disabledForm, setDisabledForm] = useState(isEditing);
-
-  const data = Array.from({ length: 8 }, (_, i) => ({
-    key: i + 1,
-    urutan: i + 1,
-    tanggalPencairan: "-",
-    nama: "-",
-    kontribusi: "-",
-  }));
+  const queryClient = useQueryClient();
 
   const { mutate: mutateKloterCreate } = useMutation({
     mutationKey: ["createKloter"],
     mutationFn: (body: createKloterParams) => kloterService.createKloter(body),
     onSuccess: (data) => {
       if (!data) {
+        queryClient.invalidateQueries({ queryKey: ["kloters"] });
         notification.success({
           message: "Katalog telah berhasil dibuat.",
           description: "Silakan isi slot yang tersedia dalam daftar katalog",
@@ -106,6 +120,7 @@ const KloterForm = () => {
       kloterService.updateKloterById(data),
     onSuccess: (data) => {
       if (!data) {
+        queryClient.invalidateQueries({ queryKey: ["kloter"] });
         notification.success({
           message: "Katalog telah berhasil diupdate.",
         });
@@ -114,12 +129,25 @@ const KloterForm = () => {
   });
 
   const { mutate: mutateSlotCreate } = useMutation({
-    mutationKey: ["updateKloter"],
+    mutationKey: ["createSlot"],
     mutationFn: (data: createSlotParams) => slotService.createSlot(data),
     onSuccess: (data) => {
       if (!data) {
+        queryClient.invalidateQueries({ queryKey: ["slot"] });
         notification.success({
           message: "Slot telah berhasil dibuat",
+        });
+      }
+    },
+  });
+  const { mutate: mutateSlotDelete } = useMutation({
+    mutationKey: ["deleteSlot"],
+    mutationFn: (data: number) => slotService.deleteSlot(data),
+    onSuccess: (data) => {
+      if (!data) {
+        queryClient.invalidateQueries({ queryKey: ["slot"] });
+        notification.success({
+          message: "Slot telah berhasil dihapus",
         });
       }
     },
@@ -130,12 +158,70 @@ const KloterForm = () => {
   //   queryFn: () => slotService.getSlotByCatalogId(parseInt(params.id ?? "0")),
   //   enabled: isEditing,
   // });
+  const detailSlot = [
+    {
+      id: 1,
+      catalogId: 101,
+      payoutAt: "2025-05-01T10:00:00Z",
+      contribution: 50.0,
+      status: "active",
+      isPayoutAllowed: true,
+    },
+    {
+      id: 2,
+      catalogId: 102,
+      payoutAt: "2025-06-10T14:00:00Z",
+      contribution: 75.0,
+      status: "inactive",
+      isPayoutAllowed: false,
+    },
+    {
+      id: 3,
+      catalogId: 103,
+      payoutAt: "2025-09-05T12:00:00Z",
+      contribution: 60.0,
+      status: "active",
+      isPayoutAllowed: true,
+    },
+  ];
 
-  const { data: detailKloter } = useQuery({
-    queryKey: ["kloter", params.id],
-    queryFn: () => kloterService.getKloterById(parseInt(params.id ?? "0")),
-    enabled: isEditing,
-  });
+  // const { data: detailKloter } = useQuery({
+  //   queryKey: ["kloter", params.id],
+  //   queryFn: () => kloterService.getKloterById(parseInt(params.id ?? "0")),
+  //   enabled: isEditing,
+  //   initialData: () => {
+  //     return {
+  //       id: 1,
+  //       title: "Kloter A - Spring 2025",
+  //       groupId: 101,
+  //       description:
+  //         "A special trip for the Spring season, filled with fun and adventure.",
+  //       capacity: 10,
+  //       cycleDay: 7,
+  //       startAt: "2025-05-01T08:00:00Z",
+  //       endAt: "2025-05-01T20:00:00Z",
+  //       availableAt: "2025-04-15T10:00:00Z",
+  //       payout: 150.0,
+  //       adminFee: 10.0,
+  //       status: "active",
+  //     };
+  //   },
+  // });
+  const detailKloter = {
+    id: 1,
+    title: "Kloter A - Spring 2025",
+    groupId: 101,
+    description:
+      "A special trip for the Spring season, filled with fun and adventure.",
+    capacity: 5,
+    cycleDay: 7,
+    startAt: "2025-05-01T08:00:00Z",
+    endAt: "2025-05-01T20:00:00Z",
+    availableAt: "2025-04-15T10:00:00Z",
+    payout: 150.0,
+    adminFee: 10.0,
+    status: "active",
+  };
   if (detailKloter) {
     form.setFieldsValue({
       ...detailKloter,
@@ -158,24 +244,8 @@ const KloterForm = () => {
       okText: "Simpan",
       cancelText: "Batal",
       icon: null,
-      okButtonProps: {
-        style: {
-          backgroundColor: "#9F4ABC",
-          color: "white",
-          borderRadius: "9999px",
-          padding: "8px 24px",
-          fontWeight: 600,
-        },
-      },
-      cancelButtonProps: {
-        style: {
-          backgroundColor: "#EEEEF0",
-          color: "black",
-          borderRadius: "9999px",
-          padding: "8px 24px",
-          fontWeight: 600,
-        },
-      },
+      okButtonProps: constants.okButtonProps,
+      cancelButtonProps: constants.cancelButtonProps,
       onOk() {
         console.log("Status changed to Tersedia");
         submitKloter(values);
@@ -186,10 +256,20 @@ const KloterForm = () => {
     });
   };
 
+  const removeModal = (id: number) => {
+    Modal.confirm({
+      title: "Apakah anda yakin ingin menghapus slot ini?",
+      okButtonProps: constants.okButtonProps,
+      cancelButtonProps: constants.cancelButtonProps,
+      onOk() {
+        mutateSlotDelete(id);
+      },
+    });
+  };
+
   const submitKloter = (values: createKloterParams) => {
     const body = {
       ...values,
-      groupId: 5,
       status: "DRAFTED", // DRAFTED, CANCELLED, ON_GOING, FINISHED, OPEN
     };
     if (isEditing) {
@@ -214,6 +294,7 @@ const KloterForm = () => {
   // list slot itu gmn? soalnya abis create catalog, get slot by id, return array kosong
   // udh coba create slot, pas get slot by id, bener return yg baru dibuat td
   // method patch kena cors
+  // di list slot blm ada nama
   return (
     <>
       <div className="bg-[#F9F9F9] min-h-screen">
@@ -261,6 +342,15 @@ const KloterForm = () => {
                 <Form.Item
                   label="Title Katalog"
                   name="title"
+                  rules={[{ required: true }]}
+                >
+                  <Input disabled={disabledForm} />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item
+                  label="Group ID"
+                  name="groupId"
                   rules={[{ required: true }]}
                 >
                   <Input disabled={disabledForm} />
@@ -362,8 +452,14 @@ const KloterForm = () => {
           <div className="p-6 m-6 rounded-md bg-white">
             <div className="font-semibold text-xl mb-4">Daftar Slot</div>
             <Table
-              columns={columns({ setSlotModal })}
-              dataSource={data}
+              columns={columnsSlot({ setSlotModal, removeModal })}
+              //  fill remaining item based on the detailslot.capacity
+              dataSource={[
+                ...detailSlot,
+                ...Array(
+                  Math.abs(detailKloter.capacity - detailSlot.length)
+                ).fill(emptySlotItem),
+              ]}
               pagination={false}
             />
           </div>

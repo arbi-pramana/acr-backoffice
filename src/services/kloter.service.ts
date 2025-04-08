@@ -1,4 +1,5 @@
 import http from "../helper/http";
+import { ROUTES } from "../routes/api";
 import {
   createKloterParams,
   Kloter,
@@ -9,23 +10,23 @@ import {
 
 export const kloterService = {
   async getKloters(params: Params) {
-    const data = (await http.get("/v1/catalogs/public", {
+    const data = (await http.get(ROUTES.kloter.list, {
       params,
     })) as ListResponse<Kloter>;
     return data;
   },
   async getKloterById(id: number) {
-    const data = (await http.get("/v1/catalogs/" + id)) as Kloter;
+    const data = (await http.get(ROUTES.kloter.byId(id))) as Kloter;
     return data;
   },
   async updateKloterById(params: updateKloterByIdParams) {
-    const data = await http.patch("/v1/catalogs/" + params.id, {
+    const data = await http.patch(ROUTES.kloter.updateById(params.id), {
       body: params.body,
     });
     return data;
   },
   async createKloter(body: createKloterParams) {
-    const data = await http.post("/v1/catalogs", body);
+    const data = await http.post(ROUTES.kloter.create, body);
     return data;
   },
 };

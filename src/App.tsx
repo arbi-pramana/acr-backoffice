@@ -5,12 +5,17 @@ import Dashboard from "./pages/dashboard";
 import KloterForm from "./pages/kloter-form";
 import KYCForm from "./pages/kyc-form";
 import Login from "./pages/login";
+// import utc from "dayjs/plugin/utc";
+// import timezone from "dayjs/plugin/timezone";
+// import dayjs from "dayjs";
 
 function App() {
   notification.config({
     placement: "topRight",
   });
-
+  // dayjs.extend(utc);
+  // dayjs.extend(timezone);
+  // dayjs.tz.setDefault(dayjs.tz.guess());
   return (
     <BrowserRouter>
       <Routes>

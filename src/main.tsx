@@ -39,6 +39,11 @@ createRoot(document.getElementById("root")!).render(
             Form: {
               labelColor: "#6E6E78",
             },
+            Modal: {
+              colorPrimary: "#9f4abc",
+              colorPrimaryActive: "#7e36a1",
+              colorPrimaryBg: "#fbddfa",
+            },
           },
         }}
       >
