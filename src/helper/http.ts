@@ -20,7 +20,6 @@ http.interceptors.response.use(
   (error) => {
     notification.error({
       message: error.response.data.message ?? "Unknown Error",
-      placement: "bottomRight",
     });
     if (
       error.response.status === 401 &&
@@ -28,7 +27,6 @@ http.interceptors.response.use(
     ) {
       notification.error({
         message: "Session expired, please relogin",
-        placement: "bottomRight",
       });
       localStorage.removeItem("session");
       window.location.href = "/login";

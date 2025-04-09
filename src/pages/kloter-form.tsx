@@ -30,7 +30,7 @@ import {
 } from "../types";
 
 const emptySlotItem = {
-  id: "-",
+  id: 0,
   catalogId: "-",
   payoutAt: "",
   contribution: "-",
@@ -46,6 +46,7 @@ const columnsSlot = (props: {
     title: "Urutan",
     dataIndex: "id",
     key: "id",
+    render: (val) => <div>{val == 0 ? "-" : val}</div>,
   },
   {
     title: "Tanggal Pencairan",
@@ -59,8 +60,9 @@ const columnsSlot = (props: {
   },
   {
     title: "Nama",
-    dataIndex: "id",
-    key: "id",
+    dataIndex: "name",
+    key: "name",
+    render: (val) => <div>{val ?? "-"}</div>,
   },
   {
     title: "Kontribusi",
@@ -79,9 +81,12 @@ const columnsSlot = (props: {
     dataIndex: "action",
     key: "action",
     width: 100,
+    align: "end",
     render: (_, record) => (
       <Space>
-        <Button onClick={() => props.removeModal(record.id)}>Hapus</Button>
+        {record.id ? (
+          <Button onClick={() => props.removeModal(record.id)}>Hapus</Button>
+        ) : null}
         <Button type="primary" onClick={() => props.setSlotModal(true)}>
           Isi Data
         </Button>
@@ -121,12 +126,16 @@ const KloterForm = () => {
     mutationFn: (data: updateKloterByIdParams) =>
       kloterService.updateKloterById(data),
     onSuccess: (data) => {
-      if (!data) {
-        queryClient.invalidateQueries({ queryKey: ["kloter"] });
-        notification.success({
-          message: "Katalog telah berhasil diupdate.",
-        });
+      // error response
+      if (data.status && data.status.toString().startsWith("5")) {
+        return;
       }
+      queryClient.invalidateQueries({ queryKey: ["kloter", params.id] });
+      setDisabledForm(true);
+      console.log("sini");
+      notification.success({
+        message: "Katalog telah berhasil diupdate.",
+      });
     },
   });
 
@@ -217,6 +226,12 @@ const KloterForm = () => {
     const body = {
       ...values,
       status: "DRAFTED", // DRAFTED, CANCELLED, ON_GOING, FINISHED, OPEN
+      /**
+       * batal: cancelled
+       * tersedia: open
+       * draft: draft
+       * periode lewat: finised
+       */
     };
     if (isEditing) {
       if (!params.id) return;
@@ -419,13 +434,13 @@ const KloterForm = () => {
             <div className="flex items-center gap-4">
               <label className="text-sm font-medium">Pilih Respon Status</label>
               <Select
-                defaultValue="DRAFTED"
+                value={kloterStatus ? kloterStatus : detailKloter?.status}
                 options={[
                   { label: "Drafted", value: "DRAFTED" },
-                  { label: "Open", value: "OPEN" },
+                  { label: "Tersedia", value: "OPEN" },
+                  { label: "Cancelled", value: "CANCELLED" },
                   { label: "On Going", value: "ON_GOING" },
                   { label: "Finished", value: "FINISHED" },
-                  { label: "Cancelled", value: "CANCELLED" },
                 ]}
                 className="w-48"
                 onChange={(val) => setKloterStatus(val)}

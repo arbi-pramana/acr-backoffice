@@ -9,6 +9,7 @@ import { ColumnsType } from "antd/es/table";
 import dayjs from "dayjs";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Chip from "../components/chip";
 import Pagination from "../components/pagination";
 import { kloterService } from "../services/kloter.service";
 import { Kloter } from "../types";
@@ -37,6 +38,16 @@ const columns = (props: {
     title: "Status",
     dataIndex: "status",
     key: "status",
+    render: (value) =>
+      value == "OPEN" ? (
+        <Chip variant="success" label="Tersedia" />
+      ) : value == "DRAFTED" ? (
+        <Chip variant="default" label="Drafted" />
+      ) : value == "CANCELLED" ? (
+        <Chip variant="danger" label="Batal" />
+      ) : value == "FINISHED" ? (
+        <Chip variant="info" label="Selesai" />
+      ) : null,
   },
   {
     title: "Period",
@@ -45,7 +56,13 @@ const columns = (props: {
     align: "center",
     render: (_period, record) => (
       <div className="h-full">
-        {record.startAt} - {record.endAt}
+        {`${dayjs(record.startAt).format("DD MMMM YYYY")} | ${dayjs(
+          record.startAt
+        ).format("HH:MM:ss")}`}{" "}
+        -{" "}
+        {`${dayjs(record.endAt).format("DD MMMM YYYY")} | ${dayjs(
+          record.endAt
+        ).format("HH:MM:ss")}`}
       </div>
     ),
   },
@@ -167,7 +184,7 @@ const KloterManagement = () => {
         />
       </div>
       <Table
-        scroll={{ x: "max-content", y: 390 }}
+        scroll={{ x: "max-content", y: "auto" }}
         columns={columns({ navigate })}
         dataSource={kloters?.content ?? []}
         pagination={false}

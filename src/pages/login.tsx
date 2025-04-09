@@ -1,9 +1,9 @@
-import { Button, Form, Input } from "antd";
-import { useLogin } from "../services/auth.service";
-import { storage } from "../helper/local-storage";
-import { useNavigate } from "react-router-dom";
+import { Button, Form, Input, notification } from "antd";
 import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { isAuthenticated } from "../helper/is-authenticated";
+import { storage } from "../helper/local-storage";
+import { useLogin } from "../services/auth.service";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -15,6 +15,12 @@ const Login = () => {
     mutate(values, {
       onSuccess(data) {
         if (data.status === 401) {
+          return;
+        }
+        if (!data.roles.includes("ROLE_ADMIN")) {
+          notification.warning({
+            message: "Your role cannot access this application",
+          });
           return;
         }
         storage.setItem("session", JSON.stringify(data));
