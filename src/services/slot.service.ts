@@ -15,4 +15,8 @@ export const slotService = {
     const data = await http.delete(ROUTES.slot.delete(id));
     return data;
   },
+  async updateSlot({ id, body }: { id: number; body: Partial<Slot> }) {
+    const data = await http.patch(ROUTES.slot.update(id), body);
+    return data;
+  },
 };

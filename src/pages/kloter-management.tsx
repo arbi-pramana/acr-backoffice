@@ -11,6 +11,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Chip from "../components/chip";
 import Pagination from "../components/pagination";
+import { numberWithCommas } from "../helper/number-with-commas";
 import { kloterService } from "../services/kloter.service";
 import { Kloter } from "../types";
 
@@ -47,6 +48,8 @@ const columns = (props: {
         <Chip variant="danger" label="Batal" />
       ) : value == "FINISHED" ? (
         <Chip variant="info" label="Selesai" />
+      ) : value == "ON_GOING" ? (
+        <Chip variant="warning" label="Sedang Berjalan" />
       ) : null,
   },
   {
@@ -89,6 +92,7 @@ const columns = (props: {
     dataIndex: "payout",
     key: "payout",
     width: 150,
+    render: (val) => <div>Rp{numberWithCommas(val)}</div>,
   },
   {
     title: "Kontribusi",
@@ -97,7 +101,8 @@ const columns = (props: {
     width: 150,
     render: (value) => (
       <div>
-        Rp{value?.lowest} - Rp{value?.highest}
+        Rp{numberWithCommas(value?.lowest ?? 0)} - Rp
+        {numberWithCommas(value?.highest ?? 0)}
       </div>
     ),
   },
@@ -106,6 +111,7 @@ const columns = (props: {
     dataIndex: "adminFee",
     key: "adminFee",
     width: 150,
+    render: (val) => <div>Rp{numberWithCommas(val)}</div>,
   },
   {
     title: "Action",

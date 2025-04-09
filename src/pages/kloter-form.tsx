@@ -20,6 +20,7 @@ import dayjs from "dayjs";
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { constants } from "../helper/constant";
+import { numberWithCommas } from "../helper/number-with-commas";
 import { kloterService } from "../services/kloter.service";
 import { slotService } from "../services/slot.service";
 import {
@@ -27,6 +28,7 @@ import {
   createSlotParams,
   Slot,
   updateKloterByIdParams,
+  updateSlotParams,
 } from "../types";
 
 const emptySlotItem = {
@@ -41,12 +43,13 @@ const emptySlotItem = {
 const columnsSlot = (props: {
   setSlotModal: (val: boolean) => void;
   removeModal: (id: number) => void;
+  updatePayout: (id: number, val: boolean) => void;
 }): TableColumnsType<Slot> => [
   {
     title: "Urutan",
     dataIndex: "id",
     key: "id",
-    render: (val) => <div>{val == 0 ? "-" : val}</div>,
+    render: (val, _record, index) => <div>{val ? index + 1 : "-"}</div>,
   },
   {
     title: "Tanggal Pencairan",
@@ -68,13 +71,19 @@ const columnsSlot = (props: {
     title: "Kontribusi",
     dataIndex: "contribution",
     key: "contribution",
-    render: (val) => <div>Rp.{val}</div>,
+    render: (val) => <div>Rp{numberWithCommas(val)}</div>,
   },
   {
     title: "Aksi Pencairan",
     dataIndex: "isPayoutAllowed",
     key: "isPayoutAllowed",
-    render: (val) => <Switch value={val} disabled />,
+    render: (val, record) => (
+      <Switch
+        value={val}
+        disabled={record.id == 0}
+        onClick={(val) => props.updatePayout(record.id, val)}
+      />
+    ),
   },
   {
     title: "Action",
@@ -153,6 +162,7 @@ const KloterForm = () => {
       }
     },
   });
+
   const { mutate: mutateSlotDelete } = useMutation({
     mutationKey: ["deleteSlot"],
     mutationFn: (data: number) => slotService.deleteSlot(data),
@@ -163,6 +173,20 @@ const KloterForm = () => {
           message: "Slot telah berhasil dihapus",
         });
       }
+    },
+  });
+
+  const { mutate: mutateSlotUpdate } = useMutation({
+    mutationKey: ["updateSlot", params.id],
+    mutationFn: (data: updateSlotParams) => slotService.updateSlot(data),
+    onSuccess: (data) => {
+      if (data.status && data.status.toString().startsWith("5")) {
+        return;
+      }
+      queryClient.invalidateQueries({ queryKey: ["slot", params.id] });
+      notification.success({
+        message: "Slot telah berhasil diupdate",
+      });
     },
   });
 
@@ -226,12 +250,6 @@ const KloterForm = () => {
     const body = {
       ...values,
       status: "DRAFTED", // DRAFTED, CANCELLED, ON_GOING, FINISHED, OPEN
-      /**
-       * batal: cancelled
-       * tersedia: open
-       * draft: draft
-       * periode lewat: finised
-       */
     };
     if (isEditing) {
       if (!params.id) return;
@@ -256,6 +274,8 @@ const KloterForm = () => {
   // udh coba create slot, pas get slot by id, bener return yg baru dibuat td
   // method patch kena cors
   // di list slot blm ada nama
+  // di list kloter blm ada kontribusi
+  // di form, status bawah apa aja
   return (
     <>
       <div className="bg-[#F9F9F9] min-h-screen">
@@ -413,7 +433,22 @@ const KloterForm = () => {
           <div className="p-6 m-6 rounded-md bg-white">
             <div className="font-semibold text-xl mb-4">Daftar Slot</div>
             <Table
-              columns={columnsSlot({ setSlotModal, removeModal })}
+              columns={columnsSlot({
+                setSlotModal,
+                removeModal,
+                updatePayout: (id, val) =>
+                  Modal.confirm({
+                    title: "Apakah kamu yakin ingin mengubah aksi pencairan?",
+                    okButtonProps: constants.okButtonProps,
+                    cancelButtonProps: constants.cancelButtonProps,
+                    onOk() {
+                      mutateSlotUpdate({
+                        id: id,
+                        body: { isPayoutAllowed: val },
+                      });
+                    },
+                  }),
+              })}
               loading={loadSlot}
               dataSource={[
                 ...detailSlot,
@@ -438,9 +473,7 @@ const KloterForm = () => {
                 options={[
                   { label: "Drafted", value: "DRAFTED" },
                   { label: "Tersedia", value: "OPEN" },
-                  { label: "Cancelled", value: "CANCELLED" },
-                  { label: "On Going", value: "ON_GOING" },
-                  { label: "Finished", value: "FINISHED" },
+                  { label: "Batal", value: "CANCELLED" },
                 ]}
                 className="w-48"
                 onChange={(val) => setKloterStatus(val)}

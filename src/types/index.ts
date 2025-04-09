@@ -46,3 +46,4 @@ export type Slot = {
 };
 
 export type createSlotParams = Omit<Slot, "id" | "isPayoutAllowed">;
+export type updateSlotParams = { id: number; body: Partial<Slot> };
