@@ -31,6 +31,12 @@ import {
   updateSlotParams,
 } from "../types";
 
+const kloterNextStatus = [
+  { label: "Drafted", value: "DRAFTED" },
+  { label: "Tersedia", value: "OPEN" },
+  { label: "Batal", value: "CANCELLED" },
+];
+
 const emptySlotItem = {
   id: 0,
   catalogId: "-",
@@ -148,47 +154,50 @@ const KloterForm = () => {
     },
   });
 
-  const { mutate: mutateSlotCreate } = useMutation({
-    mutationKey: ["createSlot"],
-    mutationFn: (data: createSlotParams) => slotService.createSlot(data),
-    onSuccess: (data) => {
-      if (!data) {
-        formAddSlot.resetFields();
-        setSlotModal(false);
-        queryClient.invalidateQueries({ queryKey: ["slot"] });
-        notification.success({
-          message: "Slot telah berhasil dibuat",
-        });
-      }
-    },
-  });
+  const { mutate: mutateSlotCreate, isPending: pendingSlotCreate } =
+    useMutation({
+      mutationKey: ["createSlot"],
+      mutationFn: (data: createSlotParams) => slotService.createSlot(data),
+      onSuccess: (data) => {
+        if (!data) {
+          formAddSlot.resetFields();
+          setSlotModal(false);
+          queryClient.invalidateQueries({ queryKey: ["slot"] });
+          notification.success({
+            message: "Slot telah berhasil dibuat",
+          });
+        }
+      },
+    });
 
-  const { mutate: mutateSlotDelete } = useMutation({
-    mutationKey: ["deleteSlot"],
-    mutationFn: (data: number) => slotService.deleteSlot(data),
-    onSuccess: (data) => {
-      if (!data) {
-        queryClient.invalidateQueries({ queryKey: ["slot"] });
-        notification.success({
-          message: "Slot telah berhasil dihapus",
-        });
-      }
-    },
-  });
+  const { mutate: mutateSlotDelete, isPending: pendingSlotDelete } =
+    useMutation({
+      mutationKey: ["deleteSlot"],
+      mutationFn: (data: number) => slotService.deleteSlot(data),
+      onSuccess: (data) => {
+        if (!data) {
+          queryClient.invalidateQueries({ queryKey: ["slot"] });
+          notification.success({
+            message: "Slot telah berhasil dihapus",
+          });
+        }
+      },
+    });
 
-  const { mutate: mutateSlotUpdate } = useMutation({
-    mutationKey: ["updateSlot", params.id],
-    mutationFn: (data: updateSlotParams) => slotService.updateSlot(data),
-    onSuccess: (data) => {
-      if (data.status && data.status.toString().startsWith("5")) {
-        return;
-      }
-      queryClient.invalidateQueries({ queryKey: ["slot", params.id] });
-      notification.success({
-        message: "Slot telah berhasil diupdate",
-      });
-    },
-  });
+  const { mutate: mutateSlotUpdate, isPending: pendingSlotUpdate } =
+    useMutation({
+      mutationKey: ["updateSlot", params.id],
+      mutationFn: (data: updateSlotParams) => slotService.updateSlot(data),
+      onSuccess: (data) => {
+        if (data.status && data.status.toString().startsWith("5")) {
+          return;
+        }
+        queryClient.invalidateQueries({ queryKey: ["slot", params.id] });
+        notification.success({
+          message: "Slot telah berhasil diupdate",
+        });
+      },
+    });
 
   const { data: detailSlot, isLoading: loadSlot } = useQuery({
     queryKey: ["slot", params.id],
@@ -223,6 +232,7 @@ const KloterForm = () => {
       okText: "Simpan",
       cancelText: "Batal",
       icon: null,
+      centered: true,
       okButtonProps: constants.okButtonProps,
       cancelButtonProps: constants.cancelButtonProps,
       onOk() {
@@ -449,7 +459,12 @@ const KloterForm = () => {
                     },
                   }),
               })}
-              loading={loadSlot}
+              loading={
+                loadSlot ||
+                pendingSlotUpdate ||
+                pendingSlotDelete ||
+                pendingSlotCreate
+              }
               dataSource={[
                 ...detailSlot,
                 ...Array(
@@ -470,11 +485,7 @@ const KloterForm = () => {
               <label className="text-sm font-medium">Pilih Respon Status</label>
               <Select
                 value={kloterStatus ? kloterStatus : detailKloter?.status}
-                options={[
-                  { label: "Drafted", value: "DRAFTED" },
-                  { label: "Tersedia", value: "OPEN" },
-                  { label: "Batal", value: "CANCELLED" },
-                ]}
+                options={kloterNextStatus}
                 className="w-48"
                 onChange={(val) => setKloterStatus(val)}
               />
@@ -489,9 +500,22 @@ const KloterForm = () => {
             className="w-[200px]"
             onClick={() =>
               isEditing
-                ? mutateKloterUpdate({
-                    body: { status: kloterStatus },
-                    id: params.id ? parseInt(params.id) : 0,
+                ? Modal.confirm({
+                    title: `Apakah kamu yakin ingin mengubah status kloter ke ${
+                      kloterNextStatus.find((v) => v.value == kloterStatus)
+                        ?.label
+                    }?`,
+                    content:
+                      "Jika status diubah, sistem akan melakukan perubahan pada status seluruh slot dalam kloter ini.",
+                    okButtonProps: constants.okButtonProps,
+                    cancelButtonProps: constants.cancelButtonProps,
+                    centered: true,
+                    onOk() {
+                      mutateKloterUpdate({
+                        body: { status: kloterStatus },
+                        id: params.id ? parseInt(params.id) : 0,
+                      });
+                    },
                   })
                 : form.submit()
             }
