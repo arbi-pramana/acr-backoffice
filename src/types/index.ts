@@ -30,7 +30,7 @@ export type Params = {
 
 // kloter.service.ts
 export type updateKloterByIdParams = {
-  body: Omit<Kloter, "id" | "description">;
+  body: Partial<Omit<Kloter, "id" | "description">>;
   id: number;
 };
 export type createKloterParams = Omit<Kloter, "id" | "description">;

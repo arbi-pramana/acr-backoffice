@@ -1,5 +1,5 @@
 import { ArrowLeftOutlined } from "@ant-design/icons";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Button,
   Col,
@@ -66,6 +66,7 @@ const columnsSlot = (props: {
     title: "Kontribusi",
     dataIndex: "contribution",
     key: "contribution",
+    render: (val) => <div>Rp.{val}</div>,
   },
   {
     title: "Aksi Pencairan",
@@ -97,6 +98,7 @@ const KloterForm = () => {
   const [formAddSlot] = Form.useForm();
   const [slotModal, setSlotModal] = useState(false);
   const [disabledForm, setDisabledForm] = useState(isEditing);
+  const [kloterStatus, setKloterStatus] = useState("");
   const queryClient = useQueryClient();
 
   const { mutate: mutateKloterCreate } = useMutation({
@@ -133,6 +135,8 @@ const KloterForm = () => {
     mutationFn: (data: createSlotParams) => slotService.createSlot(data),
     onSuccess: (data) => {
       if (!data) {
+        formAddSlot.resetFields();
+        setSlotModal(false);
         queryClient.invalidateQueries({ queryKey: ["slot"] });
         notification.success({
           message: "Slot telah berhasil dibuat",
@@ -153,75 +157,17 @@ const KloterForm = () => {
     },
   });
 
-  // const { data: detailSlot } = useQuery({
-  //   queryKey: ["slot", params.id],
-  //   queryFn: () => slotService.getSlotByCatalogId(parseInt(params.id ?? "0")),
-  //   enabled: isEditing,
-  // });
-  const detailSlot = [
-    {
-      id: 1,
-      catalogId: 101,
-      payoutAt: "2025-05-01T10:00:00Z",
-      contribution: 50.0,
-      status: "active",
-      isPayoutAllowed: true,
-    },
-    {
-      id: 2,
-      catalogId: 102,
-      payoutAt: "2025-06-10T14:00:00Z",
-      contribution: 75.0,
-      status: "inactive",
-      isPayoutAllowed: false,
-    },
-    {
-      id: 3,
-      catalogId: 103,
-      payoutAt: "2025-09-05T12:00:00Z",
-      contribution: 60.0,
-      status: "active",
-      isPayoutAllowed: true,
-    },
-  ];
+  const { data: detailSlot, isLoading: loadSlot } = useQuery({
+    queryKey: ["slot", params.id],
+    queryFn: () => slotService.getSlotByCatalogId(parseInt(params.id ?? "0")),
+    enabled: isEditing,
+  });
 
-  // const { data: detailKloter } = useQuery({
-  //   queryKey: ["kloter", params.id],
-  //   queryFn: () => kloterService.getKloterById(parseInt(params.id ?? "0")),
-  //   enabled: isEditing,
-  //   initialData: () => {
-  //     return {
-  //       id: 1,
-  //       title: "Kloter A - Spring 2025",
-  //       groupId: 101,
-  //       description:
-  //         "A special trip for the Spring season, filled with fun and adventure.",
-  //       capacity: 10,
-  //       cycleDay: 7,
-  //       startAt: "2025-05-01T08:00:00Z",
-  //       endAt: "2025-05-01T20:00:00Z",
-  //       availableAt: "2025-04-15T10:00:00Z",
-  //       payout: 150.0,
-  //       adminFee: 10.0,
-  //       status: "active",
-  //     };
-  //   },
-  // });
-  const detailKloter = {
-    id: 1,
-    title: "Kloter A - Spring 2025",
-    groupId: 101,
-    description:
-      "A special trip for the Spring season, filled with fun and adventure.",
-    capacity: 5,
-    cycleDay: 7,
-    startAt: "2025-05-01T08:00:00Z",
-    endAt: "2025-05-01T20:00:00Z",
-    availableAt: "2025-04-15T10:00:00Z",
-    payout: 150.0,
-    adminFee: 10.0,
-    status: "active",
-  };
+  const { data: detailKloter } = useQuery({
+    queryKey: ["kloter", params.id],
+    queryFn: () => kloterService.getKloterById(parseInt(params.id ?? "0")),
+    enabled: isEditing,
+  });
   if (detailKloter) {
     form.setFieldsValue({
       ...detailKloter,
@@ -448,12 +394,12 @@ const KloterForm = () => {
             </Row>
           </Form>
         </div>
-        {isEditing ? (
+        {isEditing && detailKloter && detailSlot ? (
           <div className="p-6 m-6 rounded-md bg-white">
             <div className="font-semibold text-xl mb-4">Daftar Slot</div>
             <Table
               columns={columnsSlot({ setSlotModal, removeModal })}
-              //  fill remaining item based on the detailslot.capacity
+              loading={loadSlot}
               dataSource={[
                 ...detailSlot,
                 ...Array(
@@ -482,6 +428,7 @@ const KloterForm = () => {
                   { label: "Cancelled", value: "CANCELLED" },
                 ]}
                 className="w-48"
+                onChange={(val) => setKloterStatus(val)}
               />
             </div>
           ) : (
@@ -494,9 +441,10 @@ const KloterForm = () => {
             className="w-[200px]"
             onClick={() =>
               isEditing
-                ? {
-                    /** action update status */
-                  }
+                ? mutateKloterUpdate({
+                    body: { status: kloterStatus },
+                    id: params.id ? parseInt(params.id) : 0,
+                  })
                 : form.submit()
             }
           >

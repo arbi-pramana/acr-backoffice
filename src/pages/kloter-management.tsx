@@ -6,6 +6,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { Button, DatePicker, Input, Table } from "antd";
 import { ColumnsType } from "antd/es/table";
+import dayjs from "dayjs";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Pagination from "../components/pagination";
@@ -19,6 +20,7 @@ const columns = (props: {
     title: "ID",
     dataIndex: "id",
     key: "id",
+    width: 70,
   },
   {
     title: "Title Katalog",
@@ -29,6 +31,7 @@ const columns = (props: {
     title: "Rotasi",
     dataIndex: "cycleDay",
     key: "rotation",
+    width: 100,
   },
   {
     title: "Status",
@@ -45,6 +48,47 @@ const columns = (props: {
         {record.startAt} - {record.endAt}
       </div>
     ),
+  },
+  {
+    title: "Tanggal Rilis",
+    dataIndex: "availableAt",
+    key: "availableAt",
+    align: "center",
+    render: (period) => (
+      <div className="h-full">
+        {dayjs(period).format("DD MMMM YYYY")} |{" "}
+        {dayjs(period).format("HH:MM:ss")}
+      </div>
+    ),
+  },
+  {
+    title: "Jumlah Slot",
+    dataIndex: "capacity",
+    key: "capacity",
+    width: 150,
+  },
+  {
+    title: "Pencairan",
+    dataIndex: "payout",
+    key: "payout",
+    width: 150,
+  },
+  {
+    title: "Kontribusi",
+    dataIndex: "contribution",
+    key: "contribution",
+    width: 150,
+    render: (value) => (
+      <div>
+        Rp{value?.lowest} - Rp{value?.highest}
+      </div>
+    ),
+  },
+  {
+    title: "Biaya Admin",
+    dataIndex: "adminFee",
+    key: "adminFee",
+    width: 150,
   },
   {
     title: "Action",

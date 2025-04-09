@@ -12,6 +12,7 @@ export const ROUTES = {
   },
   slot: {
     create: `/${version}/backoffice/slots`,
+    delete: (id: number) => `/${version}/backoffice/slots/` + id,
     getByCatalogId: (id: number) => `/${version}/backoffice/slots/` + id,
   },
 };

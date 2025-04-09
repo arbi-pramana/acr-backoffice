@@ -20,9 +20,10 @@ export const kloterService = {
     return data;
   },
   async updateKloterById(params: updateKloterByIdParams) {
-    const data = await http.patch(ROUTES.kloter.updateById(params.id), {
-      body: params.body,
-    });
+    const data = await http.patch(
+      ROUTES.kloter.updateById(params.id),
+      params.body
+    );
     return data;
   },
   async createKloter(body: createKloterParams) {

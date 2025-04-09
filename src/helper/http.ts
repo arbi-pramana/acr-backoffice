@@ -1,6 +1,6 @@
+import { notification } from "antd";
 import axios from "axios";
 import { storage } from "./local-storage";
-import { notification } from "antd";
 
 const http = axios.create({ baseURL: import.meta.env.VITE_APP_BASE_URL });
 
