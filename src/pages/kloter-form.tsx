@@ -220,12 +220,13 @@ const KloterForm = () => {
   }
 
   const showConfirm = (values: createKloterParams, isEditing: boolean) => {
-    const titleContent = isEditing
-      ? "Apakah anda yakin kamu mengubah data katalog?"
-      : 'Apakah kamu yakin ingin mengubah status kloter ke "Tersedia"?';
-    const textContent = isEditing
-      ? "Data yang anda ubah dapat mengubah data yang ditampilakn di UI user"
-      : 'Status kloter akan berubah menjadi "Tersedia" dan akan dipublikasikan';
+    if (!isEditing) {
+      submitKloter(values);
+      return;
+    }
+    const titleContent = "Apakah anda yakin kamu mengubah data katalog?";
+    const textContent =
+      "Data yang anda ubah dapat mengubah data yang ditampilakn di UI user";
     Modal.confirm({
       title: titleContent,
       content: textContent,
@@ -448,9 +449,15 @@ const KloterForm = () => {
                 removeModal,
                 updatePayout: (id, val) =>
                   Modal.confirm({
-                    title: "Apakah kamu yakin ingin mengubah aksi pencairan?",
+                    title: `Yakin ingin ${
+                      val ? "mengaktifkan" : "menonaktifkan"
+                    } pencairan?`,
+                    content:
+                      "Dengan mengaktifkan pencairan, kontribusi pada slot ini akan diproses untuk dicairkan.",
                     okButtonProps: constants.okButtonProps,
                     cancelButtonProps: constants.cancelButtonProps,
+                    okText: val ? "Aktifkan" : "Nonaktifkan",
+                    cancelText: "Batal",
                     onOk() {
                       mutateSlotUpdate({
                         id: id,
@@ -498,27 +505,31 @@ const KloterForm = () => {
           <Button
             type="primary"
             className="w-[200px]"
-            onClick={() =>
-              isEditing
-                ? Modal.confirm({
-                    title: `Apakah kamu yakin ingin mengubah status kloter ke ${
-                      kloterNextStatus.find((v) => v.value == kloterStatus)
-                        ?.label
-                    }?`,
-                    content:
-                      "Jika status diubah, sistem akan melakukan perubahan pada status seluruh slot dalam kloter ini.",
-                    okButtonProps: constants.okButtonProps,
-                    cancelButtonProps: constants.cancelButtonProps,
-                    centered: true,
-                    onOk() {
-                      mutateKloterUpdate({
-                        body: { status: kloterStatus },
-                        id: params.id ? parseInt(params.id) : 0,
-                      });
-                    },
-                  })
-                : form.submit()
-            }
+            onClick={() => {
+              if (isEditing) {
+                const status = kloterStatus
+                  ? kloterStatus
+                  : detailKloter?.status;
+                Modal.confirm({
+                  title: `Apakah kamu yakin ingin mengubah status kloter ke ${
+                    kloterNextStatus.find((v) => v.value == status)?.label
+                  }?`,
+                  content:
+                    "Jika status diubah, sistem akan melakukan perubahan pada status seluruh slot dalam kloter ini.",
+                  okButtonProps: constants.okButtonProps,
+                  cancelButtonProps: constants.cancelButtonProps,
+                  centered: true,
+                  onOk() {
+                    mutateKloterUpdate({
+                      body: { status: kloterStatus },
+                      id: params.id ? parseInt(params.id) : 0,
+                    });
+                  },
+                });
+              } else {
+                form.submit();
+              }
+            }}
           >
             Submit
           </Button>

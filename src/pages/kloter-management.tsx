@@ -28,6 +28,7 @@ const columns = (props: {
     title: "Title Katalog",
     dataIndex: "title",
     key: "price",
+    width: 120,
   },
   {
     title: "Rotasi",
