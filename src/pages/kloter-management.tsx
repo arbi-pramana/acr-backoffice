@@ -4,7 +4,7 @@ import {
   SearchOutlined,
 } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-import { Button, DatePicker, Input, Table } from "antd";
+import { Button, DatePicker, Divider, Input, Spin, Table } from "antd";
 import { ColumnsType } from "antd/es/table";
 import dayjs from "dayjs";
 import { useState } from "react";
@@ -19,10 +19,10 @@ const columns = (props: {
   navigate: (val: string) => void;
 }): ColumnsType<Kloter> => [
   {
-    title: "ID",
+    title: "Kloter ID",
     dataIndex: "id",
     key: "id",
-    width: 70,
+    width: 100,
   },
   {
     title: "Title Katalog",
@@ -63,7 +63,10 @@ const columns = (props: {
         {`${dayjs(record.startAt).format("DD MMMM YYYY")} | ${dayjs(
           record.startAt
         ).format("HH:MM:ss")}`}{" "}
-        -{" "}
+        <Divider
+          type="vertical"
+          style={{ height: 2, width: 36, backgroundColor: "#d9d9d9" }}
+        />{" "}
         {`${dayjs(record.endAt).format("DD MMMM YYYY")} | ${dayjs(
           record.endAt
         ).format("HH:MM:ss")}`}
@@ -89,6 +92,13 @@ const columns = (props: {
     width: 150,
   },
   {
+    title: "Minimum Uang Muka",
+    dataIndex: "minimumInitialAmount",
+    key: "minimumInitialAmount",
+    width: 200,
+    render: (val) => <div>Rp{numberWithCommas(val ?? 0)}</div>,
+  },
+  {
     title: "Pencairan",
     dataIndex: "payout",
     key: "payout",
@@ -99,7 +109,7 @@ const columns = (props: {
     title: "Kontribusi",
     dataIndex: "contribution",
     key: "contribution",
-    width: 150,
+    width: 200,
     render: (value) => (
       <div>
         Rp{numberWithCommas(value?.lowest ?? 0)} - Rp
@@ -138,9 +148,14 @@ const KloterManagement = () => {
     search: "",
   });
 
-  const { data: kloters } = useQuery({
+  const { data: kloters, isLoading: loadingKloter } = useQuery({
     queryFn: () => kloterService.getKloters(params),
     queryKey: ["kloters", params],
+  });
+
+  const { data: kloterDashboard } = useQuery({
+    queryFn: () => kloterService.getKloterDashboard(),
+    queryKey: ["kloterDashboard"],
   });
 
   return (
@@ -168,19 +183,42 @@ const KloterManagement = () => {
       <div className="flex gap-2 my-4">
         <div className="border border-solid rounded-md border-gray-200 p-6 w-full">
           <div className="font-semibold text-sm">Jumlah Kloter</div>
-          <div className="font-semibold text-4xl">1,210</div>
+          <div className="font-semibold text-4xl">
+            {kloterDashboard?.totalCatalogs ?? <Spin size="small" />}
+          </div>
         </div>
         <div className="border border-solid rounded-md border-gray-200 p-6 w-full">
           <div className="font-semibold text-sm">Kloter Rilis</div>
-          <div className="font-semibold text-4xl">316</div>
+          <div className="font-semibold text-4xl">
+            {kloterDashboard?.releasedCatalogs ?? <Spin size="small" />}
+          </div>
         </div>
         <div className="border border-solid rounded-md border-gray-200 p-6 w-full">
           <div className="font-semibold text-sm">Kloter Batal</div>
-          <div className="font-semibold text-4xl">316</div>
+          <div className="font-semibold text-4xl">
+            {kloterDashboard?.cancelledCatalogs ?? <Spin size="small" />}
+          </div>
         </div>
       </div>
       <div className="flex justify-between my-4">
-        <DatePicker placeholder="Tanggal Submit" />
+        <DatePicker.RangePicker
+          placeholder={["Tanggal Awal", "Tanggal Akhir"]}
+          onChange={(v) => {
+            if (v) {
+              setParams((prev) => ({
+                ...prev,
+                createdAtFrom: dayjs(v[0]).format("YYYY-MM-DDTHH:mm:ss+00:00"),
+                createdAtTo: dayjs(v[1]).format("YYYY-MM-DDTHH:mm:ss+00:00"),
+              }));
+            } else if (v == null) {
+              setParams((prev) => ({
+                ...prev,
+                createdAtFrom: "",
+                createdAtTo: "",
+              }));
+            }
+          }}
+        />
         <Input
           addonBefore={<SearchOutlined />}
           style={{ width: "fit-content" }}
@@ -195,6 +233,7 @@ const KloterManagement = () => {
         columns={columns({ navigate })}
         dataSource={kloters?.content ?? []}
         pagination={false}
+        loading={loadingKloter}
         rowKey="id"
       />
       {kloters && (
@@ -202,7 +241,7 @@ const KloterManagement = () => {
           <Pagination
             pageNumber={
               kloters.pageable.pageNumber !== null
-                ? kloters.pageable.pageNumber
+                ? kloters.pageable.pageNumber + 1
                 : 0
             }
             totalPages={kloters.totalPages}

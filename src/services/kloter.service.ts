@@ -3,6 +3,7 @@ import { ROUTES } from "../routes/api";
 import {
   createKloterParams,
   Kloter,
+  KloterDashboard,
   ListResponse,
   Params,
   updateKloterByIdParams,
@@ -17,6 +18,10 @@ export const kloterService = {
   },
   async getKloterById(id: number) {
     const data = (await http.get(ROUTES.kloter.byId(id))) as Kloter;
+    return data;
+  },
+  async getKloterDashboard() {
+    const data = (await http.get(ROUTES.kloter.dashboard)) as KloterDashboard;
     return data;
   },
   async updateKloterById(params: updateKloterByIdParams) {

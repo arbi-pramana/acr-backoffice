@@ -426,6 +426,15 @@ const KloterForm = () => {
               </Col>
               <Col span={12}>
                 <Form.Item
+                  label="Minimum Uang Muka"
+                  name="minimumInitialAmount"
+                  rules={[{ required: true }]}
+                >
+                  <Input addonBefore="Rp" disabled={disabledForm} />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item
                   label="Tanggal Rilis"
                   name="availableAt"
                   rules={[{ required: true }]}

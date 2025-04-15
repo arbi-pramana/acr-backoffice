@@ -7,6 +7,7 @@ export const ROUTES = {
   kloter: {
     list: `/${version}/backoffice/catalogs`,
     byId: (id: number) => `${version}/backoffice/catalogs/` + id,
+    dashboard: `/${version}/backoffice/catalogs/dashboard`,
     updateById: (id: number) => `/${version}/backoffice/catalogs/` + id,
     create: `/${version}/backoffice/catalogs`,
   },

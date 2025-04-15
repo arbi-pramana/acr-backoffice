@@ -21,6 +21,13 @@ export type Kloter = {
   adminFee: number;
   status: string;
 };
+export type KloterDashboard = {
+  totalCatalogs: number;
+  releasedCatalogs: number;
+  cancelledCatalogs: number;
+  onGoingCatalogs: number;
+  finishedCatalogs: number;
+};
 
 export type Params = {
   page: number;
