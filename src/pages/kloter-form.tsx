@@ -336,7 +336,7 @@ const KloterForm = () => {
                   name="title"
                   rules={[{ required: true }]}
                 >
-                  <Input disabled={disabledForm} />
+                  <Input disabled={disabledForm} data-testid="title" />
                 </Form.Item>
               </Col>
               <Col span={12}>
@@ -345,7 +345,7 @@ const KloterForm = () => {
                   name="groupId"
                   rules={[{ required: true }]}
                 >
-                  <Input disabled={disabledForm} />
+                  <Input disabled={disabledForm} data-testid="groupId" />
                 </Form.Item>
               </Col>
               <Col span={12}>
@@ -362,7 +362,7 @@ const KloterForm = () => {
                     },
                   ]}
                 >
-                  <Input disabled={disabledForm} />
+                  <Input disabled={disabledForm} data-testid="capacity" />
                 </Form.Item>
               </Col>
               <Col span={12}>
@@ -379,7 +379,7 @@ const KloterForm = () => {
                     },
                   ]}
                 >
-                  <Input disabled={disabledForm} />
+                  <Input disabled={disabledForm} data-testid="cycleDay" />
                 </Form.Item>
               </Col>
               <Col span={12}>
@@ -391,6 +391,7 @@ const KloterForm = () => {
                           placeholder="Awal Periode"
                           style={{ width: "100%" }}
                           disabled={disabledForm}
+                          data-testid="startAt"
                         />
                       </Form.Item>
                     </Col>
@@ -400,6 +401,7 @@ const KloterForm = () => {
                           placeholder="Akhir Periode"
                           style={{ width: "100%" }}
                           disabled={disabledForm}
+                          data-testid="endAt"
                         />
                       </Form.Item>
                     </Col>
@@ -412,7 +414,11 @@ const KloterForm = () => {
                   name="payout"
                   rules={[{ required: true }]}
                 >
-                  <Input addonBefore="Rp" disabled={disabledForm} />
+                  <Input
+                    addonBefore="Rp"
+                    disabled={disabledForm}
+                    data-testid="payout"
+                  />
                 </Form.Item>
               </Col>
               <Col span={12}>
@@ -421,7 +427,11 @@ const KloterForm = () => {
                   name="adminFee"
                   rules={[{ required: true }]}
                 >
-                  <Input addonBefore="Rp" disabled={disabledForm} />
+                  <Input
+                    addonBefore="Rp"
+                    disabled={disabledForm}
+                    data-testid="adminFee"
+                  />
                 </Form.Item>
               </Col>
               <Col span={12}>
@@ -430,7 +440,11 @@ const KloterForm = () => {
                   name="minimumInitialAmount"
                   rules={[{ required: true }]}
                 >
-                  <Input addonBefore="Rp" disabled={disabledForm} />
+                  <Input
+                    addonBefore="Rp"
+                    disabled={disabledForm}
+                    data-testid="minimumInitialAmount"
+                  />
                 </Form.Item>
               </Col>
               <Col span={12}>
@@ -443,6 +457,7 @@ const KloterForm = () => {
                     showTime
                     style={{ width: "100%" }}
                     disabled={disabledForm}
+                    data-testid="availableAt"
                   />
                 </Form.Item>
               </Col>
@@ -514,6 +529,7 @@ const KloterForm = () => {
           <Button
             type="primary"
             className="w-[200px]"
+            data-testid="submit-down"
             onClick={() => {
               if (isEditing) {
                 const status = kloterStatus
