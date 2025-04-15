@@ -74,6 +74,10 @@
   }
 }
 
+.gradient {
+  @apply bg-gradient-to-r from-primary-800 to-primary-500 bg-clip-text text-transparent;
+}
+
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
