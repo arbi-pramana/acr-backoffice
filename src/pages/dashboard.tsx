@@ -1,12 +1,13 @@
+import { DownOutlined, SettingOutlined } from "@ant-design/icons";
 import { Avatar, Divider, Dropdown, Layout, Menu, Typography } from "antd";
-import Sider from "antd/es/layout/Sider";
-import { SettingOutlined, DownOutlined } from "@ant-design/icons";
 import { Content, Header } from "antd/es/layout/layout";
-import React, { useState } from "react";
+import Sider from "antd/es/layout/Sider";
 import { ItemType, MenuItemType } from "antd/es/menu/interface";
+import React, { useState } from "react";
+import { useSearchParams } from "react-router-dom";
+import AccountManagement from "./account-management";
 import KloterManagement from "./kloter-management";
 import KYCManagement from "./kyc-management";
-import { useSearchParams } from "react-router-dom";
 
 const Dashboard = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -25,6 +26,12 @@ const Dashboard = () => {
       iconWhite: "/voucher-white.svg",
       iconGrey: "/voucher-grey.svg",
       tab: "kloter",
+    },
+    {
+      title: "Account Management",
+      iconWhite: "/account-white.svg",
+      iconGrey: "/account-grey.svg",
+      tab: "account",
     },
   ];
 
@@ -55,6 +62,7 @@ const Dashboard = () => {
   const children: Record<string, React.ReactNode> = {
     kyc: <KYCManagement />,
     kloter: <KloterManagement />,
+    account: <AccountManagement />,
   };
 
   return (
