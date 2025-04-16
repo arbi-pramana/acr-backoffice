@@ -241,7 +241,7 @@ const KloterManagement = () => {
           <Pagination
             pageNumber={
               kloters.pageable.pageNumber !== null
-                ? kloters.pageable.pageNumber + 1
+                ? kloters.pageable.pageNumber
                 : 0
             }
             totalPages={kloters.totalPages}

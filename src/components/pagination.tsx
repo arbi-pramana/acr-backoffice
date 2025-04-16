@@ -11,18 +11,18 @@ const Pagination = ({ pageNumber, totalPages, onChange }: PaginationProps) => {
   return (
     <div className="flex justify-between items-center">
       <div>
-        Page {pageNumber} of {totalPages}
+        Page {pageNumber + 1} of {totalPages}
       </div>
       <div className="flex gap-2">
         <Button
           onClick={() => onChange(pageNumber - 1)}
-          disabled={pageNumber >= 0}
+          disabled={pageNumber <= 0}
         >
           Previous
         </Button>
         <Button
           onClick={() => onChange(pageNumber + 1)}
-          disabled={pageNumber <= totalPages}
+          disabled={pageNumber + 1 >= totalPages}
         >
           Next
         </Button>
