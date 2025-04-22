@@ -102,7 +102,11 @@ const columnsSlot = (props: {
         {record.id ? (
           <Button onClick={() => props.removeModal(record.id)}>Hapus</Button>
         ) : null}
-        <Button type="primary" onClick={() => props.setSlotModal(true)}>
+        <Button
+          type="primary"
+          onClick={() => props.setSlotModal(true)}
+          data-testid="add-slot"
+        >
           Isi Data
         </Button>
       </Space>
@@ -546,7 +550,10 @@ const KloterForm = () => {
                   centered: true,
                   onOk() {
                     mutateKloterUpdate({
-                      body: { status: kloterStatus },
+                      body: {
+                        status: kloterNextStatus.find((v) => v.value == status)
+                          ?.value,
+                      },
                       id: params.id ? parseInt(params.id) : 0,
                     });
                   },
