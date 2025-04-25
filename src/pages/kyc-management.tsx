@@ -3,49 +3,25 @@ import {
   FileSearchOutlined,
   SearchOutlined,
 } from "@ant-design/icons";
+import { useQuery } from "@tanstack/react-query";
 import { Button, DatePicker, Input, Select, Table } from "antd";
+import { ColumnsType } from "antd/es/table";
+import dayjs from "dayjs";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Chip from "../components/chip";
 import Pagination from "../components/pagination";
+import { kycService } from "../services/kyc.service";
+import { KYCList } from "../types";
 
-const data = [
-  {
-    key: "1",
-    user: "John Doe",
-    email: "kai27@gmail.com",
-    documentType: "Passport",
-    status: "Rejected",
-    status_2: "Rejected",
-    stage: "ID Card Upload",
-    date: "2025-01-15",
-  },
-  {
-    key: "2",
-    user: "Jane Smith",
-    email: "kai27@gmail.com",
-    documentType: "Driver's License",
-    status: "In Review",
-    status_2: "In Review",
-    stage: "ID Card Upload",
-    date: "2025-01-14",
-  },
-  {
-    key: "3",
-    user: "Jane Smith",
-    email: "kai27@gmail.com",
-    documentType: "Driver's License",
-    status: "Approved",
-    status_2: "Approved",
-    stage: "ID Card Upload",
-    date: "2025-01-14",
-  },
-];
-
-const columns = (props: { navigate: (url: string) => void }) => [
+const columns = (props: {
+  navigate: (url: string) => void;
+}): ColumnsType<KYCList> => [
   {
     title: "Name",
-    dataIndex: "user",
+    dataIndex: "fullName",
     key: "user",
+    render: (text: string) => (text ? text : "-"),
   },
   {
     title: "Email",
@@ -54,17 +30,25 @@ const columns = (props: { navigate: (url: string) => void }) => [
   },
   {
     title: "Status Level 1",
-    dataIndex: "status",
+    dataIndex: "statusLevelOne",
     key: "status",
     render: (text: string) => (
       <Chip
-        label={text}
+        label={
+          text == "REJECTED"
+            ? "Rejected"
+            : text == "IN_PROGRESS"
+            ? "In Review"
+            : text == "APPROVED"
+            ? "Approved"
+            : "-"
+        }
         variant={
-          text == "Rejected"
+          text == "REJECTED"
             ? "danger"
-            : text == "In Review"
+            : text == "IN_PROGRESS"
             ? "warning"
-            : text == "Approved"
+            : text == "APPROVED"
             ? "success"
             : "default"
         }
@@ -73,17 +57,26 @@ const columns = (props: { navigate: (url: string) => void }) => [
   },
   {
     title: "Status Level 2",
-    dataIndex: "status_2",
+    dataIndex: "statusLevelTwo",
     key: "date",
+    width: 130,
     render: (text: string) => (
       <Chip
-        label={text}
+        label={
+          text == "REJECTED"
+            ? "Rejected"
+            : text == "IN_PROGRESS"
+            ? "In Review"
+            : text == "APPROVED"
+            ? "Approved"
+            : "-"
+        }
         variant={
-          text == "Rejected"
+          text == "REJECTED"
             ? "danger"
-            : text == "In Review"
+            : text == "IN_PROGRESS"
             ? "warning"
-            : text == "Approved"
+            : text == "APPROVED"
             ? "success"
             : "default"
         }
@@ -92,31 +85,46 @@ const columns = (props: { navigate: (url: string) => void }) => [
   },
   {
     title: "Current Stage",
-    dataIndex: "stage",
+    dataIndex: "currentStage",
     key: "date",
   },
   {
     title: "Tanggal Submit",
-    dataIndex: "date",
+    dataIndex: "submittedAt",
     key: "date",
+    render: (text) => {
+      return <div>{dayjs(text).format("DD MMMM YYYY HH:MM:ss")}</div>;
+    },
   },
   {
     title: "Action",
     key: "actions",
-    render: () => (
-      <button
-        onClick={() => props.navigate("/kyc-form")}
-        className="px-4 py-2 rounded-full text-primary-500 cursor-pointer hover:bg-primary-100 active:bg-primary-200 border border-solid font-semibold"
+    fixed: "right",
+    render: (_: unknown, record: { uuid: string }) => (
+      <Button
+        type="default"
+        icon={<FileSearchOutlined />}
+        iconPosition="end"
+        onClick={() => props.navigate("/kyc-form?id=" + record.uuid)}
       >
-        Proses <FileSearchOutlined />
-      </button>
+        Detail
+      </Button>
     ),
   },
 ];
 
 const KYCManagement = () => {
   const navigate = useNavigate();
-  //lanjut kloter
+  const [params, setParams] = useState({
+    page: 0,
+    size: 10,
+    search: "",
+  });
+
+  const { data: kycs, isLoading: loadingKycs } = useQuery({
+    queryFn: () => kycService.getKycs(params),
+    queryKey: ["kycs", params],
+  });
 
   return (
     <>
@@ -140,23 +148,48 @@ const KYCManagement = () => {
               { value: "level2", label: "Level 2" },
             ]}
           />
-          <DatePicker placeholder="Tanggal Submit" />
+          <DatePicker.RangePicker
+            placeholder={["Tanggal Awal", "Tanggal Akhir"]}
+            onChange={(v) => {
+              if (v) {
+                setParams((prev) => ({
+                  ...prev,
+                  fromDateTime: dayjs(v[0]).format("YYYY-MM-DDTHH:mm:ss+00:00"),
+                  toDateTime: dayjs(v[1]).format("YYYY-MM-DDTHH:mm:ss+00:00"),
+                }));
+              } else if (v == null) {
+                setParams((prev) => ({
+                  ...prev,
+                  fromDateTime: "",
+                  toDateTime: "",
+                }));
+              }
+            }}
+          />
         </div>
         <div>
-          <Input addonBefore={<SearchOutlined />} placeholder="Cari data" />
+          <Input
+            addonBefore={<SearchOutlined />}
+            placeholder="Cari data"
+            onChange={(e) =>
+              setParams((prev) => ({ ...prev, search: e.target.value }))
+            }
+          />
         </div>
       </div>
       <Table
         columns={columns({ navigate })}
-        dataSource={data}
+        dataSource={kycs?.content}
         pagination={false}
+        loading={loadingKycs}
+        scroll={{ x: "max-content", y: "auto" }}
       />
       <div className="mt-4">
         <Pagination
-          pageNumber={0}
-          totalPages={0}
-          pageSize={10}
-          onChange={() => {}}
+          pageNumber={kycs?.pageable.pageNumber ? kycs?.pageable.pageNumber : 0}
+          totalPages={kycs?.totalPages ? kycs?.totalPages : 0}
+          pageSize={kycs?.pageable.pageSize ? kycs?.pageable.pageSize : 0}
+          onChange={(val) => setParams((prev) => ({ ...prev, page: val }))}
         />
       </div>
     </>

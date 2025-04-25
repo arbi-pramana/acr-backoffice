@@ -4,15 +4,22 @@ import {
   DownOutlined,
   FileSearchOutlined,
 } from "@ant-design/icons";
-import { Button, Divider, Modal, Space, Table, Tag } from "antd";
+import { useQuery } from "@tanstack/react-query";
+import { Button, Divider, Modal, Skeleton, Space, Table, Tag } from "antd";
+import { ColumnsType } from "antd/es/table";
+import dayjs from "dayjs";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import Chip from "../components/chip";
+import { accountService } from "../services/account.service";
+import { AccountCatalog } from "../types";
 
-const columns = [
+const columns = (props: {
+  setDetail: (v: AccountCatalog) => void;
+}): ColumnsType<AccountCatalog> => [
   {
     title: "Kloter ID",
-    dataIndex: "kloterId",
+    dataIndex: "catalogId",
     key: "kloterId",
     render: (text: number) => <span className="font-semibold">{text}</span>,
   },
@@ -31,40 +38,50 @@ const columns = [
   },
   {
     title: "Total Pencairan",
-    dataIndex: "totalPencairan",
+    dataIndex: "payout",
     key: "totalPencairan",
-    render: (text: string) => <span className="font-semibold">{text}</span>,
+    render: (text: string) => <span className="font-semibold">Rp{text}</span>,
   },
   {
     title: "Kontribusi",
-    dataIndex: "kontribusi",
+    dataIndex: "totalContribution",
     key: "kontribusi",
-    render: (text: string) => <span className="font-semibold">{text}</span>,
+    render: (text: string) => <span className="font-semibold">Rp{text}</span>,
   },
   {
     title: "Total Putaran",
-    dataIndex: "totalPutaran",
+    dataIndex: "-",
     key: "totalPutaran",
   },
   {
     title: "Slot dipilih",
-    dataIndex: "slotDipilih",
+    dataIndex: "slots",
     key: "slotDipilih",
+    render: (_, record) => (
+      <span className="font-semibold">
+        {record.slots.map((v) => v.id).join(", ")}
+      </span>
+    ),
   },
   {
     title: "Periode",
-    dataIndex: "periode",
+    dataIndex: "-",
     key: "periode",
-    render: (text: string) => <span className="font-semibold">{text}</span>,
+    render: (_, record) => (
+      <span className="font-semibold">
+        {dayjs(record.startAt).format("DD/MM/YYYY")} -{" "}
+        {dayjs(record.endAt).format("DD/MM/YYYY")}
+      </span>
+    ),
   },
   {
     title: "Detail Slot",
     key: "action",
-    render: () => (
+    render: (_, record) => (
       <Button
         type="primary"
         className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-full px-4"
-        // onClick={() => console.log("Lihat detail", record)}
+        onClick={() => props.setDetail(record)}
       >
         Lihat Detail
       </Button>
@@ -141,7 +158,25 @@ const AccountForm = () => {
   const navigate = useNavigate();
   const [selectedTab, setSelectedTab] = useState(0);
   const [detailTransactionModal, setDetailTransactionModal] = useState(false);
-  const ha = true;
+  const [detail, setDetail] = useState<AccountCatalog | null>(null);
+  const params = useParams();
+  // const isEditing = params.id !== undefined;
+  // const ha = false;
+
+  const { data: detailAccount, isLoading: loadAccount } = useQuery({
+    queryKey: ["detail-account", params.id],
+    queryFn: () => accountService.getAccountById(params.id ?? ""),
+  });
+
+  const { data: accountCatalog, isLoading: loadAccountCatalog } = useQuery({
+    queryKey: ["account-catalog", params.id, selectedTab],
+    queryFn: () =>
+      accountService.getAccountCatalog(params.id ?? "", {
+        statuses:
+          selectedTab == 0 ? "DRAFTED,ON_GOING,OPEN,CANCELLED" : "FINISHED",
+      }),
+  });
+
   return (
     <div className="bg-[#F9F9F9] min-h-screen">
       <div className="w-full h-full flex justify-between p-6 text-primary-500 font-semibold bg-white">
@@ -153,7 +188,7 @@ const AccountForm = () => {
           <img src="/acr-logo.svg" width={20} alt="" /> ACR Digital
         </div>
       </div>
-      {ha ? (
+      {detail ? (
         <>
           <div className="p-4 m-4 bg-white rounded-md">
             <div className="font-semibold text-lg mb-4">Detail</div>
@@ -310,39 +345,51 @@ const AccountForm = () => {
       ) : (
         <>
           <div className="p-4 m-4 bg-white rounded-md">
-            <div className="font-semibold text-lg mb-4">Detail Account</div>
-
-            {/* Account Info */}
-            <div className="space-y-2 mb-6">
-              <div className="flex">
-                <div className="w-40 text-gray-500">Nama Account</div>
-                <div className="font-medium text-black">Scoot Travis</div>
-              </div>
-              <div className="flex">
-                <div className="w-40 text-gray-500">Email</div>
-                <div className="font-medium text-black">goog@gmail.com</div>
-              </div>
-              <div className="flex">
-                <div className="w-40 text-gray-500">Nomer HP</div>
-                <div className="font-medium text-black">+62 837595983</div>
-              </div>
-            </div>
-
-            {/* Statistic Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="border rounded-lg p-4">
-                <div className="text-sm text-gray-600 mb-1">
-                  Jumlah Kloter diambil
+            {loadAccount ? (
+              <Skeleton active />
+            ) : (
+              <>
+                <div className="font-semibold text-lg mb-4">Detail Account</div>
+                <div className="space-y-2 mb-6">
+                  <div className="flex">
+                    <div className="w-40 text-gray-500">Nama Account</div>
+                    <div className="font-medium text-black">
+                      {detailAccount?.fullName}
+                    </div>
+                  </div>
+                  <div className="flex">
+                    <div className="w-40 text-gray-500">Email</div>
+                    <div className="font-medium text-black">
+                      {detailAccount?.email}
+                    </div>
+                  </div>
+                  <div className="flex">
+                    <div className="w-40 text-gray-500">Nomer HP</div>
+                    <div className="font-medium text-black">
+                      {detailAccount?.mobile}
+                    </div>
+                  </div>
                 </div>
-                <div className="text-3xl font-bold text-gray-900">8</div>
-              </div>
-              <div className="border rounded-lg p-4">
-                <div className="text-sm text-gray-600 mb-1">
-                  Sedang berlangsung
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="border rounded-lg p-4">
+                    <div className="text-sm text-gray-600 mb-1">
+                      Jumlah Kloter diambil
+                    </div>
+                    <div className="text-3xl font-bold text-gray-900">
+                      {detailAccount?.totalCatalogs}
+                    </div>
+                  </div>
+                  <div className="border rounded-lg p-4">
+                    <div className="text-sm text-gray-600 mb-1">
+                      Sedang berlangsung
+                    </div>
+                    <div className="text-3xl font-bold text-gray-900">
+                      {detailAccount?.totalOnGoingCatalogs}
+                    </div>
+                  </div>
                 </div>
-                <div className="text-3xl font-bold text-gray-900">4</div>
-              </div>
-            </div>
+              </>
+            )}
           </div>
           <div className="p-4 m-4 bg-white rounded-md">
             <h2 className="font-semibold text-lg mb-4">List Arisan Diambil</h2>
@@ -360,7 +407,13 @@ const AccountForm = () => {
                 Riwayat Arisan
               </Button>
             </div>
-            <Table columns={columns} dataSource={[]} />
+            <Table
+              columns={columns({
+                setDetail: (record: AccountCatalog) => setDetail(record),
+              })}
+              loading={loadAccountCatalog}
+              dataSource={accountCatalog?.content}
+            />
           </div>
         </>
       )}

@@ -253,6 +253,8 @@ const KloterForm = () => {
   const removeModal = (id: number) => {
     Modal.confirm({
       title: "Apakah anda yakin ingin menghapus slot ini?",
+      content:
+        "Menghapus slot akan menghapus seluruh data transaksi secara permanen dan tidak dapat dikembalikan.",
       okButtonProps: constants.okButtonProps,
       cancelButtonProps: constants.cancelButtonProps,
       onOk() {

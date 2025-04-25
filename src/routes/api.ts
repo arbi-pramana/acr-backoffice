@@ -3,6 +3,19 @@ const version = import.meta.env.VITE_APP_API_VERSION;
 export const ROUTES = {
   auth: {
     login: `/${version}/auth/login`,
+    image: (key: string) => `/${version}/buckets?key=${key}`,
+  },
+  account: {
+    list: `/${version}/backoffice/accounts`,
+    byId: (id: string) => `${version}/backoffice/accounts/` + id,
+    installment: (id: string) =>
+      `${version}/backoffice/accounts/installments/` + id,
+    catalog: (id: string) => `${version}/backoffice/accounts/catalogs/` + id,
+  },
+  kyc: {
+    list: `/${version}/backoffice/kycs`,
+    byId: (id: string) => `${version}/backoffice/kycs/` + id,
+    byIdMatch: (id: string) => `${version}/backoffice/kycs/compare/` + id,
   },
   kloter: {
     list: `/${version}/backoffice/catalogs`,

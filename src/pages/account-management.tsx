@@ -9,33 +9,21 @@ import { ColumnsType } from "antd/es/table";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Pagination from "../components/pagination";
-import { kloterService } from "../services/kloter.service";
-import { Kloter } from "../types";
+import { accountService } from "../services/account.service";
+import { AccountList } from "../types";
 
 const columns = (props: {
   navigate: (val: string) => void;
-}): ColumnsType<Kloter> => [
-  {
-    title: "Kloter ID",
-    dataIndex: "kloterId",
-    key: "kloterId",
-  },
+}): ColumnsType<AccountList> => [
   {
     title: "Nama",
-    dataIndex: "nama",
+    dataIndex: "fullName",
     key: "nama",
     render: (text: string) => (
       <span className="text-purple-600 font-medium cursor-pointer hover:underline">
-        {text}
+        {text ?? "-"}
       </span>
     ),
-  },
-  {
-    title: "Jumlah Kloter diambil",
-    dataIndex: "jumlahKloter",
-    key: "jumlahKloter",
-    width: 200,
-    render: (value: number) => <span className="font-semibold">{value}</span>,
   },
   {
     title: "Email",
@@ -45,9 +33,11 @@ const columns = (props: {
   },
   {
     title: "No HP",
-    dataIndex: "noHp",
+    dataIndex: "mobile",
     key: "noHp",
-    render: (text: string) => <span className="font-semibold">{text}</span>,
+    render: (text: string) => (
+      <span className="font-semibold">{text ?? "-"}</span>
+    ),
   },
   {
     title: "Detail account",
@@ -56,7 +46,7 @@ const columns = (props: {
       <Button
         type="primary"
         className="bg-gradient-to-r from-purple-500 to-pink-500"
-        onClick={() => props.navigate(`/kloter/${record.id}`)}
+        onClick={() => props.navigate(`/account-form/${record.id}`)}
       >
         Lihat Detail
       </Button>
@@ -72,9 +62,9 @@ const AccountManagement = () => {
     search: "",
   });
 
-  const { data: kloters } = useQuery({
-    queryFn: () => kloterService.getKloters(params),
-    queryKey: ["kloters", params],
+  const { data: accounts } = useQuery({
+    queryFn: () => accountService.getAccounts(params),
+    queryKey: ["accounts", params],
   });
 
   return (
@@ -99,20 +89,6 @@ const AccountManagement = () => {
           </Button>
         </div>
       </div>
-      <div className="flex gap-2 my-4">
-        <div className="border border-solid rounded-md border-gray-200 p-6 w-full">
-          <div className="font-semibold text-sm">Jumlah Kloter</div>
-          <div className="font-semibold text-4xl">1,210</div>
-        </div>
-        <div className="border border-solid rounded-md border-gray-200 p-6 w-full">
-          <div className="font-semibold text-sm">Kloter Rilis</div>
-          <div className="font-semibold text-4xl">316</div>
-        </div>
-        <div className="border border-solid rounded-md border-gray-200 p-6 w-full">
-          <div className="font-semibold text-sm">Kloter Batal</div>
-          <div className="font-semibold text-4xl">316</div>
-        </div>
-      </div>
       <div className="flex justify-between my-4">
         <DatePicker placeholder="Tanggal Submit" />
         <Input
@@ -127,21 +103,23 @@ const AccountManagement = () => {
       <Table
         scroll={{ x: "max-content", y: "auto" }}
         columns={columns({ navigate })}
-        dataSource={kloters?.content ?? []}
+        dataSource={accounts?.content ?? []}
         pagination={false}
         rowKey="id"
       />
-      {kloters && (
+      {accounts && (
         <div className="mt-4">
           <Pagination
             pageNumber={
-              kloters.pageable.pageNumber !== null
-                ? kloters.pageable.pageNumber
+              accounts.pageable.pageNumber !== null
+                ? accounts.pageable.pageNumber
                 : 0
             }
-            totalPages={kloters.totalPages}
+            totalPages={accounts.totalPages}
             pageSize={
-              kloters.pageable.pageSize !== null ? kloters.pageable.pageSize : 0
+              accounts.pageable.pageSize !== null
+                ? accounts.pageable.pageSize
+                : 0
             }
             onChange={(val) => setParams((prev) => ({ ...prev, page: val }))}
           />

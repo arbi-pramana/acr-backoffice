@@ -4,16 +4,106 @@ import {
   FileOutlined,
   InfoCircleFilled,
 } from "@ant-design/icons";
-import { Alert, Button, Divider, Form, Input, Progress, Select } from "antd";
-import Switch from "../components/switch";
-import OCRGuide from "../components/ocr-guide";
+import { useQuery } from "@tanstack/react-query";
+import {
+  Alert,
+  Button,
+  Divider,
+  Form,
+  Input,
+  Modal,
+  Progress,
+  Select,
+  Spin,
+} from "antd";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import OCRGuide from "../components/ocr-guide";
+import Switch from "../components/switch";
+import ProtectedFile from "../helper/protected-file";
+import { kycService } from "../services/kyc.service";
 
 const KYCStep1 = () => {
   const navigate = useNavigate();
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get("id");
+  console.log("params", params);
   const [form] = Form.useForm();
-  const [step, setStep] = useState(1);
+  const [modalFile, setModalFile] = useState(false);
+
+  const { data: kyc, isLoading: loadingKyc } = useQuery({
+    queryFn: () => kycService.getKycById(id ?? ""),
+    enabled: id !== null,
+    queryKey: ["kyc", id],
+  });
+  const step = kyc?.statusLevelOne == "APPROVED" ? 2 : 1;
+
+  const { data: kycMatch } = useQuery({
+    queryFn: () => kycService.getKycByIdMatch(id ?? ""),
+    enabled: id !== null,
+    queryKey: ["kyc-match", id],
+  });
+
+  const getBackground = () => {
+    if (step == 1) {
+      if (kyc?.statusLevelOne === "REJECTED") return "bg-danger-500";
+      if (kyc?.statusLevelOne === "IN_PROGRESS") return "bg-warning-500";
+      if (kyc?.statusLevelOne === "APPROVED") return "bg-success-500";
+    }
+    if (step == 2) {
+      if (kyc?.statusLevelTwo === "REJECTED") return "bg-danger-500";
+      if (kyc?.statusLevelTwo === "IN_PROGRESS") return "bg-warning-500";
+      if (kyc?.statusLevelTwo === "APPROVED") return "bg-success-500";
+    }
+  };
+
+  const getStatusLabel = (status: string) => {
+    if (status === "REJECTED") return "Reject";
+    if (status === "IN_PROGRESS") return "Review";
+    if (status === "APPROVED") return "Approved";
+  };
+
+  const InputMatch = ({
+    value,
+    isMatch = false,
+    label,
+  }: {
+    label: string;
+    value?: string;
+    isMatch?: boolean;
+  }) => {
+    return (
+      <>
+        <label className="text-sm font-medium">{label}</label>
+        <div className="flex items-center gap-3">
+          <Input defaultValue={value} className="w-full" disabled={isMatch} />
+          <Switch value={isMatch} />
+        </div>
+      </>
+    );
+  };
+
+  if (loadingKyc) {
+    return (
+      <>
+        <div className="w-full flex justify-between p-3 text-primary-500 font-semibold bg-white">
+          <div
+            className="flex gap-3 cursor-pointer"
+            onClick={() => navigate(-1)}
+          >
+            <ArrowLeftOutlined /> Process Detail
+          </div>
+          <div>Langkah {step} dari 2</div>
+          <div className="flex gap-3">
+            <img src="/acr-logo.svg" width={20} alt="" /> ACR Digital
+          </div>
+        </div>
+        <div className="w-full h-[calc(100vh-100px)] grid place-content-center">
+          <Spin tip="Loading..." />
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
@@ -51,12 +141,12 @@ const KYCStep1 = () => {
             style={{ width: "50%" }}
           />
         </div>
-        <div className="bg-danger-700 rounded-lg">
+        <div className={`${getBackground()} rounded-lg`}>
           <div className="bg-white flex justify-between rounded-lg p-3">
             <div>
-              <div className="font-bold">Windah Basutri</div>
+              <div className="font-bold">{kyc?.fullName}</div>
               <div className="font-semibold">
-                Last submitted: 12 Maret 2025 | 08:00 PM
+                Last submitted: DATE?? | TIME??
               </div>
             </div>
             <div className="bg-primary-300 rounded-xl p-2 flex gap-3 items-center">
@@ -71,8 +161,13 @@ const KYCStep1 = () => {
               </button>
             </div>
           </div>
-          <div className="bg-danger-700 flex justify-center text-white font-semibold rounded-lg py-1">
-            Status Reject
+          <div
+            className={`${getBackground()} flex justify-center text-white font-semibold rounded-lg py-1`}
+          >
+            Status{" "}
+            {step == 1
+              ? getStatusLabel(kyc?.statusLevelOne ?? "")
+              : getStatusLabel(kyc?.statusLevelTwo ?? "")}
           </div>
         </div>
         {step == 1 ? (
@@ -86,12 +181,20 @@ const KYCStep1 = () => {
                 <div className="flex flex-col border border-solid border-basic-300 rounded-lg w-[50%] p-3">
                   <div className="font-semibold">KTP Dokumen</div>
                   <div className="flex justify-center w-full">
-                    <img src="/acr-logo.svg" width={200} alt="" />
+                    {/* <img src="/acr-logo.svg" width={200} alt="" /> */}
+                    <ProtectedFile
+                      keyFile={kyc?.idCardKey}
+                      type="image"
+                      width={200}
+                      style={{ objectFit: "contain" }}
+                      alt=""
+                    />
                   </div>
+                  {/* {kyc.id} */}
                   <div className="flex gap-3">
                     <div className="font-semibold">Score Data Anda</div>
                     <Progress
-                      percent={100}
+                      percent={kycMatch?.idCardMatchPercentage}
                       strokeWidth={8}
                       //   strokeColor={'orange'}
                       style={{ width: "70%" }}
@@ -101,14 +204,19 @@ const KYCStep1 = () => {
                 <div className="flex flex-col border border-solid border-basic-300 rounded-lg w-[50%] p-3">
                   <div className="font-semibold">Foto KTP dan Selfie</div>
                   <div className="flex justify-center w-full">
-                    <img src="/acr-logo.svg" width={200} alt="" />
+                    {/* <img src="/acr-logo.svg" width={200} alt="" /> */}
+                    <ProtectedFile
+                      keyFile={kyc?.idCardKey}
+                      type="image"
+                      width={200}
+                      alt=""
+                    />
                   </div>
                   <div className="flex gap-3">
                     <div className="font-semibold">Score Data Anda</div>
                     <Progress
-                      percent={100}
+                      percent={kycMatch?.idCardSelfieMatchPercentage}
                       strokeWidth={8}
-                      //   strokeColor={'orange'}
                       style={{ width: "70%" }}
                     />
                   </div>
@@ -127,102 +235,121 @@ const KYCStep1 = () => {
                   <div className="flex w-full flex-col">
                     <div className="grid grid-cols-2 gap-x-4">
                       <Form.Item label="NIK">
-                        <div className="flex items-center gap-1 w-full">
-                          <Input />
-                          <Switch />
-                        </div>
+                        <InputMatch
+                          label=""
+                          value={kyc?.idCardNumber}
+                          isMatch={kycMatch?.idCardNumber?.isMatch}
+                        />
                       </Form.Item>
                       <Form.Item label="Nama Lengkap">
-                        <div className="flex items-center gap-1 w-full">
-                          <Input />
-                          <Switch />
-                        </div>
+                        <InputMatch
+                          label=""
+                          value={kyc?.fullName}
+                          isMatch={kycMatch?.fullName?.isMatch}
+                        />
                       </Form.Item>
                       <Form.Item label="Tempat Lahir">
-                        <div className="flex items-center gap-1 w-full">
-                          <Input />
-                          <Switch />
-                        </div>
+                        <InputMatch
+                          label=""
+                          value={kyc?.placeOfBirth}
+                          isMatch={kycMatch?.placeOfBirth?.isMatch}
+                        />
                       </Form.Item>
                       <Form.Item label="Tanggal Lahir">
-                        <div className="flex items-center gap-1 w-full">
-                          <Input />
-                          <Switch />
-                        </div>
+                        <InputMatch
+                          label=""
+                          value={kyc?.dateOfBirth}
+                          isMatch={kycMatch?.dateOfBirth?.isMatch}
+                        />
                       </Form.Item>
                       <Form.Item label="Jenis Kelamin">
-                        <div className="flex items-center gap-1 w-full">
-                          <Input />
-                          <Switch />
-                        </div>
+                        <InputMatch
+                          label=""
+                          value={kyc?.gender}
+                          isMatch={kycMatch?.gender?.isMatch}
+                        />
                       </Form.Item>
                       <Form.Item label="Golongan Darah">
-                        <div className="flex items-center gap-1 w-full">
-                          <Input />
-                          <Switch />
-                        </div>
+                        <InputMatch
+                          label=""
+                          value={kyc?.bloodGroup}
+                          isMatch={kycMatch?.bloodGroup?.isMatch}
+                        />
                       </Form.Item>
                       <Form.Item label="Alamat Sesuai KTP">
-                        <div className="flex items-center gap-1 w-full">
-                          <Input />
-                          <Switch />
-                        </div>
+                        <InputMatch
+                          label=""
+                          value={kyc?.idCardAddress?.line}
+                          isMatch={kycMatch?.idCardAddress?.line?.isMatch}
+                        />
                       </Form.Item>
                     </div>
                     <div className="grid grid-cols-2 gap-x-4">
                       <Form.Item label="RT">
-                        <div className="flex items-center gap-1 w-full">
-                          <Input />
-                          <Switch />
-                        </div>
+                        <InputMatch
+                          label=""
+                          value={kyc?.idCardAddress?.rtNumber}
+                          isMatch={kycMatch?.idCardAddress?.rtNumber?.isMatch}
+                        />
                       </Form.Item>
                       <Form.Item label="RW">
-                        <div className="flex items-center gap-1 w-full">
-                          <Input />
-                          <Switch />
-                        </div>
+                        <InputMatch
+                          label=""
+                          value={kyc?.idCardAddress?.rwNumber}
+                          isMatch={kycMatch?.idCardAddress?.rwNumber?.isMatch}
+                        />
                       </Form.Item>
                       <Form.Item label="Provinsi">
-                        <div className="flex items-center gap-1 w-full">
-                          <Input />
-                          <Switch />
-                        </div>
+                        <InputMatch
+                          label=""
+                          value={kyc?.idCardAddress?.state}
+                          isMatch={kycMatch?.idCardAddress?.state?.isMatch}
+                        />
                       </Form.Item>
                       <Form.Item label="Kota">
-                        <div className="flex items-center gap-1 w-full">
-                          <Input />
-                          <Switch />
-                        </div>
+                        <InputMatch
+                          label=""
+                          value={kyc?.idCardAddress?.city}
+                          isMatch={kycMatch?.idCardAddress?.city?.isMatch}
+                        />
                       </Form.Item>
                       <Form.Item label="Kecamatan">
-                        <div className="flex items-center gap-1 w-full">
-                          <Input />
-                          <Switch />
-                        </div>
+                        <InputMatch
+                          label=""
+                          value={kyc?.idCardAddress?.district}
+                          isMatch={kycMatch?.idCardAddress?.district?.isMatch}
+                        />
                       </Form.Item>
                       <Form.Item label="Kelurahan">
-                        <div className="flex items-center gap-1 w-full">
-                          <Input />
-                          <Switch />
-                        </div>
+                        <InputMatch
+                          label=""
+                          value={kyc?.idCardAddress?.subdistrict}
+                          isMatch={
+                            kycMatch?.idCardAddress?.subdistrict?.isMatch
+                          }
+                        />
                       </Form.Item>
                       <Form.Item label="Agama">
-                        <div className="flex items-center gap-1 w-full">
-                          <Input />
-                          <Switch />
-                        </div>
+                        <InputMatch
+                          label=""
+                          value={kyc?.religion}
+                          isMatch={false}
+                        />
+                        compare??
                       </Form.Item>
                       <Form.Item label="Status">
-                        <div className="flex items-center gap-1 w-full">
-                          <Input />
-                          <Switch />
-                        </div>
+                        <InputMatch
+                          label=""
+                          value={kyc?.maritalStatus}
+                          isMatch={kycMatch?.maritalStatus?.isMatch}
+                        />
                       </Form.Item>
                       <Form.Item label="Pekerjaan">
-                        <div className="flex items-center gap-1 w-full">
-                          <Input />
-                          <Switch />
-                        </div>
+                        <InputMatch
+                          label=""
+                          value={kyc?.occupation}
+                          isMatch={kycMatch?.occupation?.isMatch}
+                        />
                       </Form.Item>
                     </div>
                   </div>
@@ -263,11 +390,15 @@ const KYCStep1 = () => {
                 <div className="flex flex-col items-center justify-center mt-2">
                   <FileOutlined className="text-2xl text-gray-500" />
                   <p className="text-gray-600 text-sm mt-1">
-                    SK Domisili-Newton.pdf
+                    {kyc?.domicileLetterKey}
                   </p>
                   <div className="flex gap-3">
                     <Button className="mt-2">Upload Ulang</Button>
-                    <Button type="primary" className="mt-2">
+                    <Button
+                      type="primary"
+                      className="mt-2"
+                      onClick={() => setModalFile(true)}
+                    >
                       Lihat File
                     </Button>
                   </div>
@@ -292,52 +423,36 @@ const KYCStep1 = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div className="col-span-2">
                   <label className="text-sm font-medium">Jalan</label>
-                  <Input defaultValue="Jl. Sudican" />
+                  <Input defaultValue={kyc?.idCardAddress?.line} />
                 </div>
 
                 <div>
                   <label className="text-sm font-medium">RT</label>
-                  <Input defaultValue="003" />
+                  <Input defaultValue={kyc?.idCardAddress?.rtNumber} />
                 </div>
                 <div>
                   <label className="text-sm font-medium">RW</label>
-                  <Input defaultValue="004" />
+                  <Input defaultValue={kyc?.idCardAddress?.rwNumber} />
                 </div>
 
                 <div>
                   <label className="text-sm font-medium">Provinsi</label>
-                  <Select
-                    defaultValue="DKI Jakarta"
-                    options={[{ label: "DKI Jakarta", value: 1 }]}
-                    className="w-full"
-                  />
+                  <Input defaultValue={kyc?.idCardAddress?.state} />
                 </div>
 
                 <div>
                   <label className="text-sm font-medium">Kota</label>
-                  <Select
-                    defaultValue="Jakarta Selatan"
-                    options={[{ label: "Jakarta Selatan", value: 1 }]}
-                    className="w-full"
-                  />
+                  <Input defaultValue={kyc?.idCardAddress?.city} />
                 </div>
 
                 <div>
                   <label className="text-sm font-medium">Kecamatan</label>
-                  <Select
-                    defaultValue="DKI Jakarta"
-                    options={[{ label: "DKI Jakarta", value: 1 }]}
-                    className="w-full"
-                  />
+                  <Input defaultValue={kyc?.idCardAddress?.district} />
                 </div>
 
                 <div>
                   <label className="text-sm font-medium">Kelurahan</label>
-                  <Select
-                    defaultValue="Guntur"
-                    options={[{ label: "Guntur", value: 1 }]}
-                    className="w-full"
-                  />
+                  <Input defaultValue={kyc?.idCardAddress?.subdistrict} />
                 </div>
               </div>
             </div>
@@ -369,29 +484,38 @@ const KYCStep1 = () => {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium">Nama Bank</label>
-                  <Input defaultValue="003" />
+                  <InputMatch
+                    label="Nama Pemilik Rekening"
+                    value={kyc?.bank.code}
+                    isMatch={false}
+                  />
+                  compare??
                 </div>
                 <div>
-                  <label className="text-sm font-medium">Nomor Rekening</label>
-                  <Input defaultValue="004" />
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium">
-                    Nama Pemilik Rekening
-                  </label>
-                  <div className="flex items-center gap-3">
-                    <Input defaultValue="004" />
-                    <Switch />
-                  </div>
+                  <InputMatch
+                    label="Nama Pemilik Rekening"
+                    value={kyc?.bank.number}
+                    isMatch={false}
+                  />
+                  compare??
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium">
-                    Nomor Handphone Anda
-                  </label>
-                  <Input defaultValue="004" />
+                  <InputMatch
+                    label="Nama Pemilik Rekening"
+                    value={kyc?.bank.holderName}
+                    isMatch={false}
+                  />
+                  compare??
+                </div>
+
+                <div>
+                  <InputMatch
+                    label="Nama Pemilik Rekening"
+                    value={kyc?.mobile}
+                    isMatch={false}
+                  />
+                  compare??
                 </div>
               </div>
             </div>
@@ -421,101 +545,119 @@ const KYCStep1 = () => {
               <div className="grid grid-cols-2 gap-4">
                 {/* Pendidikan Terakhir */}
                 <div>
-                  <label className="text-sm font-medium">
-                    Pendidikan Terakhir
-                  </label>
-                  <Select defaultValue="Mandiri" className="w-full"></Select>
+                  <InputMatch
+                    label="Pendidikan Terakhir"
+                    value={kyc?.highestEducation}
+                    isMatch={false}
+                  />
+                  compare??
                 </div>
 
                 {/* Pekerjaan */}
                 <div>
-                  <label className="text-sm font-medium">Pekerjaan</label>
-                  <Select
-                    defaultValue="Business Intelligence"
-                    className="w-full"
-                  ></Select>
+                  <InputMatch
+                    label="Pekerjaan"
+                    value={kyc?.occupation}
+                    isMatch={kycMatch?.occupation.isMatch}
+                  />
                 </div>
 
                 {/* Posisi */}
                 <div>
-                  <label className="text-sm font-medium">Posisi</label>
-                  <Select defaultValue="Management" className="w-full"></Select>
+                  <InputMatch
+                    label="Posisi"
+                    value={kyc?.jobTitle}
+                    isMatch={false}
+                  />
+                  compare??
                 </div>
 
                 {/* Penghasilan per Tahun */}
                 <div>
-                  <label className="text-sm font-medium">
-                    Penghasilan per Tahun
-                  </label>
-                  <Select
-                    defaultValue="Rp 100juta - Rp 250juta"
-                    className="w-full"
-                  ></Select>
+                  <InputMatch
+                    label="Penghasilan per Tahun"
+                    value={kyc?.annualIncome}
+                    isMatch={false}
+                  />
+                  compare??
                 </div>
 
                 {/* Nama Perusahaan */}
                 <div>
-                  <label className="text-sm font-medium">Nama Perusahaan</label>
-                  <Input defaultValue="Lark Company" className="w-full" />
+                  <InputMatch
+                    label="Nama Perusahaan"
+                    value={kyc?.employerName}
+                    isMatch={false}
+                  />
+                  compare??
                 </div>
 
                 {/* Alamat Perusahaan */}
                 <div>
-                  <label className="text-sm font-medium">
-                    Alamat Perusahaan
-                  </label>
-                  <Input defaultValue="Lark Company" className="w-full" />
+                  <InputMatch
+                    label="Alamat Perusahaan"
+                    value={kyc?.employerName}
+                    isMatch={false}
+                  />
+                  compare??
                 </div>
 
                 {/* RT & RW */}
                 <div>
-                  <label className="text-sm font-medium">RT</label>
-                  <Input defaultValue="003" className="w-full" />
+                  <InputMatch
+                    label="RT"
+                    value={kyc?.idCardAddress.rtNumber}
+                    isMatch={kycMatch?.idCardAddress.rtNumber.isMatch}
+                  />
                 </div>
                 <div>
-                  <label className="text-sm font-medium">RW</label>
-                  <Input defaultValue="005" className="w-full" />
+                  <InputMatch
+                    label="RW"
+                    value={kyc?.idCardAddress.rwNumber}
+                    isMatch={kycMatch?.idCardAddress.rwNumber.isMatch}
+                  />
                 </div>
 
                 {/* Provinsi & Kota */}
                 <div>
-                  <label className="text-sm font-medium">Provinsi</label>
-                  <Select
-                    defaultValue="DKI Jakarta"
-                    className="w-full"
-                  ></Select>
+                  <InputMatch
+                    label="Provinsi"
+                    value={kyc?.idCardAddress.state}
+                    isMatch={kycMatch?.idCardAddress.state.isMatch}
+                  />
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium">Kota</label>
-                  <Select
-                    defaultValue="Jakarta Selatan"
-                    className="w-full"
-                  ></Select>
+                  <InputMatch
+                    label="Kota"
+                    value={kyc?.idCardAddress.city}
+                    isMatch={kycMatch?.idCardAddress.city.isMatch}
+                  />
                 </div>
 
                 {/* Kecamatan & Kelurahan */}
                 <div>
-                  <label className="text-sm font-medium">Kecamatan</label>
-                  <Select
-                    defaultValue="DKI Jakarta"
-                    className="w-full"
-                  ></Select>
+                  <InputMatch
+                    label="Kecamatan"
+                    value={kyc?.idCardAddress.district}
+                    isMatch={kycMatch?.idCardAddress.district.isMatch}
+                  />
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium">Kelurahan</label>
-                  <Select
-                    defaultValue="Jakarta Selatan"
-                    className="w-full"
-                  ></Select>
+                  <InputMatch
+                    label="Kelurahan"
+                    value={kyc?.idCardAddress.subdistrict}
+                    isMatch={kycMatch?.idCardAddress.subdistrict.isMatch}
+                  />
                 </div>
                 <div>
-                  <label className="text-sm font-medium">
-                    Nomor Telepon Perusahaan
-                  </label>
-
-                  <Input addonBefore="+62" defaultValue="228973908" />
+                  <InputMatch
+                    label="Nomor Handphone Perusahaan"
+                    value={kyc?.employerMobile}
+                    isMatch={false}
+                  />
+                  compare??
                 </div>
               </div>
             </div>
@@ -540,13 +682,27 @@ const KYCStep1 = () => {
           {/* Right Section: Submit Button */}
           <Button
             type="primary"
-            onClick={() => setStep(2)}
+            // onClick={() => setStep(2)}
             className="bg-purple-600 text-white px-6 py-2 rounded-full"
           >
             Submit
           </Button>
         </div>
       </div>
+      <Modal
+        open={modalFile}
+        onCancel={() => setModalFile(false)}
+        footer={null}
+        centered
+      >
+        <div className="flex justify-center items-center h-full">
+          <ProtectedFile
+            keyFile={kyc?.domicileLetterKey}
+            style={{ width: 700, height: 600 }}
+            type="file"
+          />
+        </div>
+      </Modal>
     </>
   );
 };

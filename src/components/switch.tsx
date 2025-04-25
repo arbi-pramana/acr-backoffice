@@ -1,13 +1,20 @@
-import { Switch as AntdSwitch } from "antd";
 import { CheckOutlined, ExclamationOutlined } from "@ant-design/icons";
+import { Switch as AntdSwitch } from "antd";
 import { useState } from "react";
 
-const Switch = ({ showBoolean = true }: { showBoolean?: boolean }) => {
-  const [isChecked, setIsChecked] = useState(true);
+const Switch = ({
+  showBoolean = true,
+  value = true,
+}: {
+  showBoolean?: boolean;
+  value?: boolean;
+}) => {
+  const [isChecked, setIsChecked] = useState(value);
 
   return (
     <>
       <AntdSwitch
+        disabled
         checked={isChecked}
         onChange={() => setIsChecked(!isChecked)}
         checkedChildren={<CheckOutlined />}

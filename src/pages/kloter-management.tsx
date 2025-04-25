@@ -131,7 +131,7 @@ const columns = (props: {
     dataIndex: "id",
     render: (id) => (
       <Button
-        type="primary"
+        type="default"
         onClick={() => props.navigate("/kloter-form/" + id)}
       >
         Detail
