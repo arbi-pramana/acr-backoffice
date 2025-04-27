@@ -5,58 +5,72 @@ import {
   FileSearchOutlined,
 } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-import { Button, Divider, Modal, Skeleton, Space, Table, Tag } from "antd";
+import { Button, Divider, Modal, Skeleton, Space, Table } from "antd";
 import { ColumnsType } from "antd/es/table";
 import dayjs from "dayjs";
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Chip from "../components/chip";
+import { numberWithCommas } from "../helper/number-with-commas";
 import { accountService } from "../services/account.service";
-import { AccountCatalog } from "../types";
+import { AccountCatalog, AccountInstallment } from "../types";
 
-const columns = (props: {
+const catalogColumns = (props: {
   setDetail: (v: AccountCatalog) => void;
 }): ColumnsType<AccountCatalog> => [
   {
     title: "Kloter ID",
     dataIndex: "catalogId",
-    key: "kloterId",
+    key: "kloterId-catalog",
     render: (text: number) => <span className="font-semibold">{text}</span>,
   },
   {
     title: "Status Kloter",
     dataIndex: "status",
-    key: "status",
-    render: (status: string) => (
-      <Tag
-        color="#f5fbd7"
-        className="text-green-800 font-semibold px-3 py-1 rounded-full"
-      >
-        {status}
-      </Tag>
-    ),
+    key: "status-catalog",
+    render: (value: string) =>
+      value == "OPEN" ? (
+        <Chip variant="success" label="Tersedia" />
+      ) : value == "DRAFTED" ? (
+        <Chip variant="default" label="Drafted" />
+      ) : value == "CANCELLED" ? (
+        <Chip variant="danger" label="Batal" />
+      ) : value == "FINISHED" ? (
+        <Chip variant="info" label="Selesai" />
+      ) : value == "ON_GOING" ? (
+        <Chip variant="warning" label="Sedang Berjalan" />
+      ) : null,
   },
   {
     title: "Total Pencairan",
     dataIndex: "payout",
-    key: "totalPencairan",
-    render: (text: string) => <span className="font-semibold">Rp{text}</span>,
+    key: "totalPencairan-catalog",
+    render: (text: string) => (
+      <span className="font-semibold">
+        Rp{numberWithCommas(parseInt(text))}
+      </span>
+    ),
   },
   {
     title: "Kontribusi",
     dataIndex: "totalContribution",
-    key: "kontribusi",
-    render: (text: string) => <span className="font-semibold">Rp{text}</span>,
+    key: "kontribusi-catalog",
+    render: (text: string) => (
+      <span className="font-semibold">
+        Rp{numberWithCommas(parseInt(text))}
+      </span>
+    ),
   },
   {
     title: "Total Putaran",
-    dataIndex: "-",
-    key: "totalPutaran",
+    dataIndex: "totalContribution",
+    key: "total-putaran-catalog",
+    render: () => <span className="font-semibold">??</span>,
   },
   {
     title: "Slot dipilih",
     dataIndex: "slots",
-    key: "slotDipilih",
+    key: "slot-catalog-catalog",
     render: (_, record) => (
       <span className="font-semibold">
         {record.slots.map((v) => v.id).join(", ")}
@@ -65,8 +79,8 @@ const columns = (props: {
   },
   {
     title: "Periode",
-    dataIndex: "-",
-    key: "periode",
+    dataIndex: "",
+    key: "periode-catalog",
     render: (_, record) => (
       <span className="font-semibold">
         {dayjs(record.startAt).format("DD/MM/YYYY")} -{" "}
@@ -76,7 +90,7 @@ const columns = (props: {
   },
   {
     title: "Detail Slot",
-    key: "action",
+    // dataIndex: "",
     render: (_, record) => (
       <Button
         type="primary"
@@ -89,68 +103,70 @@ const columns = (props: {
   },
 ];
 
-const contributionColumns = [
+const installmentColumns = (props: {
+  setDetailPayout: (id: number) => void;
+}): ColumnsType<AccountInstallment> => [
   {
     title: "Urutan",
-    dataIndex: "urutan",
-    key: "urutan",
+    dataIndex: "catalogId",
+    key: "catalog-id-installment",
+    render: (text) => text,
   },
   {
     title: "Tanggal",
-    dataIndex: "tanggal",
-    key: "tanggal",
+    dataIndex: "dueAt",
+    key: "tanggal-installment",
+    render: (value: string) => <div>{dayjs(value).format("DD-MM-YYYY")}</div>,
   },
   {
     title: "Jumlah Kontribusi",
-    dataIndex: "jumlahKontribusi",
-    key: "jumlahKontribusi",
-    render: (value: string) => <strong>{value}</strong>,
+    dataIndex: "totalAmount",
+    key: "total-amount-installment",
+    render: (value: string) => <div>Rp{numberWithCommas(parseInt(value))}</div>,
   },
   {
     title: "Status",
-    dataIndex: "status",
-    key: "status",
-    render: (status: string) => {
-      const color = status === "Sudah Lunas" ? "#e8f9b7" : "#fef3c7";
-      const textColor = status === "Sudah Lunas" ? "#4d7c0f" : "#b45309";
-      return (
-        <Tag
-          color={color}
-          style={{ color: textColor, fontWeight: 600, borderRadius: 999 }}
-        >
-          {status}
-        </Tag>
-      );
-    },
+    dataIndex: "installmentStatus",
+    key: "installment-status-installment",
+    render: (value: string) =>
+      value == "PAID" ? (
+        <Chip variant="success" label="Sudah Lunas" />
+      ) : value == "UNPAID" ? (
+        <Chip variant="warning" label="Belum Dibayar" />
+      ) : null,
   },
   {
     title: "Status Rotasi",
-    dataIndex: "statusRotasi",
-    key: "statusRotasi",
-    render: (status: string) => (
-      <Tag
-        color="#e8f9b7"
-        style={{ color: "#4d7c0f", fontWeight: 600, borderRadius: 999 }}
-      >
-        {status}
-      </Tag>
-    ),
+    dataIndex: "rotationStatus",
+    key: "rotation-status-installment",
+    render: (value: string) =>
+      value == "NOT_STARTED" ? (
+        <Chip variant="warning" label="Belum Dimulai" />
+      ) : value == "FINISHED" ? (
+        <Chip variant="default" label="Sudah Lewat" />
+      ) : value == "ON_PROGRESS" ? (
+        <Chip variant="success" label="Sedang Berjalan" />
+      ) : null,
   },
   {
-    title: "Action",
-    key: "action",
-    render: (_: unknown, record: { status: string }) => {
-      if (record.status === "Sudah Lunas") {
-        return (
-          <FileSearchOutlined style={{ color: "#8b5cf6", fontSize: 16 }} />
-        );
-      }
-      return (
-        <Button type="default" disabled style={{ borderRadius: 999 }}>
-          Bayar Sekarang
+    title: "Aksi Pembayaran",
+    dataIndex: "isYourPayout",
+    key: "is-your-payout-installment",
+  },
+  {
+    title: "Aksi Pencairan",
+    dataIndex: "isYourPayout",
+    key: "is-your-payout-installment",
+    render: (value, record) =>
+      value ? (
+        <Button
+          icon={<FileSearchOutlined />}
+          iconPosition="end"
+          onClick={() => props.setDetailPayout(record.catalogId)}
+        >
+          Bukti Pencairan
         </Button>
-      );
-    },
+      ) : null,
   },
 ];
 
@@ -158,10 +174,12 @@ const AccountForm = () => {
   const navigate = useNavigate();
   const [selectedTab, setSelectedTab] = useState(0);
   const [detailTransactionModal, setDetailTransactionModal] = useState(false);
-  const [detail, setDetail] = useState<AccountCatalog | null>(null);
+  const [detailKloter, setDetailKloter] = useState<AccountCatalog | null>(null);
+  const [, setDetailPayout] = useState<number | null>(null);
   const params = useParams();
   // const isEditing = params.id !== undefined;
   // const ha = false;
+  console.log("params", params);
 
   const { data: detailAccount, isLoading: loadAccount } = useQuery({
     queryKey: ["detail-account", params.id],
@@ -169,7 +187,7 @@ const AccountForm = () => {
   });
 
   const { data: accountCatalog, isLoading: loadAccountCatalog } = useQuery({
-    queryKey: ["account-catalog", params.id, selectedTab],
+    queryKey: [params.id, selectedTab],
     queryFn: () =>
       accountService.getAccountCatalog(params.id ?? "", {
         statuses:
@@ -177,6 +195,33 @@ const AccountForm = () => {
       }),
   });
 
+  const { data: accountInstallment, isLoading: loadAccountInstallment } =
+    useQuery({
+      queryKey: ["account-installment", params.id, selectedTab],
+      queryFn: () =>
+        accountService.getAccountInstallment(
+          params.id ?? "",
+          detailKloter?.catalogId ?? 0
+        ),
+      enabled: detailKloter !== null,
+    });
+
+  const getCatalogStatus = (value: string) => {
+    return value == "OPEN" ? (
+      <Chip variant="success" label="Tersedia" />
+    ) : value == "DRAFTED" ? (
+      <Chip variant="default" label="Drafted" />
+    ) : value == "CANCELLED" ? (
+      <Chip variant="danger" label="Batal" />
+    ) : value == "FINISHED" ? (
+      <Chip variant="info" label="Selesai" />
+    ) : value == "ON_GOING" ? (
+      <Chip variant="warning" label="Sedang Berjalan" />
+    ) : null;
+  };
+
+  // TODO:
+  // table installment got caching problem
   return (
     <div className="bg-[#F9F9F9] min-h-screen">
       <div className="w-full h-full flex justify-between p-6 text-primary-500 font-semibold bg-white">
@@ -188,20 +233,28 @@ const AccountForm = () => {
           <img src="/acr-logo.svg" width={20} alt="" /> ACR Digital
         </div>
       </div>
-      {detail ? (
+      {detailKloter ? (
         <>
           <div className="p-4 m-4 bg-white rounded-md">
-            <div className="font-semibold text-lg mb-4">Detail</div>
+            <div
+              className="font-semibold text-lg mb-4 cursor-pointer"
+              onClick={() => setDetailKloter(null)}
+            >
+              <ArrowLeftOutlined className="mr-2" />
+              Detail
+            </div>
             <Divider />
             <div className="flex flex-row justify-between w-full">
               {/* Left Section */}
               <div className="w-[50%]">
                 <div className="flex items-center gap-3 mb-1">
-                  <h1 className="text-4xl font-bold gradient">Kloter 626</h1>
-                  <Chip label="Belum Dimulai" variant="warning" />
+                  <h1 className="text-4xl font-bold gradient">
+                    Kloter {detailKloter.catalogId}
+                  </h1>
+                  {getCatalogStatus(detailKloter.status)}
                 </div>
                 <p className="text-gray-600 font-medium">
-                  Rp 10,000,000 / 7 hari
+                  Rp{numberWithCommas(detailKloter.payout)} / ?? hari
                 </p>
               </div>
 
@@ -212,23 +265,27 @@ const AccountForm = () => {
                     Total Pencairan:
                   </span>
                   <span className="text-black font-semibold">
-                    Rp 30,000,000
+                    Rp{numberWithCommas(detailKloter.payout)}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-700 font-medium">
                     Total Kontribusi Anda:
                   </span>
-                  <span className="text-black font-semibold">Rp 3,085,000</span>
+                  <span className="text-black font-semibold">
+                    Rp{numberWithCommas(detailKloter.totalContribution)}
+                  </span>
                 </div>
                 <div className="flex justify-between border-dotted border-b border-gray-300 pb-1">
                   <span className="text-gray-700 font-medium">
                     Slot Terpilih:
                   </span>
-                  <span className="text-black font-semibold">1,3,7</span>
+                  <span className="text-black font-semibold">
+                    {detailKloter.slots.map((v) => v.id).join(", ")}
+                  </span>
                 </div>
                 <div className="flex justify-end text-xs text-gray-500 pt-1">
-                  Periode: 11/03/25 - 24/04/25
+                  Periode: ??
                 </div>
               </div>
             </div>
@@ -236,7 +293,7 @@ const AccountForm = () => {
             {/* Progress */}
             <div className="bg-primary-500/8 text-primary-500 text-sm font-medium px-4 py-2 rounded-full mt-6 flex justify-between w-[50%]">
               <span>Putaran Berlangsung:</span>
-              <span>7/10</span>
+              <span>??/{detailKloter.capacity}</span>
             </div>
           </div>
           <div className="p-4 m-4 bg-white rounded-md">
@@ -248,17 +305,13 @@ const AccountForm = () => {
             </div>
             <Divider />
             <Table
-              columns={contributionColumns}
-              dataSource={[
-                {
-                  key: "1",
-                  urutan: 2,
-                  tanggal: "28-02-2025",
-                  jumlahKontribusi: "Rp 3,085,000",
-                  status: "Sudah Lunas",
-                  statusRotasi: "Sedang Berlangsung",
-                },
-              ]}
+              columns={installmentColumns({
+                setDetailPayout: (id: number) => setDetailPayout(id),
+              })}
+              key={`installment-table-${detailKloter.catalogId}`}
+              dataSource={accountInstallment}
+              loading={loadAccountInstallment}
+              rowKey={(record) => record.catalogId}
               pagination={false}
             />
 
@@ -408,11 +461,13 @@ const AccountForm = () => {
               </Button>
             </div>
             <Table
-              columns={columns({
-                setDetail: (record: AccountCatalog) => setDetail(record),
+              columns={catalogColumns({
+                setDetail: (record: AccountCatalog) => setDetailKloter(record),
               })}
+              key={`catalog-table-${params.id}`}
               loading={loadAccountCatalog}
               dataSource={accountCatalog?.content}
+              rowKey={(record) => record.catalogId}
             />
           </div>
         </>

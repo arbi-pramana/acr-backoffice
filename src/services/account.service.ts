@@ -19,10 +19,10 @@ export const accountService = {
     const data = (await http.get(ROUTES.account.byId(id))) as AccountDetail;
     return data;
   },
-  async getAccountInstallment(id: string) {
-    const data = (await http.get(
-      ROUTES.account.installment(id)
-    )) as AccountInstallment;
+  async getAccountInstallment(userId: string, catalogId: number) {
+    const data = (await http.get(ROUTES.account.installment(userId), {
+      params: { catalogId: catalogId },
+    })) as AccountInstallment[];
     return data;
   },
   async getAccountCatalog(id: string, params: unknown) {
