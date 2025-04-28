@@ -4,6 +4,8 @@ import {
   AccountCatalog,
   AccountDetail,
   AccountInstallment,
+  AccountInstallmentPayment,
+  AccountInstallmentPayout,
   AccountList,
   ListResponse,
 } from "../types";
@@ -23,6 +25,18 @@ export const accountService = {
     const data = (await http.get(ROUTES.account.installment(userId), {
       params: { catalogId: catalogId },
     })) as AccountInstallment[];
+    return data;
+  },
+  async getAccountInstallmentPayout(userId: string, installmentIds: number[]) {
+    const data = (await http.get(ROUTES.account.installmentPayout(userId), {
+      params: { installmentIds: installmentIds.join(",") },
+    })) as AccountInstallmentPayout[];
+    return data;
+  },
+  async getAccountInstallmentPayment(userId: string, installmentIds: number[]) {
+    const data = (await http.get(ROUTES.account.installmentPayment(userId), {
+      params: { installmentIds: installmentIds.join(",") },
+    })) as AccountInstallmentPayment[];
     return data;
   },
   async getAccountCatalog(id: string, params: unknown) {

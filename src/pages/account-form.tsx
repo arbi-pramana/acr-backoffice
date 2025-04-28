@@ -18,12 +18,14 @@ const catalogColumns = (props: {
     title: "Kloter ID",
     dataIndex: "catalogId",
     key: "kloterId-catalog",
+    width: 100,
     render: (text: number) => <span className="font-semibold">{text}</span>,
   },
   {
     title: "Status Kloter",
     dataIndex: "status",
     key: "status-catalog",
+    width: 150,
     render: (value: string) =>
       value == "OPEN" ? (
         <Chip variant="success" label="Tersedia" />
@@ -41,6 +43,7 @@ const catalogColumns = (props: {
     title: "Total Pencairan",
     dataIndex: "payout",
     key: "totalPencairan-catalog",
+    width: 150,
     render: (text: string) => (
       <span className="font-semibold">
         Rp{numberWithCommas(parseInt(text))}
@@ -59,9 +62,9 @@ const catalogColumns = (props: {
   },
   {
     title: "Total Putaran",
-    dataIndex: "totalContribution",
+    dataIndex: "capacity",
     key: "total-putaran-catalog",
-    render: () => <span className="font-semibold">??</span>,
+    width: 150,
   },
   {
     title: "Slot dipilih",
@@ -69,13 +72,14 @@ const catalogColumns = (props: {
     key: "slot-catalog-catalog",
     render: (_, record) => (
       <span className="font-semibold">
-        {record.slots.map((v) => v.id).join(", ")}
+        {record.slots.map((v) => v.number).join(", ")}
       </span>
     ),
   },
   {
     title: "Periode",
     dataIndex: "",
+    width: 200,
     key: "periode-catalog",
     render: (_, record) => (
       <span className="font-semibold">

@@ -10,6 +10,10 @@ export const ROUTES = {
     byId: (id: string) => `${version}/backoffice/accounts/` + id,
     installment: (id: string) =>
       `${version}/backoffice/accounts/installments/` + id,
+    installmentPayout: (id: string) =>
+      `${version}/backoffice/accounts/installments/payouts/` + id,
+    installmentPayment: (id: string) =>
+      `${version}/backoffice/accounts/installments/payments/` + id,
     catalog: (id: string) => `${version}/backoffice/accounts/catalogs/` + id,
   },
   kyc: {

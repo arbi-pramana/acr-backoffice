@@ -1,11 +1,10 @@
 import {
   ArrowLeftOutlined,
   CopyOutlined,
-  DownOutlined,
   FileSearchOutlined,
 } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-import { Button, Divider, Modal, Space, Table } from "antd";
+import { Button, Divider, Modal, Result, Space, Table } from "antd";
 import { ColumnsType } from "antd/es/table";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
@@ -14,10 +13,12 @@ import Chip from "../components/chip";
 import { storage } from "../helper/local-storage";
 import { numberWithCommas } from "../helper/number-with-commas";
 import { accountService } from "../services/account.service";
+import { kloterService } from "../services/kloter.service";
 import { AccountCatalog, AccountInstallment } from "../types";
 
 const installmentColumns = (props: {
-  setDetailPayout: (id: number) => void;
+  setDetailPayout: (id: AccountInstallment) => void;
+  setDetailPayment: (id: AccountInstallment) => void;
 }): ColumnsType<AccountInstallment> => [
   {
     title: "Urutan",
@@ -63,23 +64,31 @@ const installmentColumns = (props: {
   },
   {
     title: "Aksi Pembayaran",
-    dataIndex: "isYourPayout",
+    dataIndex: "",
     key: "is-your-payout-installment",
+    render: (_, record) => (
+      <Button
+        icon={<FileSearchOutlined />}
+        iconPosition="end"
+        onClick={() => props.setDetailPayment(record)}
+      >
+        Bukti Transaksi
+      </Button>
+    ),
   },
   {
     title: "Aksi Pencairan",
-    dataIndex: "isYourPayout",
+    dataIndex: "",
     key: "is-your-payout-installment",
-    render: (value, record) =>
-      value ? (
-        <Button
-          icon={<FileSearchOutlined />}
-          iconPosition="end"
-          onClick={() => props.setDetailPayout(record.catalogId)}
-        >
-          Bukti Pencairan
-        </Button>
-      ) : null,
+    render: (_, record) => (
+      <Button
+        icon={<FileSearchOutlined />}
+        iconPosition="end"
+        onClick={() => props.setDetailPayout(record)}
+      >
+        Bukti Pencairan
+      </Button>
+    ),
   },
 ];
 
@@ -87,12 +96,13 @@ const AccountInstallments = () => {
   const params = useParams();
   const navigate = useNavigate();
 
-  const [detailTransactionModal, setDetailTransactionModal] = useState(false);
-  const [detailKloter] = useState<AccountCatalog | null>(
-    storage.getItem("catalog", true)
+  const [detailKloter, setDetailKloter] = useState<AccountCatalog | null>(null);
+  const [detailPayout, setDetailPayout] = useState<AccountInstallment | null>(
+    null
   );
-  const [, setDetailPayout] = useState<number | null>(null);
-  console.log("sad", storage.getItem("catalog", true));
+  const [detailPayment, setDetailPayment] = useState<AccountInstallment | null>(
+    null
+  );
 
   const { data: accountInstallment, isLoading: loadAccountInstallment } =
     useQuery({
@@ -102,8 +112,35 @@ const AccountInstallments = () => {
           params.id ?? "",
           detailKloter?.catalogId ?? 0
         ),
-      //   enabled: detailKloter !== null,
+      enabled: detailKloter !== null,
     });
+
+  const { data: detailKloterFromAPI } = useQuery({
+    queryKey: ["kloter", params.id],
+    queryFn: () => kloterService.getKloterById(detailKloter?.catalogId ?? 0),
+    enabled: detailKloter !== null,
+  });
+
+  const { data: detailInstallmentPayout } = useQuery({
+    queryKey: ["detail-installment-payout", params.id],
+    queryFn: () =>
+      accountService.getAccountInstallmentPayout(
+        params.id ?? "",
+        detailPayout?.installmentIds ?? []
+      ),
+    enabled: detailPayout !== null,
+  });
+
+  const { data: detailInstallmentPayment } = useQuery({
+    queryKey: ["detail-installment-payment", params.id],
+    queryFn: () =>
+      accountService.getAccountInstallmentPayment(
+        params.id ?? "",
+        detailPayment?.installmentIds ?? []
+      ),
+    enabled: detailPayment !== null,
+  });
+
   const getCatalogStatus = (value: string) => {
     return value == "OPEN" ? (
       <Chip variant="success" label="Tersedia" />
@@ -119,9 +156,10 @@ const AccountInstallments = () => {
   };
 
   useEffect(() => {
-    return () => {
-      localStorage.removeItem("catalog");
-    };
+    setDetailKloter(storage.getItem("catalog", true));
+    // return () => {
+    //   localStorage.removeItem("catalog");
+    // };
   }, []);
 
   if (!detailKloter) return null;
@@ -147,7 +185,8 @@ const AccountInstallments = () => {
               {getCatalogStatus(detailKloter.status)}
             </div>
             <p className="text-gray-600 font-medium">
-              Rp{numberWithCommas(detailKloter.payout)} / ?? hari
+              Rp{numberWithCommas(detailKloter.payout)} /{" "}
+              {detailKloterFromAPI?.cycleDay} hari
             </p>
           </div>
 
@@ -172,11 +211,12 @@ const AccountInstallments = () => {
             <div className="flex justify-between border-dotted border-b border-gray-300 pb-1">
               <span className="text-gray-700 font-medium">Slot Terpilih:</span>
               <span className="text-black font-semibold">
-                {detailKloter.slots.map((v) => v.id).join(", ")}
+                {detailKloter.slots.map((v) => v.number).join(", ")}
               </span>
             </div>
             <div className="flex justify-end text-xs text-gray-500 pt-1">
-              Periode: ??
+              Periode: {dayjs(detailKloter.startAt).format("DD/MM/YYYY")} -{" "}
+              {dayjs(detailKloter.endAt).format("DD/MM/YYYY")}
             </div>
           </div>
         </div>
@@ -188,16 +228,16 @@ const AccountInstallments = () => {
         </div>
       </div>
       <div className="p-4 m-4 bg-white rounded-md">
-        <div
-          className="font-semibold text-lg mb-4"
-          onClick={() => setDetailTransactionModal(true)}
-        >
+        <div className="font-semibold text-lg mb-4">
           List kontribusi pembayaran
         </div>
         <Divider />
         <Table
           columns={installmentColumns({
-            setDetailPayout: (id: number) => setDetailPayout(id),
+            setDetailPayout: (record: AccountInstallment) =>
+              setDetailPayout(record),
+            setDetailPayment: (record: AccountInstallment) =>
+              setDetailPayment(record),
           })}
           key={`installment-table-${params.id}-${detailKloter.catalogId}`}
           dataSource={accountInstallment}
@@ -207,74 +247,203 @@ const AccountInstallments = () => {
         />
 
         <Modal
-          open={detailTransactionModal}
-          onCancel={() => setDetailTransactionModal(false)}
+          open={detailPayout !== null}
+          onCancel={() => setDetailPayout(null)}
           title={<div className="gradient">Detail Transaksi</div>}
           footer={null}
+          centered
         >
-          <div className="bg-[#f9fafb] rounded-lg p-6 mb-4 text-sm">
-            <div>
-              <div className="flex justify-between">
-                <div>ID Transaksi</div>
-                <div>
-                  98037299874 <CopyOutlined style={{ marginLeft: 8 }} />
+          {detailInstallmentPayout && detailInstallmentPayout?.length > 0 ? (
+            <>
+              {detailInstallmentPayout?.map((v) => (
+                <div className="bg-[#f9fafb] rounded-lg p-6 mb-4 text-sm">
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <div>ID Transaksi</div>
+                      <div>
+                        {v.transactionCode}{" "}
+                        <CopyOutlined style={{ marginLeft: 8 }} />
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex justify-between">
+                        <div>Kloter ID</div>
+                        <div>
+                          {detailKloter.catalogId}{" "}
+                          <CopyOutlined style={{ marginLeft: 8 }} />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex justify-between">
+                      <div>Tanggal</div>
+                      <div>{dayjs(v.createdAt).format("DD/MM/YY, HH:MM")}</div>
+                    </div>
+                    <div className="flex justify-between">
+                      <div>Produk</div>
+                      <div>Rp{numberWithCommas(v.paymentAmount)} / ?? Hari</div>
+                    </div>
+                    <div className="flex justify-between">
+                      <div>Status</div>
+                      <Chip
+                        label={
+                          v.status == "SUCCESS"
+                            ? "Success"
+                            : v.status == "PENDING"
+                            ? "Pending"
+                            : v.status == "FAILED"
+                            ? "Gagal"
+                            : ""
+                        }
+                        variant={
+                          v.status == "SUCCESS"
+                            ? "success"
+                            : v.status == "PENDING"
+                            ? "warning"
+                            : v.status == "FAILED"
+                            ? "danger"
+                            : "default"
+                        }
+                      />
+                    </div>
+                  </div>
                 </div>
-              </div>
-              <div>
-                <div className="flex justify-between">
-                  <div>Kloter ID</div>
-                  <div>
-                    K1234 <CopyOutlined style={{ marginLeft: 8 }} />
+              ))}
+              <div className="bg-[#f9fafb] rounded-lg p-6 space-y-2">
+                <div className="text-center font-semibold">
+                  <div>Jumlah Uang Cair</div>
+                  <div className="gradient text-xl">Rp 5.000.000</div>
+                </div>
+                <div className="text-center font-semibold">
+                  <div>Nama Bank</div>
+                  <div className="gradient text-xl">BCA</div>
+                </div>
+                <div className="text-center font-semibold">
+                  <div>Nomor Rekening</div>
+                  <div className="gradient text-xl">12345678</div>
+                </div>
+                <div className="text-center font-semibold">
+                  <div>Atas Nama</div>
+                  <div className="gradient text-xl">
+                    Artemis Newton Fido Scamander
                   </div>
                 </div>
               </div>
-              <div className="flex justify-between">
-                <div>Tanggal</div>
-                <div>22/02/25, 12:00</div>
+              <div className="text-xs text-center mt-3">
+                Permintaan pencairan uang akan diproses dalam waktu maksimal 1
+                hari kerja.
               </div>
-              <div className="flex justify-between">
-                <div>Produk</div>
-                <div>Rp 5,000,000 / 7 Hari</div>
-              </div>
-              <div className="flex justify-between">
-                <div>Tipe Transaksi</div>
-                <div>Giliran Bayar</div>
-              </div>
-              <div className="flex justify-between">
-                <div>Status</div>
-                <Chip label="Lunas" variant="success" />
-              </div>
-            </div>
-          </div>
-          <div className="bg-[#f9fafb] rounded-lg p-6">
-            <Space direction="vertical" size={8} style={{ width: "100%" }}>
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <div>Total Biaya Kontribusi / Rotasi</div>
-                <div>Rp 1,640,000</div>
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <div>Uang Muka yang Sudah Dibayar</div>
-                <div>- Rp 530,000</div>
-              </div>
-            </Space>
+            </>
+          ) : (
+            <Result status="404" title="No payout found" />
+          )}
+        </Modal>
+        <Modal
+          open={detailPayment !== null}
+          centered
+          onCancel={() => setDetailPayment(null)}
+          title={<div className="gradient">Detail Transaksi</div>}
+          footer={null}
+        >
+          {detailInstallmentPayment && detailInstallmentPayment?.length > 0 ? (
+            <>
+              {detailInstallmentPayment?.map((v) => (
+                <div className="bg-[#f9fafb] rounded-lg p-6 mb-4 text-sm">
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <div>ID Transaksi</div>
+                      <div>
+                        {v.transactionCode}{" "}
+                        <CopyOutlined style={{ marginLeft: 8 }} />
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex justify-between">
+                        <div>Kloter ID</div>
+                        <div>
+                          {detailKloter.catalogId}{" "}
+                          <CopyOutlined style={{ marginLeft: 8 }} />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex justify-between">
+                      <div>Tanggal</div>
+                      <div>{dayjs(v.createdAt).format("DD/MM/YY, HH:MM")}</div>
+                    </div>
+                    <div className="flex justify-between">
+                      <div>Produk</div>
+                      <div>Rp{numberWithCommas(v.paymentAmount)} / ?? Hari</div>
+                    </div>
+                    <div className="flex justify-between">
+                      <div>Tipe Transaksi</div>
+                      <div>??</div>
+                    </div>
+                    <div className="flex justify-between">
+                      <div>Status</div>
+                      <Chip
+                        label={
+                          v.status == "SUCCESS"
+                            ? "Success"
+                            : v.status == "PENDING"
+                            ? "Pending"
+                            : v.status == "FAILED"
+                            ? "Gagal"
+                            : ""
+                        }
+                        variant={
+                          v.status == "SUCCESS"
+                            ? "success"
+                            : v.status == "PENDING"
+                            ? "warning"
+                            : v.status == "FAILED"
+                            ? "danger"
+                            : "default"
+                        }
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+              <div className="bg-[#f9fafb] rounded-lg p-6">
+                <Space direction="vertical" size={8} style={{ width: "100%" }}>
+                  <div
+                    style={{ display: "flex", justifyContent: "space-between" }}
+                  >
+                    <div>Total Biaya Kontribusi / Rotasi</div>
+                    <div>??</div>
+                  </div>
+                  <div
+                    style={{ display: "flex", justifyContent: "space-between" }}
+                  >
+                    <div>Uang Muka yang Sudah Dibayar</div>
+                    <div>- ??</div>
+                  </div>
+                </Space>
 
-            <Divider />
+                <Divider />
 
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <div className="font-semibold">Sisa Biaya yang Harus Dibayar</div>
-              <div className="font-semibold gradient">Rp 1,110,000</div>
-            </div>
+                <div
+                  style={{ display: "flex", justifyContent: "space-between" }}
+                >
+                  <div className="font-semibold">
+                    Sisa Biaya yang Harus Dibayar
+                  </div>
+                  <div className="font-semibold gradient">??</div>
+                </div>
 
-            <div className="text-center mt-4">
-              <Button
-                type="link"
-                icon={<DownOutlined />}
-                style={{ color: "#9f4abc" }}
-              >
-                Tampilkan Detail
-              </Button>
-            </div>
-          </div>
+                {/* <div className="text-center mt-4">
+                  <Button
+                    type="link"
+                    icon={<DownOutlined />}
+                    style={{ color: "#9f4abc" }}
+                  >
+                    Tampilkan Detail
+                  </Button>
+                </div> */}
+              </div>
+            </>
+          ) : (
+            <Result status="404" title="No payment found" />
+          )}
         </Modal>
       </div>
     </>

@@ -265,6 +265,7 @@ export type AccountInstallment = {
   catalogId: number;
   dueAt: string;
   totalAmount: number;
+  installmentIds: number[];
   slots: [
     {
       id: number;
@@ -274,4 +275,25 @@ export type AccountInstallment = {
   rotationStatus: string;
   installmentStatus: string;
   isYourPayout: boolean;
+};
+
+export type AccountInstallmentPayout = {
+  transactionCode: string;
+  createdAt: string;
+  type: string;
+  status: string;
+  paymentAmount: number;
+  recipientDetails: {
+    code: string;
+    number: string;
+    holderName: string;
+  };
+};
+
+export type AccountInstallmentPayment = {
+  transactionCode: string;
+  createdAt: string;
+  type: string;
+  status: string;
+  paymentAmount: number;
 };
