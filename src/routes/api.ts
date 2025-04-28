@@ -20,6 +20,8 @@ export const ROUTES = {
     list: `/${version}/backoffice/kycs`,
     byId: (id: string) => `${version}/backoffice/kycs/` + id,
     byIdMatch: (id: string) => `${version}/backoffice/kycs/compare/` + id,
+    updateStatusReason: (id: string) =>
+      `${version}/backoffice/kycs/status-reason/` + id,
   },
   kloter: {
     list: `/${version}/backoffice/catalogs`,

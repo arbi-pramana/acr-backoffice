@@ -4,7 +4,7 @@ import {
   FileOutlined,
   InfoCircleFilled,
 } from "@ant-design/icons";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Alert,
   Button,
@@ -12,6 +12,7 @@ import {
   Form,
   Input,
   Modal,
+  notification,
   Progress,
   Select,
   Spin,
@@ -30,6 +31,8 @@ const KYCStep1 = () => {
   console.log("params", params);
   const [form] = Form.useForm();
   const [modalFile, setModalFile] = useState(false);
+  const [statusReason, setStatusReason] = useState("");
+  const queryClient = useQueryClient();
 
   const { data: kyc, isLoading: loadingKyc } = useQuery({
     queryFn: () => kycService.getKycById(id ?? ""),
@@ -43,6 +46,22 @@ const KYCStep1 = () => {
     enabled: id !== null,
     queryKey: ["kyc-match", id],
   });
+  const { mutate: mutateUpdateStatus, isPending: pendingUpdateStatus } =
+    useMutation({
+      mutationFn: (param: { statusLevelOne: string }) =>
+        kycService.updateStatusReason(id ?? "", param),
+      mutationKey: ["kyc-update-status", id],
+      onSuccess: () => {
+        // queryClient.invalidateQueries(["kyc-match", "kyc"]);
+        notification.success({
+          message: "KYC successfully updated",
+        });
+        navigate(-1);
+        queryClient.invalidateQueries({ queryKey: ["kyc-match", "kyc", id] });
+        // refetchKyc();
+        // refetchKycMatch();
+      },
+    });
 
   const getBackground = () => {
     if (step == 1) {
@@ -333,9 +352,8 @@ const KYCStep1 = () => {
                         <InputMatch
                           label=""
                           value={kyc?.religion}
-                          isMatch={false}
+                          isMatch={kycMatch?.religion?.isMatch}
                         />
-                        compare??
                       </Form.Item>
                       <Form.Item label="Status">
                         <InputMatch
@@ -393,7 +411,7 @@ const KYCStep1 = () => {
                     {kyc?.domicileLetterKey}
                   </p>
                   <div className="flex gap-3">
-                    <Button className="mt-2">Upload Ulang</Button>
+                    {/* <Button className="mt-2">Upload Ulang</Button> */}
                     <Button
                       type="primary"
                       className="mt-2"
@@ -668,21 +686,25 @@ const KYCStep1 = () => {
           <div className="flex items-center gap-4">
             <label className="text-sm font-medium">Pilih Respon Status</label>
             <Select
-              defaultValue="In Progress"
+              defaultValue={
+                step == 1 ? kyc?.statusLevelOne : kyc?.statusLevelTwo
+              }
               options={[
-                { label: "In Progress", value: 1 },
-                { label: "In Review", value: 2 },
-                { label: "Rejected", value: 3 },
-                { label: "Approved", value: 4 },
+                { label: "In Review", value: "IN_PROGRESS" },
+                { label: "Rejected", value: "REJECTED" },
+                { label: "Approved", value: "APPROVED" },
               ]}
               className="w-48"
+              onChange={(v) => setStatusReason(v)}
             />
           </div>
 
           {/* Right Section: Submit Button */}
           <Button
             type="primary"
-            // onClick={() => setStep(2)}
+            loading={pendingUpdateStatus}
+            disabled={pendingUpdateStatus}
+            onClick={() => mutateUpdateStatus({ statusLevelOne: statusReason })}
             className="bg-purple-600 text-white px-6 py-2 rounded-full"
           >
             Submit

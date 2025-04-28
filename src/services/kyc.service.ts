@@ -17,4 +17,11 @@ export const kycService = {
     const data = (await http.get(ROUTES.kyc.byIdMatch(id))) as KYCMatch;
     return data;
   },
+  async updateStatusReason(id: string, param: unknown) {
+    const data = (await http.patch(
+      ROUTES.kyc.updateStatusReason(id),
+      param
+    )) as KYCMatch;
+    return data;
+  },
 };

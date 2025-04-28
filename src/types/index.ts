@@ -165,6 +165,10 @@ export type KYCMatch = {
     data: string;
     isMatch: boolean;
   };
+  religion: {
+    data: string;
+    isMatch: boolean;
+  };
   bloodGroup: {
     data: string;
     isMatch: boolean;
