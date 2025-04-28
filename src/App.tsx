@@ -2,6 +2,7 @@ import { notification } from "antd";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import ProtectedRoute from "./helper/protected-route";
 import AccountForm from "./pages/account-form";
+import AccountInstallments from "./pages/account-form-installment";
 import Dashboard from "./pages/dashboard";
 import KloterForm from "./pages/kloter-form";
 import KYCForm from "./pages/kyc-form";
@@ -59,6 +60,14 @@ function App() {
           element={
             <ProtectedRoute>
               <AccountForm />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/account-form/:id/:catalogid"
+          element={
+            <ProtectedRoute>
+              <AccountInstallments />
             </ProtectedRoute>
           }
         />
