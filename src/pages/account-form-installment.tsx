@@ -4,7 +4,7 @@ import {
   FileSearchOutlined,
 } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-import { Button, Divider, Modal, Result, Space, Table } from "antd";
+import { Button, Divider, Modal, Result, Table } from "antd";
 import { ColumnsType } from "antd/es/table";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
@@ -280,7 +280,7 @@ const AccountInstallments = () => {
                     </div>
                     <div className="flex justify-between">
                       <div>Produk</div>
-                      <div>Rp{numberWithCommas(v.paymentAmount)} / ?? Hari</div>
+                      <div>Rp{numberWithCommas(v.payoutAmount)} / ?? Hari</div>
                     </div>
                     <div className="flex justify-between">
                       <div>Status</div>
@@ -306,28 +306,34 @@ const AccountInstallments = () => {
                       />
                     </div>
                   </div>
+                  {/* <div className="bg-[#f9fafb] rounded-lg p-6 space-y-2"> */}
+                  <div className="text-center font-semibold">
+                    <div>Jumlah Uang Cair</div>
+                    <div className="gradient text-xl">
+                      Rp{numberWithCommas(v.payoutAmount)}
+                    </div>
+                  </div>
+                  <div className="text-center font-semibold">
+                    <div>Nama Bank</div>
+                    <div className="gradient text-xl">
+                      {v.recipientDetails.code}
+                    </div>
+                  </div>
+                  <div className="text-center font-semibold">
+                    <div>Nomor Rekening</div>
+                    <div className="gradient text-xl">
+                      {v.recipientDetails.number}
+                    </div>
+                  </div>
+                  <div className="text-center font-semibold">
+                    <div>Atas Nama</div>
+                    <div className="gradient text-xl">
+                      {v.recipientDetails.holderName}
+                    </div>
+                  </div>
+                  {/* </div> */}
                 </div>
               ))}
-              <div className="bg-[#f9fafb] rounded-lg p-6 space-y-2">
-                <div className="text-center font-semibold">
-                  <div>Jumlah Uang Cair</div>
-                  <div className="gradient text-xl">Rp 5.000.000</div>
-                </div>
-                <div className="text-center font-semibold">
-                  <div>Nama Bank</div>
-                  <div className="gradient text-xl">BCA</div>
-                </div>
-                <div className="text-center font-semibold">
-                  <div>Nomor Rekening</div>
-                  <div className="gradient text-xl">12345678</div>
-                </div>
-                <div className="text-center font-semibold">
-                  <div>Atas Nama</div>
-                  <div className="gradient text-xl">
-                    Artemis Newton Fido Scamander
-                  </div>
-                </div>
-              </div>
               <div className="text-xs text-center mt-3">
                 Permintaan pencairan uang akan diproses dalam waktu maksimal 1
                 hari kerja.
@@ -375,7 +381,7 @@ const AccountInstallments = () => {
                     </div>
                     <div className="flex justify-between">
                       <div>Tipe Transaksi</div>
-                      <div>??</div>
+                      <div>{v.type}</div>
                     </div>
                     <div className="flex justify-between">
                       <div>Status</div>
@@ -403,43 +409,6 @@ const AccountInstallments = () => {
                   </div>
                 </div>
               ))}
-              <div className="bg-[#f9fafb] rounded-lg p-6">
-                <Space direction="vertical" size={8} style={{ width: "100%" }}>
-                  <div
-                    style={{ display: "flex", justifyContent: "space-between" }}
-                  >
-                    <div>Total Biaya Kontribusi / Rotasi</div>
-                    <div>??</div>
-                  </div>
-                  <div
-                    style={{ display: "flex", justifyContent: "space-between" }}
-                  >
-                    <div>Uang Muka yang Sudah Dibayar</div>
-                    <div>- ??</div>
-                  </div>
-                </Space>
-
-                <Divider />
-
-                <div
-                  style={{ display: "flex", justifyContent: "space-between" }}
-                >
-                  <div className="font-semibold">
-                    Sisa Biaya yang Harus Dibayar
-                  </div>
-                  <div className="font-semibold gradient">??</div>
-                </div>
-
-                {/* <div className="text-center mt-4">
-                  <Button
-                    type="link"
-                    icon={<DownOutlined />}
-                    style={{ color: "#9f4abc" }}
-                  >
-                    Tampilkan Detail
-                  </Button>
-                </div> */}
-              </div>
             </>
           ) : (
             <Result status="404" title="No payment found" />
