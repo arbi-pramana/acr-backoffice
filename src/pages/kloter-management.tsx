@@ -20,7 +20,7 @@ const columns = (props: {
 }): ColumnsType<Kloter> => [
   {
     title: "Kloter ID",
-    dataIndex: "id",
+    dataIndex: "groupId",
     key: "id",
     width: 100,
   },
