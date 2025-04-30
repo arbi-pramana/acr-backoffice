@@ -5,6 +5,9 @@ export const ROUTES = {
     login: `/${version}/auth/login`,
     image: (key: string) => `/${version}/buckets?key=${key}`,
   },
+  general: {
+    bank: `/${version}/banks/public`,
+  },
   account: {
     list: `/${version}/backoffice/accounts`,
     byId: (id: string) => `${version}/backoffice/accounts/` + id,
@@ -22,6 +25,10 @@ export const ROUTES = {
     byIdMatch: (id: string) => `${version}/backoffice/kycs/compare/` + id,
     updateStatusReason: (id: string) =>
       `${version}/backoffice/kycs/status-reason/` + id,
+    updateLevelOne: (id: string) =>
+      `${version}/backoffice/kycs/level-one/` + id,
+    updateLevelTwo: (id: string) =>
+      `${version}/backoffice/kycs/level-two/` + id,
   },
   kloter: {
     list: `/${version}/backoffice/catalogs`,

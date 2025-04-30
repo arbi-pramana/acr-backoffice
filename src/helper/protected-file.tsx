@@ -30,7 +30,11 @@ const ProtectedFile = ({ keyFile, type, ...props }: ProtectedImageProps) => {
   });
 
   if (isLoading) {
-    return <Spin size="small" />;
+    return (
+      <div className="h-fit">
+        <Spin size="small" />
+      </div>
+    );
   }
 
   if (type === "file") {

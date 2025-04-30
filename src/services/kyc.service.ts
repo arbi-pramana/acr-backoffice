@@ -24,4 +24,12 @@ export const kycService = {
     )) as KYCMatch;
     return data;
   },
+  async updateLevelOne(id: string, param: unknown) {
+    const data = await http.patch(ROUTES.kyc.updateLevelOne(id), param);
+    return data;
+  },
+  async updateLevelTwo(id: string, param: unknown) {
+    const data = await http.patch(ROUTES.kyc.updateLevelTwo(id), param);
+    return data;
+  },
 };
