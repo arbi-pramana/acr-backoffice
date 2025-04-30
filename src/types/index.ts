@@ -220,6 +220,28 @@ export type KYCMatch = {
     data: string;
     isMatch: boolean;
   };
+  bank: {
+    code: {
+      data: string;
+      isMatch: boolean;
+    };
+    number: {
+      data: string;
+      isMatch: boolean;
+    };
+    holderName: {
+      data: string;
+      isMatch: boolean;
+    };
+    status: {
+      data: "PENDING";
+      isMatch: boolean;
+    };
+    reason: {
+      data: string;
+      isMatch: boolean;
+    };
+  };
 };
 
 // account.service.ts
@@ -286,7 +308,7 @@ export type AccountInstallmentPayout = {
   createdAt: string;
   type: string;
   status: string;
-  paymentAmount: number;
+  payoutAmount: number;
   recipientDetails: {
     code: string;
     number: string;
@@ -300,4 +322,9 @@ export type AccountInstallmentPayment = {
   type: string;
   status: string;
   paymentAmount: number;
+};
+
+export type Bank = {
+  name: string;
+  code: string;
 };
