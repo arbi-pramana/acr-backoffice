@@ -87,6 +87,27 @@ const columns = (props: {
     title: "Current Stage",
     dataIndex: "currentStage",
     key: "date",
+    render: (text) => {
+      return text == "ID_CARD_UPLOAD" ? (
+        <div>Upload KTP</div>
+      ) : text == "ID_CARD_SELFIE_UPLOAD" ? (
+        <div>Upload Selfie KTP</div>
+      ) : text == "DATA_VERIFICATION" ? (
+        <div>Verifikasi Data</div>
+      ) : text == "BANK_VERIFICATION" ? (
+        <div>Verifikasi Bank</div>
+      ) : text == "OCCUPATION_INFORMATION" ? (
+        <div>Informasi Pekerjaan</div>
+      ) : text == "FAMILY_CARD_UPLOAD" ? (
+        <div>Upload KK</div>
+      ) : text == "GUARANTOR_INFORMATION" ? (
+        <div>Informasi Penjamin</div>
+      ) : text == "DONE" ? (
+        <div>Selesai</div>
+      ) : (
+        "-"
+      );
+    },
   },
   {
     title: "Tanggal Submit",

@@ -10,6 +10,7 @@ import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Chip from "../components/chip";
+import { copyToClipboard } from "../helper/copy-to-clipboard";
 import { storage } from "../helper/local-storage";
 import { numberWithCommas } from "../helper/number-with-commas";
 import { accountService } from "../services/account.service";
@@ -269,7 +270,7 @@ const AccountInstallments = () => {
                       <div className="flex justify-between">
                         <div>Kloter ID</div>
                         <div>
-                          {detailKloter.catalogId}{" "}
+                          {detailKloter.groupId}{" "}
                           <CopyOutlined style={{ marginLeft: 8 }} />
                         </div>
                       </div>
@@ -280,7 +281,10 @@ const AccountInstallments = () => {
                     </div>
                     <div className="flex justify-between">
                       <div>Produk</div>
-                      <div>Rp{numberWithCommas(v.payoutAmount)} / ?? Hari</div>
+                      <div>
+                        Rp{numberWithCommas(detailKloter.payout)} /{" "}
+                        {detailKloterFromAPI?.cycleDay} hari
+                      </div>
                     </div>
                     <div className="flex justify-between">
                       <div>Status</div>
@@ -359,15 +363,23 @@ const AccountInstallments = () => {
                       <div>ID Transaksi</div>
                       <div>
                         {v.transactionCode}{" "}
-                        <CopyOutlined style={{ marginLeft: 8 }} />
+                        <CopyOutlined
+                          style={{ marginLeft: 8, cursor: "pointer" }}
+                          onClick={() => copyToClipboard(v.transactionCode)}
+                        />
                       </div>
                     </div>
                     <div>
                       <div className="flex justify-between">
                         <div>Kloter ID</div>
                         <div>
-                          {detailKloter.catalogId}{" "}
-                          <CopyOutlined style={{ marginLeft: 8 }} />
+                          {detailKloter.groupId}{" "}
+                          <CopyOutlined
+                            style={{ marginLeft: 8, cursor: "pointer" }}
+                            onClick={() =>
+                              copyToClipboard(detailKloter.groupId)
+                            }
+                          />
                         </div>
                       </div>
                     </div>
@@ -377,11 +389,22 @@ const AccountInstallments = () => {
                     </div>
                     <div className="flex justify-between">
                       <div>Produk</div>
-                      <div>Rp{numberWithCommas(v.paymentAmount)} / ?? Hari</div>
+                      <div>
+                        Rp{numberWithCommas(detailKloter.payout)} /{" "}
+                        {detailKloterFromAPI?.cycleDay} hari
+                      </div>
                     </div>
                     <div className="flex justify-between">
                       <div>Tipe Transaksi</div>
-                      <div>{v.type}</div>
+                      <div>
+                        {v.type == "INITIAL_PAYMENT"
+                          ? "Uang Muka"
+                          : v.type == "CONTRIBUTION_PAYMENT"
+                          ? "Giliran Bayar"
+                          : v.type == "DISBURSEMENT"
+                          ? "Pencairan"
+                          : ""}
+                      </div>
                     </div>
                     <div className="flex justify-between">
                       <div>Status</div>
