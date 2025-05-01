@@ -74,6 +74,7 @@ export type KYCDetail = {
   bloodGroup: string;
   dateOfBirth: string;
   placeOfBirth: string;
+  updatedAt: string;
   idCardAddress: {
     line: string;
     rtNumber: string;

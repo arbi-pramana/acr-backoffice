@@ -17,6 +17,7 @@ import {
   Select,
   Spin,
 } from "antd";
+import dayjs from "dayjs";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { InputMatch } from "../components/input-match";
@@ -141,17 +142,17 @@ const KYCStep1 = () => {
 
     // for some kyc level 2 payload
     if (changedValue?.bank) {
-      if (changedValue?.bank.code) {
-        changedValue.bankCode = changedValue.bank.code;
-        delete changedValue.bank.code;
+      if (changedValue?.bank?.code) {
+        changedValue.bankCode = changedValue.bank?.code;
+        delete changedValue.bank?.code;
       }
-      if (changedValue?.bank.number) {
-        changedValue.bankAccountNumber = changedValue.bank.number;
-        delete changedValue.bank.number;
+      if (changedValue?.bank?.number) {
+        changedValue.bankAccountNumber = changedValue.bank?.number;
+        delete changedValue.bank?.number;
       }
-      if (changedValue?.bank.holderName) {
-        changedValue.bankHolderName = changedValue.bank.holderName;
-        delete changedValue.bank.holderName;
+      if (changedValue?.bank?.holderName) {
+        changedValue.bankHolderName = changedValue.bank?.holderName;
+        delete changedValue.bank?.holderName;
       }
     }
     if (changedValue?.mobile) {
@@ -231,7 +232,8 @@ const KYCStep1 = () => {
             <div>
               <div className="font-bold">{kyc?.fullName}</div>
               <div className="font-semibold">
-                Last submitted: DATE?? | TIME??
+                Perubahan terakhir: {dayjs(kyc?.updatedAt).format("DD-MM-YYYY")}{" "}
+                | {dayjs(kyc?.updatedAt).format("HH:mm A")}
               </div>
             </div>
             <div className="bg-primary-300 rounded-xl p-2 flex gap-3 items-center">
@@ -241,8 +243,8 @@ const KYCStep1 = () => {
               <div className="text-white font-semibold">
                 Kirim pemberitahuan kepada user
               </div>
-              <button className="bg-primary-500 rounded-lg flex items-center px-2 text-white">
-                Send Notification
+              <button className="bg-primary-500 rounded-lg flex items-center px-2 text-white cursor-pointer">
+                Kirim Notifikasi
               </button>
             </div>
           </div>
@@ -301,7 +303,7 @@ const KYCStep1 = () => {
                     <div className="flex justify-center w-full">
                       {/* <img src="/acr-logo.svg" width={200} alt="" /> */}
                       <ProtectedFile
-                        keyFile={kyc?.idCardKey}
+                        keyFile={kyc?.idCardSelfieKey}
                         type="image"
                         width={200}
                         alt=""
@@ -652,7 +654,7 @@ const KYCStep1 = () => {
                   <div>
                     <InputMatch
                       label="Nama Pemilik Rekening"
-                      value={kyc?.bank.holderName}
+                      value={kyc?.bank?.holderName}
                       isMatch={kycMatch?.bank?.holderName.isMatch}
                     />
                   </div>
