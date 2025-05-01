@@ -288,8 +288,8 @@ const KYCStep1 = () => {
                       <div className="font-semibold">Score Data Anda</div>
                       <Progress
                         percent={parseInt(
-                          kycMatch?.idCardMatchPercentage
-                            ? kycMatch?.idCardMatchPercentage.toFixed(2)
+                          kycMatch?.statusLevelOnePercentage
+                            ? kycMatch?.statusLevelOnePercentage.toFixed(2)
                             : "0"
                         )}
                         strokeWidth={8}
