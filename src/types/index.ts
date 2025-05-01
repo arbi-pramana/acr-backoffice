@@ -146,6 +146,7 @@ export type KYCMatch = {
   statusLevelOne: string;
   idCardMatchPercentage: number;
   idCardSelfieMatchPercentage: number;
+  statusLevelOnePercentage: number;
   idCardNumber: {
     data: string;
     isMatch: boolean;
