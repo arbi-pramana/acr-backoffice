@@ -19,8 +19,11 @@ const columns = (props: {
     title: "Nama",
     dataIndex: "fullName",
     key: "nama",
-    render: (text: string) => (
-      <span className="text-purple-600 font-medium cursor-pointer hover:underline">
+    render: (text: string, record) => (
+      <span
+        className="text-purple-600 font-medium cursor-pointer hover:underline"
+        onClick={() => props.navigate(`/account-form/${record.id}`)}
+      >
         {text ?? "-"}
       </span>
     ),

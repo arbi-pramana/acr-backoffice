@@ -170,7 +170,7 @@ const KloterManagement = () => {
           </div>
         </div>
         <div className="flex gap-3">
-          <Button icon={<CloudUploadOutlined />}>Export</Button>
+          <Button icon={<CloudUploadOutlined />}>Import CSV</Button>
           <Button
             icon={<PlusOutlined />}
             type="primary"

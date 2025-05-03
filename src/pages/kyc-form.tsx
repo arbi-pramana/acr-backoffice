@@ -18,7 +18,7 @@ import {
   Spin,
 } from "antd";
 import dayjs from "dayjs";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { InputMatch } from "../components/input-match";
 import OCRGuide from "../components/ocr-guide";
@@ -36,13 +36,14 @@ const KYCStep1 = () => {
   const [formKYC2] = Form.useForm();
   const [modalFile, setModalFile] = useState(false);
   const [statusReason, setStatusReason] = useState("");
+  const [step, setStep] = useState(0);
 
   const { data: kyc, isLoading: loadingKyc } = useQuery({
     queryFn: () => kycService.getKycById(id ?? ""),
     enabled: id !== null,
     queryKey: ["kyc-detail", id],
   });
-  const step = kyc?.statusLevelOne == "APPROVED" ? 2 : 1;
+  // const step = kyc?.statusLevelOne == "APPROVED" ? 2 : 1;
 
   const { data: kycMatch, isLoading: loadingKycMatch } = useQuery({
     queryFn: () => kycService.getKycByIdMatch(id ?? ""),
@@ -169,6 +170,10 @@ const KYCStep1 = () => {
     }
   };
 
+  useEffect(() => {
+    setStep(kyc?.statusLevelOne == "APPROVED" ? 2 : 1);
+  }, [kyc]);
+
   if (loadingKyc || loadingKycMatch) {
     return (
       <>
@@ -203,8 +208,23 @@ const KYCStep1 = () => {
         </div>
       </div>
       <div className="w-full p-3 bg-basic-100">
-        <div className="w-full flex items-center justify-center gap-2">
-          <Progress
+        {/* <Tabs items={[{label:'kyc 1',children:}]} /> */}
+        <div className="w-full flex items-center justify-center gap-2 bg-white p-2 mb-3 rounded-lg">
+          <Button
+            type={step == 1 ? "primary" : "default"}
+            block
+            onClick={() => setStep(1)}
+          >
+            KYC Tahap 1
+          </Button>
+          <Button
+            type={step == 2 ? "primary" : "default"}
+            block
+            onClick={() => setStep(2)}
+          >
+            KYC Tahap 2
+          </Button>
+          {/* <Progress
             percent={100}
             showInfo={false}
             strokeWidth={8}
@@ -225,7 +245,7 @@ const KYCStep1 = () => {
             }}
             trailColor="#E5E5E5"
             style={{ width: "50%" }}
-          />
+          /> */}
         </div>
         <div className={`${getBackground()} rounded-lg`}>
           <div className="bg-white flex justify-between rounded-lg p-3">
@@ -715,7 +735,18 @@ const KYCStep1 = () => {
                   label="Penghasilan per Tahun"
                   name={["annualIncome"]}
                 >
-                  <Input />
+                  <Select
+                    options={[
+                      { name: "< Rp 10 juta", value: "<10jt" },
+                      { name: "Rp 10 – 30 juta", value: "10-30jt" },
+                      { name: "Rp 30 – 50 juta", value: "30-50jt" },
+                      { name: "Rp 50 – 100 juta", value: "50-100jt" },
+                      { name: "Rp 100 – 300 juta", value: "100-300jt" },
+                      { name: "Rp 300 – 500 juta", value: "300-500jt" },
+                      { name: "Rp 500 juta – 1 Miliar", value: "500jt-1M" },
+                      { name: "> Rp 1 Miliar", value: ">1M" },
+                    ]}
+                  />
                 </Form.Item>
 
                 <Form.Item label="Nama Perusahaan" name={["employerName"]}>
