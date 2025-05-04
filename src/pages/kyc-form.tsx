@@ -14,6 +14,7 @@ import {
   Modal,
   notification,
   Progress,
+  Result,
   Select,
   Spin,
 } from "antd";
@@ -638,6 +639,12 @@ const KYCStep1 = () => {
               </div>
             </Form>
           </>
+        ) : kyc?.statusLevelTwo == null ? (
+          <Result
+            status="403"
+            title="KYC Not Found"
+            subTitle="This user doesn't have KYC level 2 yet"
+          />
         ) : (
           <Form layout="vertical" form={formKYC2}>
             <div className="bg-white p-3 mt-3 rounded-lg w-full ">
