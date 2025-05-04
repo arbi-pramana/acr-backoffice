@@ -32,13 +32,17 @@ const KYCStep1 = () => {
   const navigate = useNavigate();
   const params = new URLSearchParams(window.location.search);
   const id = params.get("id");
-  const [form] = Form.useForm();
+  const [formKYC1] = Form.useForm();
   const [formKYC2] = Form.useForm();
   const [modalFile, setModalFile] = useState(false);
   const [statusReason, setStatusReason] = useState("");
   const [step, setStep] = useState(0);
 
-  const { data: kyc, isLoading: loadingKyc } = useQuery({
+  const {
+    data: kyc,
+    isLoading: loadingKyc,
+    refetch: refetchKYC,
+  } = useQuery({
     queryFn: () => kycService.getKycById(id ?? ""),
     enabled: id !== null,
     queryKey: ["kyc-detail", id],
@@ -67,7 +71,7 @@ const KYCStep1 = () => {
         notification.success({
           message: "KYC status successfully updated",
         });
-        navigate(-1);
+        refetchKYC();
       },
     });
 
@@ -81,7 +85,7 @@ const KYCStep1 = () => {
           notification.success({
             message: "KYC level 1 successfully updated",
           });
-          navigate(-1);
+          refetchKYC();
         }
       },
     });
@@ -96,7 +100,7 @@ const KYCStep1 = () => {
           notification.success({
             message: "KYC level 2 successfully updated",
           });
-          navigate(-1);
+          refetchKYC();
         }
       },
     });
@@ -135,7 +139,7 @@ const KYCStep1 = () => {
     }
 
     const currentValue =
-      step == 1 ? form.getFieldsValue() : formKYC2.getFieldsValue();
+      step == 1 ? formKYC1.getFieldsValue() : formKYC2.getFieldsValue();
     const changedValue = getChangedFields(kyc, currentValue);
 
     console.log("currentValue", currentValue);
@@ -172,7 +176,9 @@ const KYCStep1 = () => {
 
   useEffect(() => {
     setStep(kyc?.statusLevelOne == "APPROVED" ? 2 : 1);
-  }, [kyc]);
+    formKYC1.setFieldsValue(kyc);
+    formKYC2.setFieldsValue(kyc);
+  }, [kyc, formKYC2, formKYC1]);
 
   if (loadingKyc || loadingKycMatch) {
     return (
@@ -280,8 +286,7 @@ const KYCStep1 = () => {
         {step == 1 ? (
           <>
             <Form
-              form={form}
-              initialValues={kyc}
+              form={formKYC1}
               layout="vertical"
               // className="flex gap-2 w-[70%]"
             >
@@ -634,7 +639,7 @@ const KYCStep1 = () => {
             </Form>
           </>
         ) : (
-          <Form layout="vertical" form={formKYC2} initialValues={kyc}>
+          <Form layout="vertical" form={formKYC2}>
             <div className="bg-white p-3 mt-3 rounded-lg w-full ">
               <div className="flex justify-between items-center mb-4">
                 <div className="text-md font-semibold">
