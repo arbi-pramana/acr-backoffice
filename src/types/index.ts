@@ -330,3 +330,34 @@ export type Bank = {
   name: string;
   code: string;
 };
+
+export type Account = {
+  username: string;
+  fullName: string;
+  idCardNumber: string;
+  email: string;
+  mobile: string;
+  profilePictureKey: string;
+  isEmailVerified: boolean;
+  emailVerifiedAt: string;
+  dateOfBirth: string;
+  placeOfBirth: string;
+  idCardAddress: {
+    line: string;
+    rtNumber: string;
+    rwNumber: string;
+    city: string;
+    district: string;
+    subdistrict: string;
+    state: string;
+  };
+  domicileAddress: {
+    line: string;
+    rtNumber: string;
+    rwNumber: string;
+    city: string;
+    district: string;
+    subdistrict: string;
+    state: string;
+  };
+};

@@ -7,6 +7,7 @@ export const ROUTES = {
   },
   general: {
     bank: `/${version}/banks/public`,
+    account: `/${version}/accounts/details`,
   },
   account: {
     list: `/${version}/backoffice/accounts`,

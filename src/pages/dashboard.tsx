@@ -1,10 +1,13 @@
-import { DownOutlined, SettingOutlined } from "@ant-design/icons";
-import { Avatar, Divider, Dropdown, Layout, Menu, Typography } from "antd";
+import { SettingOutlined } from "@ant-design/icons";
+import { useQuery } from "@tanstack/react-query";
+import { Divider, Layout, Menu, Typography } from "antd";
 import { Content, Header } from "antd/es/layout/layout";
 import Sider from "antd/es/layout/Sider";
 import { ItemType, MenuItemType } from "antd/es/menu/interface";
 import React, { useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import ProtectedFile from "../helper/protected-file";
+import { generalService } from "../services/general.service";
 import AccountManagement from "./account-management";
 import KloterManagement from "./kloter-management";
 import KYCManagement from "./kyc-management";
@@ -58,6 +61,11 @@ const Dashboard = () => {
   };
 
   const items = generateMenus();
+
+  const { data: account } = useQuery({
+    queryKey: ["account"],
+    queryFn: () => generalService.getAccount(),
+  });
 
   const children: Record<string, React.ReactNode> = {
     kyc: <KYCManagement />,
@@ -116,31 +124,35 @@ const Dashboard = () => {
             <Divider style={{ marginTop: 12 }} />
             {collapse ? (
               <div className="flex justify-center items-center cursor-pointer p-3">
-                <Avatar
-                  src="https://i.pravatar.cc/50" // Replace with your image URL
-                  size={40}
+                <ProtectedFile
+                  type="image"
+                  keyFile={account?.profilePictureKey}
+                  width={40}
                 />
               </div>
             ) : (
-              <div className="mx-5 border border-solid border-gray-400 rounded-lg p-3 cursor-pointer max-h-[70px]">
+              <div className="mx-5 border border-solid border-gray-400 rounded-lg p-2 cursor-pointer max-h-[70px] mb-3">
                 <div className="flex flex-row items-center">
-                  <Avatar
-                    src="https://i.pravatar.cc/50" // Replace with your image URL
-                    size={40}
+                  <ProtectedFile
+                    type="image"
+                    keyFile={account?.profilePictureKey}
+                    width={40}
                   />
                   <div className="ml-1 grow">
-                    <Typography.Text strong>Olivia Rhye</Typography.Text>
+                    <Typography.Text strong>
+                      {account?.fullName ?? "-"}
+                    </Typography.Text>
                     <br />
                     <Typography.Text
                       type="secondary"
                       style={{ fontSize: "12px" }}
                     >
-                      Oliviaacr@gmail.com
+                      {account?.email ?? "-"}
                     </Typography.Text>
                   </div>
-                  <Dropdown menu={{ items: [] }}>
+                  {/* <Dropdown menu={{ items: [] }}>
                     <DownOutlined style={{ fontSize: "14px", color: "#aaa" }} />
-                  </Dropdown>
+                  </Dropdown> */}
                 </div>
               </div>
             )}
