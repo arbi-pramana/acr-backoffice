@@ -812,6 +812,7 @@ const KYCStep1 = () => {
               defaultValue={
                 step == 1 ? kyc?.statusLevelOne : kyc?.statusLevelTwo
               }
+              key={step}
               options={[
                 { label: "In Review", value: "IN_PROGRESS" },
                 { label: "Rejected", value: "REJECTED" },

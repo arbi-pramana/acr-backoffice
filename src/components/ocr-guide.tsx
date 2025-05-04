@@ -11,7 +11,7 @@ const OCRGuide = () => {
       {/* Header */}
       <div className="flex items-center gap-2 mb-2">
         <InfoCircleOutlined className="text-lg" />
-        <span className="font-semibold">Identifikasi sesuai dengan ORC</span>
+        <span className="font-semibold">Identifikasi sesuai dengan OCR</span>
       </div>
       <p className="text-sm opacity-90">
         Pastikan ikuti Panduan untuk mengetahui data yang sudah benar atau
@@ -28,6 +28,7 @@ const OCRGuide = () => {
             unCheckedChildren={<ExclamationOutlined />}
             defaultChecked
             className="mt-2"
+            disabled
             style={{
               backgroundColor: "#97c90e",
             }}
@@ -43,6 +44,7 @@ const OCRGuide = () => {
             unCheckedChildren={<ExclamationOutlined />}
             defaultChecked={false}
             className="mt-2"
+            disabled
             style={{
               backgroundColor: "#D22F45",
             }}

@@ -1,4 +1,4 @@
-import { ArrowLeftOutlined } from "@ant-design/icons";
+import { ArrowLeftOutlined, CloudUploadOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Button,
@@ -12,9 +12,11 @@ import {
   Row,
   Select,
   Space,
+  Spin,
   Switch,
   Table,
   TableColumnsType,
+  Upload,
 } from "antd";
 import dayjs from "dayjs";
 import { useState } from "react";
@@ -209,7 +211,7 @@ const KloterForm = () => {
     enabled: isEditing,
   });
 
-  const { data: detailKloter } = useQuery({
+  const { data: detailKloter, isLoading: loadingKloter } = useQuery({
     queryKey: ["kloter", params.id],
     queryFn: () => kloterService.getKloterById(parseInt(params.id ?? "0")),
     enabled: isEditing,
@@ -329,150 +331,167 @@ const KloterForm = () => {
               ) : null)}
           </div>
           <Divider />
-          <Form
-            layout="vertical"
-            form={form}
-            onFinish={(values) => showConfirm(values, isEditing)}
-            onFinishFailed={(err) => console.log(err)}
-          >
-            <Row gutter={16}>
-              <Col span={12}>
-                <Form.Item
-                  label="Title Katalog"
-                  name="title"
-                  rules={[{ required: true }]}
-                >
-                  <Input disabled={disabledForm} data-testid="title" />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item
-                  label="Group ID"
-                  name="groupId"
-                  rules={[{ required: true }]}
-                >
-                  <Input disabled={disabledForm} data-testid="groupId" />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item
-                  label="Slot"
-                  name="capacity"
-                  rules={[
-                    {
-                      required: true,
-                      type: "integer",
-                      transform(value) {
-                        return value ? parseInt(value) : undefined;
+          {loadingKloter ? (
+            <div className="flex justify-center">
+              <Spin size="default" />
+            </div>
+          ) : (
+            <Form
+              layout="vertical"
+              form={form}
+              onFinish={(values) => showConfirm(values, isEditing)}
+              onFinishFailed={(err) => console.log(err)}
+            >
+              <Row gutter={16}>
+                <Col span={12}>
+                  <Form.Item
+                    label="Title Katalog"
+                    name="title"
+                    rules={[{ required: true }]}
+                  >
+                    <Input disabled={disabledForm} data-testid="title" />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item
+                    label="Group ID"
+                    name="groupId"
+                    rules={[{ required: true }]}
+                  >
+                    <Input disabled={disabledForm} data-testid="groupId" />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item
+                    label="Slot"
+                    name="capacity"
+                    rules={[
+                      {
+                        required: true,
+                        type: "integer",
+                        transform(value) {
+                          return value ? parseInt(value) : undefined;
+                        },
                       },
-                    },
-                  ]}
-                >
-                  <Input disabled={disabledForm} data-testid="capacity" />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item
-                  label="Rotasi (Hari)"
-                  name="cycleDay"
-                  rules={[
-                    {
-                      required: true,
-                      type: "integer",
-                      transform(value) {
-                        return value ? parseInt(value) : undefined;
+                    ]}
+                  >
+                    <Input disabled={disabledForm} data-testid="capacity" />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item
+                    label="Rotasi (Hari)"
+                    name="cycleDay"
+                    rules={[
+                      {
+                        required: true,
+                        type: "integer",
+                        transform(value) {
+                          return value ? parseInt(value) : undefined;
+                        },
                       },
-                    },
-                  ]}
-                >
-                  <Input disabled={disabledForm} data-testid="cycleDay" />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item label="Periode" name="periode">
-                  <Row gutter={8}>
-                    <Col span={12}>
-                      <Form.Item name="startAt" rules={[{ required: true }]}>
-                        <DatePicker
-                          placeholder="Awal Periode"
-                          style={{ width: "100%" }}
-                          disabled={disabledForm}
-                          data-testid="startAt"
-                        />
-                      </Form.Item>
-                    </Col>
-                    <Col span={12}>
-                      <Form.Item name="endAt" rules={[{ required: true }]}>
-                        <DatePicker
-                          placeholder="Akhir Periode"
-                          style={{ width: "100%" }}
-                          disabled={disabledForm}
-                          data-testid="endAt"
-                        />
-                      </Form.Item>
-                    </Col>
-                  </Row>
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item
-                  label="Pencairan"
-                  name="payout"
-                  rules={[{ required: true }]}
-                >
-                  <Input
-                    addonBefore="Rp"
-                    disabled={disabledForm}
-                    data-testid="payout"
-                  />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item
-                  label="Biaya Admin"
-                  name="adminFee"
-                  rules={[{ required: true }]}
-                >
-                  <Input
-                    addonBefore="Rp"
-                    disabled={disabledForm}
-                    data-testid="adminFee"
-                  />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item
-                  label="Minimum Uang Muka"
-                  name="minimumInitialAmount"
-                  rules={[{ required: true }]}
-                >
-                  <Input
-                    addonBefore="Rp"
-                    disabled={disabledForm}
-                    data-testid="minimumInitialAmount"
-                  />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item
-                  label="Tanggal Rilis"
-                  name="availableAt"
-                  rules={[{ required: true }]}
-                >
-                  <DatePicker
-                    showTime
-                    style={{ width: "100%" }}
-                    disabled={disabledForm}
-                    data-testid="availableAt"
-                  />
-                </Form.Item>
-              </Col>
-            </Row>
-          </Form>
+                    ]}
+                  >
+                    <Input disabled={disabledForm} data-testid="cycleDay" />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item label="Periode" name="periode">
+                    <Row gutter={8}>
+                      <Col span={12}>
+                        <Form.Item name="startAt" rules={[{ required: true }]}>
+                          <DatePicker
+                            placeholder="Awal Periode"
+                            style={{ width: "100%" }}
+                            disabled={disabledForm}
+                            data-testid="startAt"
+                          />
+                        </Form.Item>
+                      </Col>
+                      <Col span={12}>
+                        <Form.Item name="endAt" rules={[{ required: true }]}>
+                          <DatePicker
+                            placeholder="Akhir Periode"
+                            style={{ width: "100%" }}
+                            disabled={disabledForm}
+                            data-testid="endAt"
+                          />
+                        </Form.Item>
+                      </Col>
+                    </Row>
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item
+                    label="Pencairan"
+                    name="payout"
+                    rules={[{ required: true }]}
+                  >
+                    <Input
+                      addonBefore="Rp"
+                      disabled={disabledForm}
+                      data-testid="payout"
+                    />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item
+                    label="Biaya Admin"
+                    name="adminFee"
+                    rules={[{ required: true }]}
+                  >
+                    <Input
+                      addonBefore="Rp"
+                      disabled={disabledForm}
+                      data-testid="adminFee"
+                    />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item
+                    label="Minimum Uang Muka"
+                    name="minimumInitialAmount"
+                    rules={[{ required: true }]}
+                  >
+                    <Input
+                      addonBefore="Rp"
+                      disabled={disabledForm}
+                      data-testid="minimumInitialAmount"
+                    />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item
+                    label="Tanggal Rilis"
+                    name="availableAt"
+                    rules={[{ required: true }]}
+                  >
+                    <DatePicker
+                      showTime
+                      style={{ width: "100%" }}
+                      disabled={disabledForm}
+                      data-testid="availableAt"
+                    />
+                  </Form.Item>
+                </Col>
+              </Row>
+            </Form>
+          )}
         </div>
         {isEditing && detailKloter && detailSlot ? (
           <div className="p-6 m-6 rounded-md bg-white">
-            <div className="font-semibold text-xl mb-4">Daftar Slot</div>
+            <div className="flex justify-between mb-4">
+              <div className="font-semibold text-xl mb-4">Daftar Slot</div>
+              <Upload onChange={(info) => console.log(info)}>
+                <Button
+                  // onClick={() => setSlotModal(true)}
+                  icon={<CloudUploadOutlined />}
+                  iconPosition="start"
+                >
+                  Import CSV
+                </Button>
+              </Upload>
+            </div>
             <Table
               columns={columnsSlot({
                 setSlotModal,
