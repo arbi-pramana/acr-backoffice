@@ -59,7 +59,7 @@ const installmentColumns = (props: {
         <Chip variant="warning" label="Belum Dimulai" />
       ) : value == "FINISHED" ? (
         <Chip variant="default" label="Sudah Lewat" />
-      ) : value == "ON_PROGRESS" ? (
+      ) : value == "ON_GOING" ? (
         <Chip variant="success" label="Sedang Berjalan" />
       ) : null,
   },
