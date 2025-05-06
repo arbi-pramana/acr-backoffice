@@ -28,6 +28,9 @@ import { getChangedFields } from "../helper/changed-value";
 import ProtectedFile from "../helper/protected-file";
 import { generalService } from "../services/general.service";
 import { kycService } from "../services/kyc.service";
+import provinceJson from "../helper/province.json";
+import cityJson from "../helper/cities.json";
+import districtJson from "../helper/district.json";
 
 const KYCStep1 = () => {
   const navigate = useNavigate();
@@ -36,6 +39,7 @@ const KYCStep1 = () => {
   const [formKYC1] = Form.useForm();
   const [formKYC2] = Form.useForm();
   const [modalFile, setModalFile] = useState(false);
+  const [selectedFile, setSelectedFile] = useState("");
   const [statusReason, setStatusReason] = useState("");
   const [step, setStep] = useState(0);
 
@@ -397,21 +401,32 @@ const KYCStep1 = () => {
                         </div>
                       </Form.Item>
                       <Form.Item label="Jenis Kelamin" name={["gender"]}>
-                        <div>
-                          <InputMatch
-                            label=""
-                            value={kyc?.gender}
-                            isMatch={kycMatch?.gender?.isMatch}
+                        <div className="flex items-center gap-3">
+                          <Select
+                            options={[
+                              { value: "MALE", name: "Laki-laki" },
+                              { value: "FEMALE", name: "Perempuan" },
+                              { value: "OTHER", name: "Lainnya" },
+                            ]}
+                            defaultValue={kyc?.gender}
+                            disabled={kycMatch?.gender?.isMatch}
                           />
+                          <Switch value={kycMatch?.gender?.isMatch} />
                         </div>
                       </Form.Item>
                       <Form.Item label="Golongan Darah" name={["bloodGroup"]}>
-                        <div>
-                          <InputMatch
-                            label=""
-                            value={kyc?.bloodGroup}
-                            isMatch={kycMatch?.bloodGroup?.isMatch}
+                        <div className="flex items-center gap-3">
+                          <Select
+                            options={[
+                              { value: "A", name: "A" },
+                              { value: "B", name: "B" },
+                              { value: "AB", name: "AB" },
+                              { value: "O", name: "O" },
+                            ]}
+                            defaultValue={kyc?.bloodGroup}
+                            disabled={kycMatch?.bloodGroup?.isMatch}
                           />
+                          <Switch value={kycMatch?.bloodGroup?.isMatch} />
                         </div>
                       </Form.Item>
                       <Form.Item
@@ -456,20 +471,30 @@ const KYCStep1 = () => {
                         label="Provinsi"
                         name={["idCardAddress", "state"]}
                       >
-                        <div>
-                          <InputMatch
-                            label=""
-                            value={kyc?.idCardAddress?.state}
-                            isMatch={kycMatch?.idCardAddress?.state?.isMatch}
+                        <div className="flex items-center gap-3 mt-2">
+                          <Select
+                            optionFilterProp="label"
+                            showSearch
+                            disabled={kycMatch?.idCardAddress?.state?.isMatch}
+                            options={provinceJson}
+                            defaultValue={kyc?.domicileAddress.state}
+                          />
+                          <Switch
+                            value={kycMatch?.idCardAddress?.state?.isMatch}
                           />
                         </div>
                       </Form.Item>
                       <Form.Item label="Kota" name={["idCardAddress", "city"]}>
-                        <div>
-                          <InputMatch
-                            label=""
-                            value={kyc?.idCardAddress?.city}
-                            isMatch={kycMatch?.idCardAddress?.city?.isMatch}
+                        <div className="flex items-center gap-3 mt-2">
+                          <Select
+                            optionFilterProp="label"
+                            showSearch
+                            disabled={kycMatch?.idCardAddress?.city?.isMatch}
+                            options={cityJson}
+                            defaultValue={kyc?.domicileAddress.city}
+                          />
+                          <Switch
+                            value={kycMatch?.idCardAddress?.city?.isMatch}
                           />
                         </div>
                       </Form.Item>
@@ -477,11 +502,18 @@ const KYCStep1 = () => {
                         label="Kecamatan"
                         name={["idCardAddress", "district"]}
                       >
-                        <div>
-                          <InputMatch
-                            label=""
-                            value={kyc?.idCardAddress?.district}
-                            isMatch={kycMatch?.idCardAddress?.district?.isMatch}
+                        <div className="flex items-center gap-3 mt-2">
+                          <Select
+                            optionFilterProp="label"
+                            showSearch
+                            disabled={
+                              kycMatch?.idCardAddress?.district?.isMatch
+                            }
+                            options={districtJson}
+                            defaultValue={kyc?.domicileAddress.district}
+                          />
+                          <Switch
+                            value={kycMatch?.idCardAddress?.district?.isMatch}
                           />
                         </div>
                       </Form.Item>
@@ -533,12 +565,24 @@ const KYCStep1 = () => {
                         </div>
                       </Form.Item>
                       <Form.Item label="Pekerjaan" name={["occupation"]}>
-                        <div>
-                          <InputMatch
-                            label=""
-                            value={kyc?.occupation}
-                            isMatch={kycMatch?.occupation?.isMatch}
+                        <div className="flex items-center gap-3">
+                          <Select
+                            options={[
+                              { name: "Pelajar / Mahasiswa", value: "student" },
+                              {
+                                name: "Pegawai Swasta",
+                                value: "private employee",
+                              },
+                              { name: "PNS / ASN", value: "civil servant" },
+                              { name: "Wirausaha", value: "entrepreneur" },
+                              { name: "Ibu Rumah Tangga", value: "housewife" },
+                              { name: "Tidak Bekerja", value: "unemployed" },
+                              { name: "Lainnya", value: "others" },
+                            ]}
+                            defaultValue={kyc?.occupation}
+                            disabled={kycMatch?.occupation?.isMatch}
                           />
+                          <Switch value={kycMatch?.occupation?.isMatch} />
                         </div>
                       </Form.Item>
                     </div>
@@ -584,7 +628,10 @@ const KYCStep1 = () => {
                       <Button
                         type="primary"
                         className="mt-2"
-                        onClick={() => setModalFile(true)}
+                        onClick={() => {
+                          setModalFile(true);
+                          setSelectedFile(kyc?.domicileLetterKey ?? "");
+                        }}
                       >
                         Lihat File
                       </Button>
@@ -618,16 +665,31 @@ const KYCStep1 = () => {
                     label="Provinsi"
                     name={["domicileAddress", "state"]}
                   >
-                    <Input />
+                    <Select
+                      optionFilterProp="label"
+                      showSearch
+                      options={provinceJson}
+                      defaultValue={kyc?.domicileAddress.state}
+                    />
                   </Form.Item>
                   <Form.Item label="Kota" name={["domicileAddress", "city"]}>
-                    <Input />
+                    <Select
+                      optionFilterProp="label"
+                      showSearch
+                      options={cityJson}
+                      defaultValue={kyc?.domicileAddress.city}
+                    />
                   </Form.Item>
                   <Form.Item
                     label="Kecamatan"
                     name={["domicileAddress", "district"]}
                   >
-                    <Input />
+                    <Select
+                      optionFilterProp="label"
+                      showSearch
+                      options={districtJson}
+                      defaultValue={kyc?.domicileAddress.district}
+                    />
                   </Form.Item>
                   <Form.Item
                     label="Kelurahan"
@@ -640,11 +702,13 @@ const KYCStep1 = () => {
             </Form>
           </>
         ) : kyc?.statusLevelTwo == null ? (
-          <Result
-            status="403"
-            title="KYC Not Found"
-            subTitle="This user doesn't have KYC level 2 yet"
-          />
+          <div className="bg-white p-3 mt-3 rounded-lg w-full ">
+            <Result
+              status="403"
+              title="KYC Not Found"
+              subTitle="This user doesn't have KYC level 2 yet"
+            />
+          </div>
         ) : (
           <Form layout="vertical" form={formKYC2}>
             <div className="bg-white p-3 mt-3 rounded-lg w-full ">
@@ -673,6 +737,8 @@ const KYCStep1 = () => {
               <div className="grid grid-cols-2 gap-4">
                 <Form.Item label="Nama Bank" name={["bank", "code"]}>
                   <Select
+                    optionFilterProp="label"
+                    showSearch
                     options={banks?.map((v) => ({
                       label: v.name,
                       value: v.code,
@@ -737,7 +803,22 @@ const KYCStep1 = () => {
                 </Form.Item>
 
                 <Form.Item label="Pekerjaan" name={["occupation"]}>
-                  <Input />
+                  <Select
+                    options={[
+                      { name: "Pelajar / Mahasiswa", value: "student" },
+                      {
+                        name: "Pegawai Swasta",
+                        value: "private employee",
+                      },
+                      { name: "PNS / ASN", value: "civil servant" },
+                      { name: "Wirausaha", value: "entrepreneur" },
+                      { name: "Ibu Rumah Tangga", value: "housewife" },
+                      { name: "Tidak Bekerja", value: "unemployed" },
+                      { name: "Lainnya", value: "others" },
+                    ]}
+                    defaultValue={kyc?.occupation}
+                    disabled={kycMatch?.occupation?.isMatch}
+                  />
                 </Form.Item>
 
                 <Form.Item label="Posisi" name={["jobTitle"]}>
@@ -778,16 +859,37 @@ const KYCStep1 = () => {
                   <Input />
                 </Form.Item>
                 <Form.Item label="Provinsi" name={["employerAddress", "state"]}>
-                  <Input />
+                  <div className="flex items-center gap-3">
+                    <Select
+                      optionFilterProp="label"
+                      showSearch
+                      options={provinceJson}
+                      defaultValue={kyc?.domicileAddress.state}
+                    />
+                  </div>
                 </Form.Item>
                 <Form.Item label="Kota" name={["employerAddress", "city"]}>
-                  <Input />
+                  <div className="flex items-center gap-3">
+                    <Select
+                      optionFilterProp="label"
+                      showSearch
+                      options={cityJson}
+                      defaultValue={kyc?.domicileAddress.city}
+                    />
+                  </div>
                 </Form.Item>
                 <Form.Item
                   label="Kecamatan"
                   name={["employerAddress", "district"]}
                 >
-                  <Input />
+                  <div className="flex items-center gap-3">
+                    <Select
+                      optionFilterProp="label"
+                      showSearch
+                      options={districtJson}
+                      defaultValue={kyc?.domicileAddress.district}
+                    />
+                  </div>
                 </Form.Item>
                 <Form.Item
                   label="Kelurahan"
@@ -801,6 +903,28 @@ const KYCStep1 = () => {
                 >
                   <Input />
                 </Form.Item>
+              </div>
+            </div>
+            <div className="bg-white p-4 mt-3 rounded-lg w-full">
+              <div className="font-semibold text-lg">Family Card Document</div>
+              <div className="flex flex-col items-center justify-center mt-2">
+                <FileOutlined className="text-2xl text-gray-500" />
+                <p className="text-gray-600 text-sm mt-1">
+                  {kyc?.familyCardKey}
+                </p>
+                <div className="flex gap-3">
+                  {/* <Button className="mt-2">Upload Ulang</Button> */}
+                  <Button
+                    type="primary"
+                    className="mt-2"
+                    onClick={() => {
+                      setModalFile(true);
+                      setSelectedFile(kyc.familyCardKey ?? "");
+                    }}
+                  >
+                    Lihat File
+                  </Button>
+                </div>
               </div>
             </div>
           </Form>
@@ -846,10 +970,11 @@ const KYCStep1 = () => {
         onCancel={() => setModalFile(false)}
         footer={null}
         centered
+        title="Detail Document"
       >
         <div className="flex justify-center items-center h-full">
           <ProtectedFile
-            keyFile={kyc?.domicileLetterKey}
+            keyFile={selectedFile}
             style={{ width: 700, height: 600 }}
             type="file"
           />

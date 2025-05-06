@@ -65,7 +65,7 @@ const AccountManagement = () => {
     search: "",
   });
 
-  const { data: accounts } = useQuery({
+  const { data: accounts, isLoading: loadingAccount } = useQuery({
     queryFn: () => accountService.getAccounts(params),
     queryKey: ["accounts", params],
   });
@@ -108,6 +108,7 @@ const AccountManagement = () => {
         columns={columns({ navigate })}
         dataSource={accounts?.content ?? []}
         pagination={false}
+        loading={loadingAccount}
         rowKey="id"
       />
       {accounts && (
