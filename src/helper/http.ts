@@ -1,6 +1,7 @@
 import { notification } from "antd";
 import axios from "axios";
 import { storage } from "./local-storage";
+import { getErrorMessage } from "./error-message";
 
 const http = axios.create({ baseURL: import.meta.env.VITE_APP_BASE_URL });
 
@@ -18,9 +19,15 @@ http.interceptors.response.use(
     return response.data;
   },
   (error) => {
-    notification.error({
-      message: error.response.data.message ?? "Unknown Error",
-    });
+    const errorMessage = getErrorMessage(error.response.data.type);
+    if (errorMessage) {
+      notification.error({ message: errorMessage });
+    } else {
+      notification.error({
+        message: error.response.data.message ?? "Unknown Error",
+      });
+    }
+
     if (
       error.response.status === 401 &&
       window.location.pathname !== "/login"
