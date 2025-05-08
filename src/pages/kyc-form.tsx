@@ -404,12 +404,15 @@ const KYCStep1 = () => {
                         <div className="flex items-center gap-3">
                           <Select
                             options={[
-                              { value: "MALE", name: "Laki-laki" },
-                              { value: "FEMALE", name: "Perempuan" },
-                              { value: "OTHER", name: "Lainnya" },
+                              { value: "MALE", label: "Laki-laki" },
+                              { value: "FEMALE", label: "Perempuan" },
+                              { value: "OTHER", label: "Lainnya" },
                             ]}
                             defaultValue={kyc?.gender}
                             disabled={kycMatch?.gender?.isMatch}
+                            onChange={(val) => {
+                              formKYC1.setFieldValue("gender", val);
+                            }}
                           />
                           <Switch value={kycMatch?.gender?.isMatch} />
                         </div>
@@ -418,13 +421,16 @@ const KYCStep1 = () => {
                         <div className="flex items-center gap-3">
                           <Select
                             options={[
-                              { value: "A", name: "A" },
-                              { value: "B", name: "B" },
-                              { value: "AB", name: "AB" },
-                              { value: "O", name: "O" },
+                              { value: "A", label: "A" },
+                              { value: "B", label: "B" },
+                              { value: "AB", label: "AB" },
+                              { value: "O", label: "O" },
                             ]}
                             defaultValue={kyc?.bloodGroup}
                             disabled={kycMatch?.bloodGroup?.isMatch}
+                            onChange={(val) => {
+                              formKYC1.setFieldValue("bloodGroup", val);
+                            }}
                           />
                           <Switch value={kycMatch?.bloodGroup?.isMatch} />
                         </div>
@@ -478,6 +484,12 @@ const KYCStep1 = () => {
                             disabled={kycMatch?.idCardAddress?.state?.isMatch}
                             options={provinceJson}
                             defaultValue={kyc?.domicileAddress.state}
+                            onChange={(val) => {
+                              formKYC1.setFieldValue(
+                                ["idCardAddress", "state"],
+                                val
+                              );
+                            }}
                           />
                           <Switch
                             value={kycMatch?.idCardAddress?.state?.isMatch}
@@ -492,6 +504,12 @@ const KYCStep1 = () => {
                             disabled={kycMatch?.idCardAddress?.city?.isMatch}
                             options={cityJson}
                             defaultValue={kyc?.domicileAddress.city}
+                            onChange={(val) => {
+                              formKYC1.setFieldValue(
+                                ["idCardAddress", "city"],
+                                val
+                              );
+                            }}
                           />
                           <Switch
                             value={kycMatch?.idCardAddress?.city?.isMatch}
@@ -510,7 +528,13 @@ const KYCStep1 = () => {
                               kycMatch?.idCardAddress?.district?.isMatch
                             }
                             options={districtJson}
-                            defaultValue={kyc?.domicileAddress.district}
+                            defaultValue={kyc?.idCardAddress.district}
+                            onChange={(val) => {
+                              formKYC1.setFieldValue(
+                                ["idCardAddress", "district"],
+                                val
+                              );
+                            }}
                           />
                           <Switch
                             value={kycMatch?.idCardAddress?.district?.isMatch}
@@ -535,16 +559,19 @@ const KYCStep1 = () => {
                         <div className="flex items-center gap-3">
                           <Select
                             options={[
-                              { value: "ISLAM", name: "Islam" },
-                              { value: "KRISTEN", name: "Kristen" },
-                              { value: "KATOLIK", name: "Katolik" },
-                              { value: "HINDU", name: "Hindu" },
-                              { value: "BUDHA", name: "Budha" },
-                              { value: "KONGHUCHU", name: "Konghucu" },
-                              { value: "OTHER", name: "Lainnya" },
+                              { value: "ISLAM", label: "Islam" },
+                              { value: "KRISTEN", label: "Kristen" },
+                              { value: "KATOLIK", label: "Katolik" },
+                              { value: "HINDU", label: "Hindu" },
+                              { value: "BUDHA", label: "Budha" },
+                              { value: "KONGHUCHU", label: "Konghucu" },
+                              { value: "OTHER", label: "Lainnya" },
                             ]}
                             defaultValue={kyc?.religion}
                             disabled={kycMatch?.religion?.isMatch}
+                            onChange={(val) => {
+                              formKYC1.setFieldValue("religion", val);
+                            }}
                           />
                           <Switch value={kycMatch?.maritalStatus?.isMatch} />
                         </div>
@@ -560,6 +587,9 @@ const KYCStep1 = () => {
                             ]}
                             defaultValue={kyc?.maritalStatus}
                             disabled={kycMatch?.maritalStatus?.isMatch}
+                            onChange={(val) => {
+                              formKYC1.setFieldValue("maritalStatus", val);
+                            }}
                           />
                           <Switch value={kycMatch?.maritalStatus?.isMatch} />
                         </div>
@@ -568,19 +598,25 @@ const KYCStep1 = () => {
                         <div className="flex items-center gap-3">
                           <Select
                             options={[
-                              { name: "Pelajar / Mahasiswa", value: "student" },
                               {
-                                name: "Pegawai Swasta",
+                                label: "Pelajar / Mahasiswa",
+                                value: "student",
+                              },
+                              {
+                                label: "Pegawai Swasta",
                                 value: "private employee",
                               },
-                              { name: "PNS / ASN", value: "civil servant" },
-                              { name: "Wirausaha", value: "entrepreneur" },
-                              { name: "Ibu Rumah Tangga", value: "housewife" },
-                              { name: "Tidak Bekerja", value: "unemployed" },
-                              { name: "Lainnya", value: "others" },
+                              { label: "PNS / ASN", value: "civil servant" },
+                              { label: "Wirausaha", value: "entrepreneur" },
+                              { label: "Ibu Rumah Tangga", value: "housewife" },
+                              { label: "Tidak Bekerja", value: "unemployed" },
+                              { label: "Lainnya", value: "others" },
                             ]}
                             defaultValue={kyc?.occupation}
                             disabled={kycMatch?.occupation?.isMatch}
+                            onChange={(val) => {
+                              formKYC1.setFieldValue("occupation", val);
+                            }}
                           />
                           <Switch value={kycMatch?.occupation?.isMatch} />
                         </div>
@@ -670,6 +706,9 @@ const KYCStep1 = () => {
                       showSearch
                       options={provinceJson}
                       defaultValue={kyc?.domicileAddress.state}
+                      onChange={(val) => {
+                        formKYC1.setFieldValue(["idCardAddress", "city"], val);
+                      }}
                     />
                   </Form.Item>
                   <Form.Item label="Kota" name={["domicileAddress", "city"]}>
@@ -799,28 +838,32 @@ const KYCStep1 = () => {
                       { value: "MASTER", label: "S2" },
                       { value: "DOCTORATE", label: "S3" },
                     ]}
+                    onChange={(val) => {
+                      formKYC2.setFieldValue("highestEducation", val);
+                    }}
                   />
                 </Form.Item>
-
                 <Form.Item label="Pekerjaan" name={["occupation"]}>
                   <Select
                     options={[
-                      { name: "Pelajar / Mahasiswa", value: "student" },
+                      { label: "Pelajar / Mahasiswa", value: "student" },
                       {
-                        name: "Pegawai Swasta",
+                        label: "Pegawai Swasta",
                         value: "private employee",
                       },
-                      { name: "PNS / ASN", value: "civil servant" },
-                      { name: "Wirausaha", value: "entrepreneur" },
-                      { name: "Ibu Rumah Tangga", value: "housewife" },
-                      { name: "Tidak Bekerja", value: "unemployed" },
-                      { name: "Lainnya", value: "others" },
+                      { label: "PNS / ASN", value: "civil servant" },
+                      { label: "Wirausaha", value: "entrepreneur" },
+                      { label: "Ibu Rumah Tangga", value: "housewife" },
+                      { label: "Tidak Bekerja", value: "unemployed" },
+                      { label: "Lainnya", value: "others" },
                     ]}
                     defaultValue={kyc?.occupation}
                     disabled={kycMatch?.occupation?.isMatch}
+                    onChange={(val) => {
+                      formKYC2.setFieldValue("occupation", val);
+                    }}
                   />
                 </Form.Item>
-
                 <Form.Item label="Posisi" name={["jobTitle"]}>
                   <Input />
                 </Form.Item>
@@ -830,18 +873,20 @@ const KYCStep1 = () => {
                 >
                   <Select
                     options={[
-                      { name: "< Rp 10 juta", value: "<10jt" },
-                      { name: "Rp 10 – 30 juta", value: "10-30jt" },
-                      { name: "Rp 30 – 50 juta", value: "30-50jt" },
-                      { name: "Rp 50 – 100 juta", value: "50-100jt" },
-                      { name: "Rp 100 – 300 juta", value: "100-300jt" },
-                      { name: "Rp 300 – 500 juta", value: "300-500jt" },
-                      { name: "Rp 500 juta – 1 Miliar", value: "500jt-1M" },
-                      { name: "> Rp 1 Miliar", value: ">1M" },
+                      { label: "< Rp 10 juta", value: "<10jt" },
+                      { label: "Rp 10 – 30 juta", value: "10-30jt" },
+                      { label: "Rp 30 – 50 juta", value: "30-50jt" },
+                      { label: "Rp 50 – 100 juta", value: "50-100jt" },
+                      { label: "Rp 100 – 300 juta", value: "100-300jt" },
+                      { label: "Rp 300 – 500 juta", value: "300-500jt" },
+                      { label: "Rp 500 juta – 1 Miliar", value: "500jt-1M" },
+                      { label: "> Rp 1 Miliar", value: ">1M" },
                     ]}
+                    onChange={(val) => {
+                      formKYC2.setFieldValue("annualIncome", val);
+                    }}
                   />
                 </Form.Item>
-
                 <Form.Item label="Nama Perusahaan" name={["employerName"]}>
                   <Input />
                 </Form.Item>
@@ -851,7 +896,6 @@ const KYCStep1 = () => {
                 >
                   <Input />
                 </Form.Item>
-
                 <Form.Item label="RT" name={["employerAddress", "rtNumber"]}>
                   <Input />
                 </Form.Item>
@@ -865,6 +909,12 @@ const KYCStep1 = () => {
                       showSearch
                       options={provinceJson}
                       defaultValue={kyc?.domicileAddress.state}
+                      onChange={(val) => {
+                        formKYC2.setFieldValue(
+                          ["employerAddress", "state"],
+                          val
+                        );
+                      }}
                     />
                   </div>
                 </Form.Item>
@@ -875,6 +925,12 @@ const KYCStep1 = () => {
                       showSearch
                       options={cityJson}
                       defaultValue={kyc?.domicileAddress.city}
+                      onChange={(val) => {
+                        formKYC2.setFieldValue(
+                          ["employerAddress", "city"],
+                          val
+                        );
+                      }}
                     />
                   </div>
                 </Form.Item>
@@ -888,6 +944,12 @@ const KYCStep1 = () => {
                       showSearch
                       options={districtJson}
                       defaultValue={kyc?.domicileAddress.district}
+                      onChange={(val) => {
+                        formKYC2.setFieldValue(
+                          ["employerAddress", "district"],
+                          val
+                        );
+                      }}
                     />
                   </div>
                 </Form.Item>
