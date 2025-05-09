@@ -203,6 +203,7 @@ const KloterManagement = () => {
               mutateUploadKloterCSV(file);
               return false;
             }}
+            itemRender={() => null}
             maxCount={1}
           >
             <Button

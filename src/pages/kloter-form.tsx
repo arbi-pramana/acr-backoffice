@@ -508,6 +508,7 @@ const KloterForm = () => {
                   return false;
                 }}
                 maxCount={1}
+                itemRender={() => null}
               >
                 <Button
                   // onClick={() => setSlotModal(true)}
