@@ -3,8 +3,17 @@ import {
   PlusOutlined,
   SearchOutlined,
 } from "@ant-design/icons";
-import { useQuery } from "@tanstack/react-query";
-import { Button, DatePicker, Divider, Input, Spin, Table } from "antd";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  Button,
+  DatePicker,
+  Divider,
+  Input,
+  notification,
+  Spin,
+  Table,
+  Upload,
+} from "antd";
 import { ColumnsType } from "antd/es/table";
 import dayjs from "dayjs";
 import { useState } from "react";
@@ -142,6 +151,7 @@ const columns = (props: {
 
 const KloterManagement = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [params, setParams] = useState({
     page: 0,
     size: 10,
@@ -158,6 +168,24 @@ const KloterManagement = () => {
     queryKey: ["kloterDashboard"],
   });
 
+  const { mutate: mutateUploadKloterCSV, isPending: pendingUploadKloterCSV } =
+    useMutation({
+      mutationFn: (data: File) => kloterService.uploadCSV(data),
+      onSuccess: (data) => {
+        if (
+          data.status &&
+          (data.status.toString().startsWith("5") ||
+            data.status.toString().startsWith("4"))
+        ) {
+          return;
+        }
+        queryClient.invalidateQueries({ queryKey: ["kloters"] });
+        notification.success({
+          message: "Upload Kloter berhasil",
+        });
+      },
+    });
+
   return (
     <>
       <div className="bg-white flex justify-between items-center">
@@ -170,7 +198,21 @@ const KloterManagement = () => {
           </div>
         </div>
         <div className="flex gap-3">
-          <Button icon={<CloudUploadOutlined />}>Import CSV</Button>
+          <Upload
+            beforeUpload={(file: File) => {
+              mutateUploadKloterCSV(file);
+              return false;
+            }}
+            maxCount={1}
+          >
+            <Button
+              loading={pendingUploadKloterCSV}
+              disabled={pendingUploadKloterCSV}
+              icon={<CloudUploadOutlined />}
+            >
+              Import CSV
+            </Button>
+          </Upload>
           <Button
             icon={<PlusOutlined />}
             type="primary"

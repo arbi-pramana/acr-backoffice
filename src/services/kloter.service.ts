@@ -35,4 +35,10 @@ export const kloterService = {
     const data = await http.post(ROUTES.kloter.create, body);
     return data;
   },
+  async uploadCSV(body: File) {
+    const formData = new FormData();
+    formData.append("file", body);
+    const data = await http.post(ROUTES.kloter.uploadCatalogCSV, formData);
+    return data;
+  },
 };

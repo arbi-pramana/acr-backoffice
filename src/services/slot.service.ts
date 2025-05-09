@@ -19,4 +19,10 @@ export const slotService = {
     const data = await http.patch(ROUTES.slot.update(id), body);
     return data;
   },
+  async uploadCSV({ id, body }: { id: number; body: File }) {
+    const formData = new FormData();
+    formData.append("file", body);
+    const data = await http.post(ROUTES.slot.uploadSlotCSV(id), formData);
+    return data;
+  },
 };

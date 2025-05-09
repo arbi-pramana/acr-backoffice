@@ -37,11 +37,14 @@ export const ROUTES = {
     dashboard: `/${version}/backoffice/catalogs/dashboard`,
     updateById: (id: number) => `/${version}/backoffice/catalogs/` + id,
     create: `/${version}/backoffice/catalogs`,
+    uploadCatalogCSV: `/${version}/backoffice/catalogs/csv`,
   },
   slot: {
     create: `/${version}/backoffice/slots`,
     update: (id: number) => `/${version}/backoffice/slots/` + id,
     delete: (id: number) => `/${version}/backoffice/slots/` + id,
     getByCatalogId: (id: number) => `/${version}/backoffice/slots/` + id,
+    uploadSlotCSV: (catalogId: number) =>
+      `/${version}/backoffice/slots/${catalogId}/csv`,
   },
 };

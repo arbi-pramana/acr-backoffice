@@ -205,6 +205,26 @@ const KloterForm = () => {
       },
     });
 
+  const { mutate: mutateUploadSlotCSV, isPending: pendingUploadSlotCSV } =
+    useMutation({
+      mutationKey: ["uploadSlotCSV", params.id],
+      mutationFn: (data: File) =>
+        slotService.uploadCSV({ id: parseInt(params.id ?? "0"), body: data }),
+      onSuccess: (data) => {
+        if (
+          data.status &&
+          (data.status.toString().startsWith("5") ||
+            data.status.toString().startsWith("4"))
+        ) {
+          return;
+        }
+        queryClient.invalidateQueries({ queryKey: ["slot", params.id] });
+        notification.success({
+          message: "Upload CSV berhasil",
+        });
+      },
+    });
+
   const { data: detailSlot, isLoading: loadSlot } = useQuery({
     queryKey: ["slot", params.id],
     queryFn: () => slotService.getSlotByCatalogId(parseInt(params.id ?? "0")),
@@ -482,9 +502,17 @@ const KloterForm = () => {
           <div className="p-6 m-6 rounded-md bg-white">
             <div className="flex justify-between mb-4">
               <div className="font-semibold text-xl mb-4">Daftar Slot</div>
-              <Upload onChange={(info) => console.log(info)}>
+              <Upload
+                beforeUpload={(file: File) => {
+                  mutateUploadSlotCSV(file);
+                  return false;
+                }}
+                maxCount={1}
+              >
                 <Button
                   // onClick={() => setSlotModal(true)}
+                  disabled={pendingUploadSlotCSV}
+                  loading={pendingUploadSlotCSV}
                   icon={<CloudUploadOutlined />}
                   iconPosition="start"
                 >
