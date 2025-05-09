@@ -1,138 +1,138 @@
 [
   {
-    "value": 11,
-    "label": "ACEH"
+    "label": "ACEH",
+    "value": "ACEH"
   },
   {
-    "value": 12,
-    "label": "SUMATERA UTARA"
+    "label": "SUMATERA UTARA",
+    "value": "SUMATERA UTARA"
   },
   {
-    "value": 13,
-    "label": "SUMATERA BARAT"
+    "label": "SUMATERA BARAT",
+    "value": "SUMATERA BARAT"
   },
   {
-    "value": 14,
-    "label": "RIAU"
+    "label": "RIAU",
+    "value": "RIAU"
   },
   {
-    "value": 15,
-    "label": "JAMBI"
+    "label": "JAMBI",
+    "value": "JAMBI"
   },
   {
-    "value": 16,
-    "label": "SUMATERA SELATAN"
+    "label": "SUMATERA SELATAN",
+    "value": "SUMATERA SELATAN"
   },
   {
-    "value": 17,
-    "label": "BENGKULU"
+    "label": "BENGKULU",
+    "value": "BENGKULU"
   },
   {
-    "value": 18,
-    "label": "LAMPUNG"
+    "label": "LAMPUNG",
+    "value": "LAMPUNG"
   },
   {
-    "value": 19,
-    "label": "KEPULAUAN BANGKA BELITUNG"
+    "label": "KEPULAUAN BANGKA BELITUNG",
+    "value": "KEPULAUAN BANGKA BELITUNG"
   },
   {
-    "value": 21,
-    "label": "KEPULAUAN RIAU"
+    "label": "KEPULAUAN RIAU",
+    "value": "KEPULAUAN RIAU"
   },
   {
-    "value": 31,
-    "label": "DKI JAKARTA"
+    "label": "DKI JAKARTA",
+    "value": "DKI JAKARTA"
   },
   {
-    "value": 32,
-    "label": "JAWA BARAT"
+    "label": "JAWA BARAT",
+    "value": "JAWA BARAT"
   },
   {
-    "value": 33,
-    "label": "JAWA TENGAH"
+    "label": "JAWA TENGAH",
+    "value": "JAWA TENGAH"
   },
   {
-    "value": 34,
-    "label": "DI YOGYAKARTA"
+    "label": "DI YOGYAKARTA",
+    "value": "DI YOGYAKARTA"
   },
   {
-    "value": 35,
-    "label": "JAWA TIMUR"
+    "label": "JAWA TIMUR",
+    "value": "JAWA TIMUR"
   },
   {
-    "value": 36,
-    "label": "BANTEN"
+    "label": "BANTEN",
+    "value": "BANTEN"
   },
   {
-    "value": 51,
-    "label": "BALI"
+    "label": "BALI",
+    "value": "BALI"
   },
   {
-    "value": 52,
-    "label": "NUSA TENGGARA BARAT"
+    "label": "NUSA TENGGARA BARAT",
+    "value": "NUSA TENGGARA BARAT"
   },
   {
-    "value": 53,
-    "label": "NUSA TENGGARA TIMUR"
+    "label": "NUSA TENGGARA TIMUR",
+    "value": "NUSA TENGGARA TIMUR"
   },
   {
-    "value": 61,
-    "label": "KALIMANTAN BARAT"
+    "label": "KALIMANTAN BARAT",
+    "value": "KALIMANTAN BARAT"
   },
   {
-    "value": 62,
-    "label": "KALIMANTAN TENGAH"
+    "label": "KALIMANTAN TENGAH",
+    "value": "KALIMANTAN TENGAH"
   },
   {
-    "value": 63,
-    "label": "KALIMANTAN SELATAN"
+    "label": "KALIMANTAN SELATAN",
+    "value": "KALIMANTAN SELATAN"
   },
   {
-    "value": 64,
-    "label": "KALIMANTAN TIMUR"
+    "label": "KALIMANTAN TIMUR",
+    "value": "KALIMANTAN TIMUR"
   },
   {
-    "value": 65,
-    "label": "KALIMANTAN UTARA"
+    "label": "KALIMANTAN UTARA",
+    "value": "KALIMANTAN UTARA"
   },
   {
-    "value": 71,
-    "label": "SULAWESI UTARA"
+    "label": "SULAWESI UTARA",
+    "value": "SULAWESI UTARA"
   },
   {
-    "value": 72,
-    "label": "SULAWESI TENGAH"
+    "label": "SULAWESI TENGAH",
+    "value": "SULAWESI TENGAH"
   },
   {
-    "value": 73,
-    "label": "SULAWESI SELATAN"
+    "label": "SULAWESI SELATAN",
+    "value": "SULAWESI SELATAN"
   },
   {
-    "value": 74,
-    "label": "SULAWESI TENGGARA"
+    "label": "SULAWESI TENGGARA",
+    "value": "SULAWESI TENGGARA"
   },
   {
-    "value": 75,
-    "label": "GORONTALO"
+    "label": "GORONTALO",
+    "value": "GORONTALO"
   },
   {
-    "value": 76,
-    "label": "SULAWESI BARAT"
+    "label": "SULAWESI BARAT",
+    "value": "SULAWESI BARAT"
   },
   {
-    "value": 81,
-    "label": "MALUKU"
+    "label": "MALUKU",
+    "value": "MALUKU"
   },
   {
-    "value": 82,
-    "label": "MALUKU UTARA"
+    "label": "MALUKU UTARA",
+    "value": "MALUKU UTARA"
   },
   {
-    "value": 91,
-    "label": "PAPUA BARAT"
+    "label": "PAPUA BARAT",
+    "value": "PAPUA BARAT"
   },
   {
-    "value": 94,
-    "label": "PAPUA"
+    "label": "PAPUA",
+    "value": "PAPUA"
   }
 ]
