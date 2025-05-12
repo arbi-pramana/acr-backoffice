@@ -16,7 +16,7 @@ const catalogColumns = (props: {
 }): ColumnsType<AccountCatalog> => [
   {
     title: "Kloter ID",
-    dataIndex: "catalogId",
+    dataIndex: "groupId",
     key: "kloterId-catalog",
     width: 100,
     render: (text: number) => <span className="font-semibold">{text}</span>,
@@ -204,6 +204,7 @@ const AccountForm = () => {
               storage.setItem("catalog", JSON.stringify(record));
             },
           })}
+          pagination={false}
           key={`catalog-table-${params.id}`}
           loading={loadAccountCatalog}
           dataSource={accountCatalog?.content}

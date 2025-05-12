@@ -63,6 +63,7 @@ const AccountManagement = () => {
     page: 0,
     size: 10,
     search: "",
+    sort: "desc",
   });
 
   const { data: accounts, isLoading: loadingAccount } = useQuery({

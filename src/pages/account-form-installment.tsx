@@ -4,7 +4,7 @@ import {
   FileSearchOutlined,
 } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-import { Button, Divider, Modal, Result, Table } from "antd";
+import { Button, Divider, Modal, Result, Spin, Table } from "antd";
 import { ColumnsType } from "antd/es/table";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
@@ -48,6 +48,8 @@ const installmentColumns = (props: {
         <Chip variant="success" label="Sudah Lunas" />
       ) : value == "UNPAID" ? (
         <Chip variant="warning" label="Belum Dibayar" />
+      ) : value == "PARTIALLY_PAID" ? (
+        <Chip variant="primary" label="Bayar Sebagian" />
       ) : null,
   },
   {
@@ -122,7 +124,10 @@ const AccountInstallments = () => {
     enabled: detailKloter !== null,
   });
 
-  const { data: detailInstallmentPayout } = useQuery({
+  const {
+    data: detailInstallmentPayout,
+    isFetching: loadDetailInstallmentPayout,
+  } = useQuery({
     queryKey: ["detail-installment-payout", params.id],
     queryFn: () =>
       accountService.getAccountInstallmentPayout(
@@ -132,7 +137,10 @@ const AccountInstallments = () => {
     enabled: detailPayout !== null,
   });
 
-  const { data: detailInstallmentPayment } = useQuery({
+  const {
+    data: detailInstallmentPayment,
+    isFetching: loadDetailInstallmentPayment,
+  } = useQuery({
     queryKey: ["detail-installment-payment", params.id],
     queryFn: () =>
       accountService.getAccountInstallmentPayment(
@@ -254,98 +262,110 @@ const AccountInstallments = () => {
           footer={null}
           centered
         >
-          {detailInstallmentPayout && detailInstallmentPayout?.length > 0 ? (
-            <>
-              {detailInstallmentPayout?.map((v) => (
-                <div className="bg-[#f9fafb] rounded-lg p-6 mb-4 text-sm">
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <div>ID Transaksi</div>
-                      <div>
-                        {v.transactionCode}{" "}
-                        <CopyOutlined style={{ marginLeft: 8 }} />
-                      </div>
-                    </div>
-                    <div>
+          {loadDetailInstallmentPayout && (
+            <div className="h-12 flex justify-center items-center">
+              <Spin />
+            </div>
+          )}
+          {detailInstallmentPayout &&
+            detailInstallmentPayout?.length == 0 &&
+            !loadDetailInstallmentPayout && (
+              <Result status="404" title="No payout found" />
+            )}
+          {detailInstallmentPayout &&
+            detailInstallmentPayout?.length > 0 &&
+            !loadDetailInstallmentPayout && (
+              <>
+                {detailInstallmentPayout?.map((v) => (
+                  <div className="bg-[#f9fafb] rounded-lg p-6 mb-4 text-sm">
+                    <div className="space-y-2">
                       <div className="flex justify-between">
-                        <div>Kloter ID</div>
+                        <div>ID Transaksi</div>
                         <div>
-                          {detailKloter.groupId}{" "}
+                          {v.transactionCode}{" "}
                           <CopyOutlined style={{ marginLeft: 8 }} />
                         </div>
                       </div>
-                    </div>
-                    <div className="flex justify-between">
-                      <div>Tanggal</div>
-                      <div>{dayjs(v.createdAt).format("DD/MM/YY, HH:MM")}</div>
-                    </div>
-                    <div className="flex justify-between">
-                      <div>Produk</div>
                       <div>
-                        Rp{numberWithCommas(detailKloter.payout)} /{" "}
-                        {detailKloterFromAPI?.cycleDay} hari
+                        <div className="flex justify-between">
+                          <div>Kloter ID</div>
+                          <div>
+                            {detailKloter.groupId}{" "}
+                            <CopyOutlined style={{ marginLeft: 8 }} />
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex justify-between">
+                        <div>Tanggal</div>
+                        <div>
+                          {dayjs(v.createdAt).format("DD/MM/YY, HH:MM")}
+                        </div>
+                      </div>
+                      <div className="flex justify-between">
+                        <div>Produk</div>
+                        <div>
+                          Rp{numberWithCommas(detailKloter.payout)} /{" "}
+                          {detailKloterFromAPI?.cycleDay} hari
+                        </div>
+                      </div>
+                      <div className="flex justify-between">
+                        <div>Status</div>
+                        <Chip
+                          label={
+                            v.status == "SUCCESS"
+                              ? "Success"
+                              : v.status == "PENDING"
+                              ? "Pending"
+                              : v.status == "FAILED"
+                              ? "Gagal"
+                              : ""
+                          }
+                          variant={
+                            v.status == "SUCCESS"
+                              ? "success"
+                              : v.status == "PENDING"
+                              ? "warning"
+                              : v.status == "FAILED"
+                              ? "danger"
+                              : "default"
+                          }
+                        />
                       </div>
                     </div>
-                    <div className="flex justify-between">
-                      <div>Status</div>
-                      <Chip
-                        label={
-                          v.status == "SUCCESS"
-                            ? "Success"
-                            : v.status == "PENDING"
-                            ? "Pending"
-                            : v.status == "FAILED"
-                            ? "Gagal"
-                            : ""
-                        }
-                        variant={
-                          v.status == "SUCCESS"
-                            ? "success"
-                            : v.status == "PENDING"
-                            ? "warning"
-                            : v.status == "FAILED"
-                            ? "danger"
-                            : "default"
-                        }
-                      />
+                    {/* <div className="bg-[#f9fafb] rounded-lg p-6 space-y-2"> */}
+                    <div className="text-center font-semibold">
+                      <div>Jumlah Uang Cair</div>
+                      <div className="gradient text-xl">
+                        Rp{numberWithCommas(v.payoutAmount)}
+                      </div>
                     </div>
-                  </div>
-                  {/* <div className="bg-[#f9fafb] rounded-lg p-6 space-y-2"> */}
-                  <div className="text-center font-semibold">
-                    <div>Jumlah Uang Cair</div>
-                    <div className="gradient text-xl">
-                      Rp{numberWithCommas(v.payoutAmount)}
+                    <div className="text-center font-semibold">
+                      <div>Nama Bank</div>
+                      <div className="gradient text-xl">
+                        {v.recipientDetails.code}
+                      </div>
                     </div>
-                  </div>
-                  <div className="text-center font-semibold">
-                    <div>Nama Bank</div>
-                    <div className="gradient text-xl">
-                      {v.recipientDetails.code}
+                    <div className="text-center font-semibold">
+                      <div>Nomor Rekening</div>
+                      <div className="gradient text-xl">
+                        {v.recipientDetails.number}
+                      </div>
                     </div>
-                  </div>
-                  <div className="text-center font-semibold">
-                    <div>Nomor Rekening</div>
-                    <div className="gradient text-xl">
-                      {v.recipientDetails.number}
+                    <div className="text-center font-semibold">
+                      <div>Atas Nama</div>
+                      <div className="gradient text-xl">
+                        {v.recipientDetails.holderName}
+                      </div>
                     </div>
+                    {/* </div> */}
                   </div>
-                  <div className="text-center font-semibold">
-                    <div>Atas Nama</div>
-                    <div className="gradient text-xl">
-                      {v.recipientDetails.holderName}
-                    </div>
-                  </div>
-                  {/* </div> */}
+                ))}
+                <div className="text-xs text-center mt-3">
+                  Permintaan pencairan uang akan diproses dalam waktu maksimal 1
+                  hari kerja.
                 </div>
-              ))}
-              <div className="text-xs text-center mt-3">
-                Permintaan pencairan uang akan diproses dalam waktu maksimal 1
-                hari kerja.
-              </div>
-            </>
-          ) : (
-            <Result status="404" title="No payout found" />
-          )}
+              </>
+            )}
         </Modal>
         <Modal
           open={detailPayment !== null}
@@ -354,88 +374,102 @@ const AccountInstallments = () => {
           title={<div className="gradient">Detail Transaksi</div>}
           footer={null}
         >
-          {detailInstallmentPayment && detailInstallmentPayment?.length > 0 ? (
-            <>
-              {detailInstallmentPayment?.map((v) => (
-                <div className="bg-[#f9fafb] rounded-lg p-6 mb-4 text-sm">
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <div>ID Transaksi</div>
-                      <div>
-                        {v.transactionCode}{" "}
-                        <CopyOutlined
-                          style={{ marginLeft: 8, cursor: "pointer" }}
-                          onClick={() => copyToClipboard(v.transactionCode)}
-                        />
-                      </div>
-                    </div>
-                    <div>
+          {loadDetailInstallmentPayment && (
+            <div className="h-12 flex justify-center items-center">
+              <Spin />
+            </div>
+          )}
+          {detailInstallmentPayment &&
+            detailInstallmentPayment?.length == 0 &&
+            !loadDetailInstallmentPayment && (
+              <Result status="404" title="No payment found" />
+            )}
+          {detailInstallmentPayment &&
+            detailInstallmentPayment?.length > 0 &&
+            !loadDetailInstallmentPayment && (
+              <>
+                {detailInstallmentPayment?.map((v) => (
+                  <div className="bg-[#f9fafb] rounded-lg p-6 mb-4 text-sm">
+                    <div className="space-y-2">
                       <div className="flex justify-between">
-                        <div>Kloter ID</div>
+                        <div>ID Transaksi</div>
                         <div>
-                          {detailKloter.groupId}{" "}
+                          {v.transactionCode}{" "}
                           <CopyOutlined
                             style={{ marginLeft: 8, cursor: "pointer" }}
-                            onClick={() =>
-                              copyToClipboard(detailKloter.groupId)
-                            }
+                            onClick={() => copyToClipboard(v.transactionCode)}
                           />
                         </div>
                       </div>
-                    </div>
-                    <div className="flex justify-between">
-                      <div>Tanggal</div>
-                      <div>{dayjs(v.createdAt).format("DD/MM/YY, HH:MM")}</div>
-                    </div>
-                    <div className="flex justify-between">
-                      <div>Produk</div>
                       <div>
-                        Rp{numberWithCommas(detailKloter.payout)} /{" "}
-                        {detailKloterFromAPI?.cycleDay} hari
+                        <div className="flex justify-between">
+                          <div>Kloter ID</div>
+                          <div>
+                            {detailKloter.groupId}{" "}
+                            <CopyOutlined
+                              style={{ marginLeft: 8, cursor: "pointer" }}
+                              onClick={() =>
+                                copyToClipboard(detailKloter.groupId)
+                              }
+                            />
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex justify-between">
-                      <div>Tipe Transaksi</div>
-                      <div>
-                        {v.type == "INITIAL_PAYMENT"
-                          ? "Uang Muka"
-                          : v.type == "CONTRIBUTION_PAYMENT"
-                          ? "Giliran Bayar"
-                          : v.type == "DISBURSEMENT"
-                          ? "Pencairan"
-                          : ""}
+                      <div className="flex justify-between">
+                        <div>Tanggal</div>
+                        <div>
+                          {dayjs(v.createdAt).format("DD/MM/YY, HH:MM")}
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex justify-between">
-                      <div>Status</div>
-                      <Chip
-                        label={
-                          v.status == "SUCCESS"
-                            ? "Success"
-                            : v.status == "PENDING"
-                            ? "Pending"
-                            : v.status == "FAILED"
-                            ? "Gagal"
-                            : ""
-                        }
-                        variant={
-                          v.status == "SUCCESS"
-                            ? "success"
-                            : v.status == "PENDING"
-                            ? "warning"
-                            : v.status == "FAILED"
-                            ? "danger"
-                            : "default"
-                        }
-                      />
+                      <div className="flex justify-between">
+                        <div>Produk</div>
+                        <div>
+                          Rp{numberWithCommas(detailKloter.payout)} /{" "}
+                          {detailKloterFromAPI?.cycleDay} hari
+                        </div>
+                      </div>
+                      <div className="flex justify-between">
+                        <div>Tipe Transaksi</div>
+                        <div>
+                          {v.type == "INITIAL_PAYMENT"
+                            ? "Uang Muka"
+                            : v.type == "CONTRIBUTION_PAYMENT"
+                            ? "Giliran Bayar"
+                            : v.type == "DISBURSEMENT"
+                            ? "Pencairan"
+                            : ""}
+                        </div>
+                      </div>
+                      <div className="flex justify-between">
+                        <div>Status</div>
+                        <Chip
+                          label={
+                            v.status == "SUCCESS"
+                              ? "Success"
+                              : v.status == "PENDING"
+                              ? "Pending"
+                              : v.status == "FAILED"
+                              ? "Gagal"
+                              : v.status == "EXPIRED"
+                              ? "Expired"
+                              : ""
+                          }
+                          variant={
+                            v.status == "SUCCESS"
+                              ? "success"
+                              : v.status == "PENDING"
+                              ? "warning"
+                              : v.status == "FAILED" || v.status == "EXPIRED"
+                              ? "danger"
+                              : "default"
+                          }
+                        />
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </>
-          ) : (
-            <Result status="404" title="No payment found" />
-          )}
+                ))}
+              </>
+            )}
         </Modal>
       </div>
     </>

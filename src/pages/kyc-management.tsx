@@ -140,6 +140,7 @@ const KYCManagement = () => {
     page: 0,
     size: 10,
     search: "",
+    sort: "desc",
   });
 
   const { data: kycs, isLoading: loadingKycs } = useQuery({
