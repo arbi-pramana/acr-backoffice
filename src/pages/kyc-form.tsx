@@ -202,14 +202,19 @@ const KYCForm = () => {
               <div className="flex flex-col border border-solid border-basic-300 rounded-lg w-[50%] p-3">
                 <div className="font-semibold">KTP Dokumen</div>
                 <div className="flex justify-center w-full">
-                  {/* <img src="/acr-logo.svg" width={200} alt="" /> */}
-                  <ProtectedFile
-                    keyFile={kyc?.idCardKey}
-                    type="image"
-                    width={200}
-                    style={{ objectFit: "contain" }}
-                    alt=""
-                  />
+                  {kyc?.idCardKey ? (
+                    <ProtectedFile
+                      keyFile={kyc?.idCardKey}
+                      type="image"
+                      width={200}
+                      style={{ objectFit: "contain" }}
+                      alt=""
+                    />
+                  ) : (
+                    <div className="italic flex justify-center items-center h-20">
+                      No photo provided
+                    </div>
+                  )}
                 </div>
                 {/* {kyc.id} */}
                 <div className="flex gap-3">
@@ -229,13 +234,18 @@ const KYCForm = () => {
               <div className="flex flex-col border border-solid border-basic-300 rounded-lg w-[50%] p-3">
                 <div className="font-semibold">Foto KTP dan Selfie</div>
                 <div className="flex justify-center w-full">
-                  {/* <img src="/acr-logo.svg" width={200} alt="" /> */}
-                  <ProtectedFile
-                    keyFile={kyc?.idCardSelfieKey}
-                    type="image"
-                    width={200}
-                    alt=""
-                  />
+                  {kyc?.idCardSelfieKey ? (
+                    <ProtectedFile
+                      keyFile={kyc?.idCardSelfieKey}
+                      type="image"
+                      width={200}
+                      alt=""
+                    />
+                  ) : (
+                    <div className="italic flex justify-center items-center h-20">
+                      No photo provided
+                    </div>
+                  )}
                 </div>
                 <div className="flex gap-3">
                   <div className="font-semibold">Score Data Anda</div>
@@ -965,7 +975,8 @@ const KYCForm = () => {
             disabled={
               pendingUpdateStatus ||
               pendingUpdateLevelOne ||
-              pendingUpdateLevelTwo
+              pendingUpdateLevelTwo ||
+              (step == 2 && kyc?.statusLevelTwo == null)
             }
             onClick={() => handleSubmit()}
             className="bg-purple-600 text-white px-6 py-2 rounded-full"
