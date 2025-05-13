@@ -1,4 +1,8 @@
-import { ArrowLeftOutlined, CloudUploadOutlined } from "@ant-design/icons";
+import {
+  ArrowLeftOutlined,
+  CloudUploadOutlined,
+  InfoCircleFilled,
+} from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Button,
@@ -125,6 +129,7 @@ const KloterForm = () => {
   const [slotModal, setSlotModal] = useState(false);
   const [disabledForm, setDisabledForm] = useState(isEditing);
   const [kloterStatus, setKloterStatus] = useState("");
+  const [updatedKloterDetail, setUpdatedKloterDetail] = useState(false);
   const queryClient = useQueryClient();
 
   const { mutate: mutateKloterCreate } = useMutation({
@@ -142,23 +147,32 @@ const KloterForm = () => {
     },
   });
 
-  const { mutate: mutateKloterUpdate } = useMutation({
-    mutationKey: ["updateKloter"],
-    mutationFn: (data: updateKloterByIdParams) =>
-      kloterService.updateKloterById(data),
-    onSuccess: (data) => {
-      // error response
-      if (data.status && data.status.toString().startsWith("5")) {
-        return;
-      }
-      queryClient.invalidateQueries({ queryKey: ["kloter", params.id] });
-      setDisabledForm(true);
-      console.log("sini");
-      notification.success({
-        message: "Katalog telah berhasil diupdate.",
-      });
-    },
-  });
+  const { mutate: mutateKloterUpdate, isPending: isPendingUpdateKloter } =
+    useMutation({
+      mutationKey: ["updateKloter"],
+      mutationFn: (data: updateKloterByIdParams) =>
+        kloterService.updateKloterById(data),
+      onSuccess: (data, variables) => {
+        // error response
+        if (data.status && data.status.toString().startsWith("5")) {
+          return;
+        }
+        queryClient.invalidateQueries({ queryKey: ["kloter", params.id] });
+        setDisabledForm(true);
+        console.log("update kloter", variables);
+
+        notification.success({
+          message: "Katalog telah berhasil diupdate.",
+        });
+
+        // mean that we update the kloter detail
+        if (Object.keys(variables.body).length > 1) {
+          setUpdatedKloterDetail(true);
+        } else {
+          setUpdatedKloterDetail(false);
+        }
+      },
+    });
 
   const { mutate: mutateSlotCreate, isPending: pendingSlotCreate } =
     useMutation({
@@ -252,7 +266,7 @@ const KloterForm = () => {
     }
     const titleContent = "Apakah anda yakin kamu mengubah data katalog?";
     const textContent =
-      "Data yang anda ubah dapat mengubah data yang ditampilakn di UI user";
+      "Data yang anda ubah dapat mengubah data yang ditampilkan di UI user";
     Modal.confirm({
       title: titleContent,
       content: textContent,
@@ -344,7 +358,12 @@ const KloterForm = () => {
               ) : !disabledForm ? (
                 <div className="flex gap-3">
                   <Button onClick={() => setDisabledForm(true)}>Cancel</Button>
-                  <Button type="primary" onClick={() => form.submit()}>
+                  <Button
+                    type="primary"
+                    onClick={() => form.submit()}
+                    loading={isPendingUpdateKloter}
+                    disabled={isPendingUpdateKloter}
+                  >
                     Simpan
                   </Button>
                 </div>
@@ -561,60 +580,84 @@ const KloterForm = () => {
           </div>
         ) : null}
         <div
-          className={`bg-white p-6 rounded-lg flex ${
+          className={`bg-white p-6 rounded-lg flex flex-col ${
             isEditing ? "justify-between sticky" : "justify-end fixed"
           }  gap-3 items-center w-full bottom-0`}
         >
-          {isEditing ? (
-            <div className="flex items-center gap-4">
-              <label className="text-sm font-medium">Pilih Respon Status</label>
-              <Select
-                value={kloterStatus ? kloterStatus : detailKloter?.status}
-                options={kloterNextStatus}
-                className="w-48"
-                onChange={(val) => setKloterStatus(val)}
-              />
+          {updatedKloterDetail && (
+            <div className=" flex justify-start w-full">
+              <div className="bg-warning-100 border-warning-600 border border-solid w-full flex p-2 rounded-lg gap-x-3">
+                <InfoCircleFilled
+                  color="#db9a00"
+                  style={{ color: "#db9a00" }}
+                />
+                <div>
+                  Status ditampilkan menjadi “Drafted”.{" "}
+                  <span className="font-semibold">
+                    Harap ubah sebelum melakukan submit
+                  </span>
+                </div>
+              </div>
             </div>
-          ) : (
-            <Button className="w-[200px]" onClick={() => navigate(-1)}>
-              Cancel
-            </Button>
           )}
-          <Button
-            type="primary"
-            className="w-[200px]"
-            data-testid="submit-down"
-            onClick={() => {
-              if (isEditing) {
-                const status = kloterStatus
-                  ? kloterStatus
-                  : detailKloter?.status;
-                Modal.confirm({
-                  title: `Apakah kamu yakin ingin mengubah status kloter ke ${
-                    kloterNextStatus.find((v) => v.value == status)?.label
-                  }?`,
-                  content:
-                    "Jika status diubah, sistem akan melakukan perubahan pada status seluruh slot dalam kloter ini.",
-                  okButtonProps: constants.okButtonProps,
-                  cancelButtonProps: constants.cancelButtonProps,
-                  centered: true,
-                  onOk() {
-                    mutateKloterUpdate({
-                      body: {
-                        status: kloterNextStatus.find((v) => v.value == status)
-                          ?.value,
-                      },
-                      id: params.id ? parseInt(params.id) : 0,
-                    });
-                  },
-                });
-              } else {
-                form.submit();
-              }
-            }}
-          >
-            Submit
-          </Button>
+          <div className="flex justify-between w-full">
+            {isEditing ? (
+              <div className="flex items-center gap-4">
+                <label className="text-sm font-medium">
+                  Pilih Respon Status
+                </label>
+                <Select
+                  value={kloterStatus ? kloterStatus : detailKloter?.status}
+                  options={kloterNextStatus}
+                  key={detailKloter?.status}
+                  className="w-48"
+                  onChange={(val) => setKloterStatus(val)}
+                />
+              </div>
+            ) : (
+              <Button className="w-[200px]" onClick={() => navigate(-1)}>
+                Cancel
+              </Button>
+            )}
+            <Button
+              type="primary"
+              className="w-[200px]"
+              data-testid="submit-down"
+              disabled={disabledForm == false || isPendingUpdateKloter}
+              loading={isPendingUpdateKloter}
+              onClick={() => {
+                if (isEditing) {
+                  const status = kloterStatus
+                    ? kloterStatus
+                    : detailKloter?.status;
+                  Modal.confirm({
+                    title: `Apakah kamu yakin ingin mengubah status kloter ke ${
+                      kloterNextStatus.find((v) => v.value == status)?.label
+                    }?`,
+                    content:
+                      "Jika status diubah, sistem akan melakukan perubahan pada status seluruh slot dalam kloter ini.",
+                    okButtonProps: constants.okButtonProps,
+                    cancelButtonProps: constants.cancelButtonProps,
+                    centered: true,
+                    onOk() {
+                      mutateKloterUpdate({
+                        body: {
+                          status: kloterNextStatus.find(
+                            (v) => v.value == status
+                          )?.value,
+                        },
+                        id: params.id ? parseInt(params.id) : 0,
+                      });
+                    },
+                  });
+                } else {
+                  form.submit();
+                }
+              }}
+            >
+              Submit
+            </Button>
+          </div>
         </div>
       </div>
       <Modal
