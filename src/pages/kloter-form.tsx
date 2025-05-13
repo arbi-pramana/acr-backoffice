@@ -623,7 +623,9 @@ const KloterForm = () => {
               type="primary"
               className="w-[200px]"
               data-testid="submit-down"
-              disabled={disabledForm == false || isPendingUpdateKloter}
+              disabled={
+                (isEditing && disabledForm == false) || isPendingUpdateKloter
+              }
               loading={isPendingUpdateKloter}
               onClick={() => {
                 if (isEditing) {
