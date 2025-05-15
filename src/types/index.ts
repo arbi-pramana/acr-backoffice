@@ -275,6 +275,7 @@ export type AccountCatalog = {
   payout: number;
   totalContribution: number;
   capacity: number;
+  currentRotation: number;
   slots: [
     {
       id: number;

@@ -233,7 +233,9 @@ const AccountInstallments = () => {
         {/* Progress */}
         <div className="bg-primary-500/8 text-primary-500 text-sm font-medium px-4 py-2 rounded-full mt-6 flex justify-between w-[50%]">
           <span>Putaran Berlangsung:</span>
-          <span>??/{detailKloter.capacity}</span>
+          <span>
+            {detailKloter.currentRotation}/{detailKloter.capacity}
+          </span>
         </div>
       </div>
       <div className="p-4 m-4 bg-white rounded-md">
