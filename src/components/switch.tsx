@@ -4,7 +4,7 @@ import { useState } from "react";
 
 const Switch = ({
   showBoolean = true,
-  value = true,
+  value = false,
 }: {
   showBoolean?: boolean;
   value?: boolean;
