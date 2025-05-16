@@ -417,7 +417,7 @@ const KYCForm = () => {
                         showSearch
                         disabled={kycMatch?.idCardAddress?.district?.isMatch}
                         options={districtJson}
-                        defaultValue={kyc?.idCardAddress.district}
+                        defaultValue={kyc?.idCardAddress?.district}
                         onChange={(val) => {
                           formKYC1.setFieldValue(
                             ["idCardAddress", "district"],
