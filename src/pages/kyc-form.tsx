@@ -378,7 +378,7 @@ const KYCForm = () => {
                         showSearch
                         disabled={kycMatch?.idCardAddress?.state?.isMatch}
                         options={provinceJson}
-                        defaultValue={kyc?.domicileAddress?.state}
+                        defaultValue={kyc?.idCardAddress?.state}
                         onChange={(val) => {
                           formKYC1.setFieldValue(
                             ["idCardAddress", "state"],
@@ -396,7 +396,7 @@ const KYCForm = () => {
                         showSearch
                         disabled={kycMatch?.idCardAddress?.city?.isMatch}
                         options={cityJson}
-                        defaultValue={kyc?.domicileAddress?.city}
+                        defaultValue={kyc?.idCardAddress?.city}
                         onChange={(val) => {
                           formKYC1.setFieldValue(
                             ["idCardAddress", "city"],
@@ -460,7 +460,7 @@ const KYCForm = () => {
                           formKYC1.setFieldValue("religion", val);
                         }}
                       />
-                      <Switch value={kycMatch?.maritalStatus?.isMatch} />
+                      <Switch value={kycMatch?.religion?.isMatch} />
                     </div>
                   </Form.Item>
                   <Form.Item label="Status" name={["maritalStatus"]}>
@@ -591,7 +591,7 @@ const KYCForm = () => {
                   options={provinceJson}
                   defaultValue={kyc?.domicileAddress?.state}
                   onChange={(val) => {
-                    formKYC1.setFieldValue(["idCardAddress", "city"], val);
+                    formKYC1.setFieldValue(["domicileAddress", "state"], val);
                   }}
                 />
               </Form.Item>
@@ -790,7 +790,7 @@ const KYCForm = () => {
                   optionFilterProp="label"
                   showSearch
                   options={provinceJson}
-                  defaultValue={kyc?.domicileAddress?.state}
+                  defaultValue={kyc?.employerAddress?.state}
                   onChange={(val) => {
                     formKYC2.setFieldValue(["employerAddress", "state"], val);
                   }}
@@ -803,7 +803,7 @@ const KYCForm = () => {
                   optionFilterProp="label"
                   showSearch
                   options={cityJson}
-                  defaultValue={kyc?.domicileAddress?.city}
+                  defaultValue={kyc?.employerAddress?.city}
                   onChange={(val) => {
                     formKYC2.setFieldValue(["employerAddress", "city"], val);
                   }}
@@ -816,7 +816,7 @@ const KYCForm = () => {
                   optionFilterProp="label"
                   showSearch
                   options={districtJson}
-                  defaultValue={kyc?.domicileAddress?.district}
+                  defaultValue={kyc?.employerAddress?.district}
                   onChange={(val) => {
                     formKYC2.setFieldValue(
                       ["employerAddress", "district"],
