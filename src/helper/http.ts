@@ -19,19 +19,18 @@ http.interceptors.response.use(
     return response.data;
   },
   (error) => {
-    const errorMessage = getErrorMessage(error.response.data);
-    notification.error({ message: errorMessage });
-
     if (
       error.response.status === 401 &&
       window.location.pathname !== "/login"
     ) {
-      notification.error({
-        message: "Session expired, please relogin",
-      });
+      notification.error({ message: "Session expired, please relogin" });
       localStorage.removeItem("session");
       window.location.href = "/login";
     }
+
+    const errorMessage = getErrorMessage(error.response.data);
+    notification.error({ message: errorMessage });
+
     return error;
   }
 );
