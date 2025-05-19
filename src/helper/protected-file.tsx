@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Spin } from "antd";
+import { Image, Spin } from "antd";
 import React from "react";
 import { authService } from "../services/auth.service";
 
@@ -67,7 +67,8 @@ const ProtectedFile = ({ keyFile, type, ...props }: ProtectedImageProps) => {
   }
 
   return (
-    <img
+    // @ts-expect-error antd image component
+    <Image
       src={data?.presignedUrl}
       {...(props as React.ImgHTMLAttributes<HTMLImageElement>)}
     />

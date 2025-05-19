@@ -993,11 +993,19 @@ const KYCForm = () => {
         title="Detail Document"
       >
         <div className="flex justify-center items-center h-full">
-          <ProtectedFile
-            keyFile={selectedFile}
-            style={{ width: 700, height: 600 }}
-            type="file"
-          />
+          {selectedFile ? (
+            <ProtectedFile
+              keyFile={selectedFile}
+              style={{ width: 700, height: 600 }}
+              type="file"
+            />
+          ) : (
+            <Result
+              status="403"
+              title="File Not Found"
+              subTitle="This file doesn't exist"
+            />
+          )}
         </div>
       </Modal>
     </>

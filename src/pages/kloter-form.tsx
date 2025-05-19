@@ -23,7 +23,7 @@ import {
   Upload,
 } from "antd";
 import dayjs from "dayjs";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { constants } from "../helper/constant";
 import { numberWithCommas } from "../helper/number-with-commas";
@@ -258,6 +258,11 @@ const KloterForm = () => {
       availableAt: dayjs(detailKloter.availableAt),
     });
   }
+
+  // reset value in select so it always refer value from api after refetch
+  useEffect(() => {
+    setKloterStatus("");
+  }, [detailKloter]);
 
   const showConfirm = (values: createKloterParams, isEditing: boolean) => {
     if (!isEditing) {
@@ -606,6 +611,9 @@ const KloterForm = () => {
                 <label className="text-sm font-medium">
                   Pilih Respon Status
                 </label>
+                {/* hu {detailKloter?.status}
+                nih {`${Date.now()}-${detailKloter?.status}`}
+                kloter {kloterStatus} */}
                 <Select
                   value={kloterStatus ? kloterStatus : detailKloter?.status}
                   options={kloterNextStatus}

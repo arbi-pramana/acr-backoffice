@@ -85,7 +85,7 @@ const Dashboard = () => {
         <Header
           style={{
             background: "white",
-            padding: 20,
+            padding: 16,
             textAlign: "center",
             fontWeight: "bold",
             display: "flex",
@@ -98,7 +98,9 @@ const Dashboard = () => {
           ) : (
             <>
               <img src="/acr-logo.svg" alt="Logo" width={40} />
-              <div className="ml-2 text-primary-600">ACR Digital</div>
+              <div className="ml-2 text-primary-600">
+                Backoffice ACR Digital
+              </div>
             </>
           )}
         </Header>
