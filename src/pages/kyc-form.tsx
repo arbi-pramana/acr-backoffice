@@ -25,12 +25,11 @@ import { InputMatch } from "../components/input-match";
 import OCRGuide from "../components/ocr-guide";
 import Switch from "../components/switch";
 import { getChangedFields } from "../helper/changed-value";
-import cityJson from "../helper/cities.json";
-import districtJson from "../helper/district.json";
 import ProtectedFile from "../helper/protected-file";
 import provinceJson from "../helper/province.json";
 import { generalService } from "../services/general.service";
 import { kycService } from "../services/kyc.service";
+import useCurrentAddress from "../helper/useCurrentAddress";
 
 const KYCForm = () => {
   const navigate = useNavigate();
@@ -178,6 +177,24 @@ const KYCForm = () => {
       }
     }
   };
+
+  const {
+    filteredIdCardCitiesKYC1,
+    filteredIdCardDistrictsKYC1,
+    selectedIdCardProvinceKYC1,
+    selectedIdCardCityKYC1,
+    selectedIdCardDistrictKYC1,
+    filteredDomicileCitiesKYC1,
+    filteredDomicileDistrictsKYC1,
+    selectedDomicileProvinceKYC1,
+    selectedDomicileCityKYC1,
+    selectedDomicileDistrictKYC1,
+    filteredEmployerCitiesKYC2,
+    filteredEmployerDistrictsKYC2,
+    selectedEmployerProvinceKYC2,
+    selectedEmployerCityKYC2,
+    selectedEmployerDistrictKYC2,
+  } = useCurrentAddress(Form, formKYC1, formKYC2);
 
   useEffect(() => {
     setStep(kyc?.statusLevelOne == "APPROVED" ? 2 : 1);
@@ -378,7 +395,7 @@ const KYCForm = () => {
                         showSearch
                         disabled={kycMatch?.idCardAddress?.state?.isMatch}
                         options={provinceJson}
-                        defaultValue={kyc?.idCardAddress?.state}
+                        value={selectedIdCardProvinceKYC1}
                         onChange={(val) => {
                           formKYC1.setFieldValue(
                             ["idCardAddress", "state"],
@@ -395,8 +412,8 @@ const KYCForm = () => {
                         optionFilterProp="label"
                         showSearch
                         disabled={kycMatch?.idCardAddress?.city?.isMatch}
-                        options={cityJson}
-                        defaultValue={kyc?.idCardAddress?.city}
+                        options={filteredIdCardCitiesKYC1}
+                        value={selectedIdCardCityKYC1}
                         onChange={(val) => {
                           formKYC1.setFieldValue(
                             ["idCardAddress", "city"],
@@ -416,8 +433,8 @@ const KYCForm = () => {
                         optionFilterProp="label"
                         showSearch
                         disabled={kycMatch?.idCardAddress?.district?.isMatch}
-                        options={districtJson}
-                        defaultValue={kyc?.idCardAddress?.district}
+                        options={filteredIdCardDistrictsKYC1}
+                        value={selectedIdCardDistrictKYC1}
                         onChange={(val) => {
                           formKYC1.setFieldValue(
                             ["idCardAddress", "district"],
@@ -589,7 +606,7 @@ const KYCForm = () => {
                   optionFilterProp="label"
                   showSearch
                   options={provinceJson}
-                  defaultValue={kyc?.domicileAddress?.state}
+                  value={selectedDomicileProvinceKYC1}
                   onChange={(val) => {
                     formKYC1.setFieldValue(["domicileAddress", "state"], val);
                   }}
@@ -599,8 +616,8 @@ const KYCForm = () => {
                 <Select
                   optionFilterProp="label"
                   showSearch
-                  options={cityJson}
-                  defaultValue={kyc?.domicileAddress?.city}
+                  options={filteredDomicileCitiesKYC1}
+                  value={selectedDomicileCityKYC1}
                 />
               </Form.Item>
               <Form.Item
@@ -610,8 +627,8 @@ const KYCForm = () => {
                 <Select
                   optionFilterProp="label"
                   showSearch
-                  options={districtJson}
-                  defaultValue={kyc?.domicileAddress?.district}
+                  options={filteredDomicileDistrictsKYC1}
+                  value={selectedDomicileDistrictKYC1}
                 />
               </Form.Item>
               <Form.Item
@@ -785,46 +802,28 @@ const KYCForm = () => {
               <Input />
             </Form.Item>
             <Form.Item label="Provinsi" name={["employerAddress", "state"]}>
-              <div className="flex items-center gap-3">
-                <Select
-                  optionFilterProp="label"
-                  showSearch
-                  options={provinceJson}
-                  defaultValue={kyc?.employerAddress?.state}
-                  onChange={(val) => {
-                    formKYC2.setFieldValue(["employerAddress", "state"], val);
-                  }}
-                />
-              </div>
+              <Select
+                optionFilterProp="label"
+                showSearch
+                options={provinceJson}
+                value={selectedEmployerProvinceKYC2}
+              />
             </Form.Item>
             <Form.Item label="Kota" name={["employerAddress", "city"]}>
-              <div className="flex items-center gap-3">
-                <Select
-                  optionFilterProp="label"
-                  showSearch
-                  options={cityJson}
-                  defaultValue={kyc?.employerAddress?.city}
-                  onChange={(val) => {
-                    formKYC2.setFieldValue(["employerAddress", "city"], val);
-                  }}
-                />
-              </div>
+              <Select
+                optionFilterProp="label"
+                showSearch
+                options={filteredEmployerCitiesKYC2}
+                value={selectedEmployerCityKYC2}
+              />
             </Form.Item>
             <Form.Item label="Kecamatan" name={["employerAddress", "district"]}>
-              <div className="flex items-center gap-3">
-                <Select
-                  optionFilterProp="label"
-                  showSearch
-                  options={districtJson}
-                  defaultValue={kyc?.employerAddress?.district}
-                  onChange={(val) => {
-                    formKYC2.setFieldValue(
-                      ["employerAddress", "district"],
-                      val
-                    );
-                  }}
-                />
-              </div>
+              <Select
+                optionFilterProp="label"
+                showSearch
+                options={filteredEmployerDistrictsKYC2}
+                value={selectedEmployerDistrictKYC2}
+              />
             </Form.Item>
             <Form.Item
               label="Kelurahan"
