@@ -181,8 +181,6 @@ const KYCForm = () => {
   const {
     filteredIdCardCitiesKYC1,
     filteredIdCardDistrictsKYC1,
-    selectedIdCardProvinceKYC1,
-    selectedIdCardCityKYC1,
     selectedIdCardDistrictKYC1,
     filteredDomicileCitiesKYC1,
     filteredDomicileDistrictsKYC1,
@@ -388,65 +386,54 @@ const KYCForm = () => {
                       />
                     </div>
                   </Form.Item>
-                  <Form.Item label="Provinsi" name={["idCardAddress", "state"]}>
-                    <div className="flex items-center gap-3 mt-2">
+                  <div className="flex items-center gap-3 mt-2">
+                    <Form.Item
+                      label="Provinsi"
+                      name={["idCardAddress", "state"]}
+                      style={{ width: "100%" }}
+                    >
                       <Select
                         optionFilterProp="label"
                         showSearch
                         disabled={kycMatch?.idCardAddress?.state?.isMatch}
                         options={provinceJson}
-                        value={selectedIdCardProvinceKYC1}
-                        onChange={(val) => {
-                          formKYC1.setFieldValue(
-                            ["idCardAddress", "state"],
-                            val
-                          );
-                        }}
                       />
-                      <Switch value={kycMatch?.idCardAddress?.state?.isMatch} />
-                    </div>
-                  </Form.Item>
-                  <Form.Item label="Kota" name={["idCardAddress", "city"]}>
-                    <div className="flex items-center gap-3 mt-2">
+                    </Form.Item>
+                    <Switch value={kycMatch?.idCardAddress?.state?.isMatch} />
+                  </div>
+                  <div className="flex items-center gap-3 mt-2">
+                    <Form.Item
+                      label="Kota"
+                      name={["idCardAddress", "city"]}
+                      style={{ width: "100%" }}
+                    >
                       <Select
                         optionFilterProp="label"
                         showSearch
                         disabled={kycMatch?.idCardAddress?.city?.isMatch}
                         options={filteredIdCardCitiesKYC1}
-                        value={selectedIdCardCityKYC1}
-                        onChange={(val) => {
-                          formKYC1.setFieldValue(
-                            ["idCardAddress", "city"],
-                            val
-                          );
-                        }}
                       />
-                      <Switch value={kycMatch?.idCardAddress?.city?.isMatch} />
-                    </div>
-                  </Form.Item>
-                  <Form.Item
-                    label="Kecamatan"
-                    name={["idCardAddress", "district"]}
-                  >
-                    <div className="flex items-center gap-3 mt-2">
+                    </Form.Item>
+                    <Switch value={kycMatch?.idCardAddress?.city?.isMatch} />
+                  </div>
+                  <div className="flex items-center gap-3 mt-2">
+                    <Form.Item
+                      label="Kecamatan"
+                      name={["idCardAddress", "district"]}
+                      style={{ width: "100%" }}
+                    >
                       <Select
                         optionFilterProp="label"
                         showSearch
                         disabled={kycMatch?.idCardAddress?.district?.isMatch}
                         options={filteredIdCardDistrictsKYC1}
                         value={selectedIdCardDistrictKYC1}
-                        onChange={(val) => {
-                          formKYC1.setFieldValue(
-                            ["idCardAddress", "district"],
-                            val
-                          );
-                        }}
                       />
-                      <Switch
-                        value={kycMatch?.idCardAddress?.district?.isMatch}
-                      />
-                    </div>
-                  </Form.Item>
+                    </Form.Item>
+                    <Switch
+                      value={kycMatch?.idCardAddress?.district?.isMatch}
+                    />
+                  </div>
                   <Form.Item
                     label="Kelurahan"
                     name={["idCardAddress", "subdistrict"]}

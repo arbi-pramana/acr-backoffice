@@ -5,7 +5,7 @@ export const getErrorMessage = (error: { type: string; message: string }) => {
     return "Bank Akun Sudah Ada";
   } else if (error.type === "DuplicateMobileException") {
     return "Nomor HP sudah di gunakan";
-  } else if (error.message.includes("user with uuid")) {
+  } else if (error.type === "NoOcrFoundException") {
     return "User belum menyelesaikan KYC 1";
   }
   return error.message ?? "Unknown Error";
