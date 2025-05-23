@@ -46,7 +46,8 @@ const installmentColumns = (props: {
     render: (value: string, record) =>
       value == "PAID" ? (
         <Chip variant="success" label="Sudah Lunas" />
-      ) : value == "UNPAID" && record.rotationStatus == "FINISHED" ? (
+      ) : (value == "UNPAID" || value == "PARTIALLY_PAID") &&
+        record.rotationStatus == "FINISHED" ? (
         <Chip variant="danger" label="Menunggak" />
       ) : value == "UNPAID" ? (
         <Chip variant="warning" label="Belum Dibayar" />
