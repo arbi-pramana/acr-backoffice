@@ -123,6 +123,9 @@ const Dashboard = () => {
                 },
               ]}
             />
+            {collapse ? null : (
+              <div className="px-5 text-xs text-gray-400">V0.0.1 (BX)</div>
+            )}
             <Divider style={{ marginTop: 12 }} />
             {collapse ? (
               <div className="flex justify-center items-center cursor-pointer p-3">
