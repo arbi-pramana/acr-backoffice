@@ -973,9 +973,10 @@ const KYCForm = () => {
               }
               key={step}
               options={[
-                { label: "In Review", value: "IN_PROGRESS" },
-                { label: "Rejected", value: "REJECTED" },
-                { label: "Approved", value: "APPROVED" },
+                { label: "Sedang Berjalan", value: "IN_PROGRESS" },
+                { label: "Sedang Ditinjau", value: "IN_REVIEW" },
+                { label: "Ditolak", value: "REJECTED" },
+                { label: "Disetujui", value: "APPROVED" },
               ]}
               className="w-48"
               onChange={(v) => setStatusReason(v)}

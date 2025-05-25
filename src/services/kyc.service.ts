@@ -32,4 +32,8 @@ export const kycService = {
     const data = await http.patch(ROUTES.kyc.updateLevelTwo(id), param);
     return data;
   },
+  async sendNotifRejectLevelOne(id: string) {
+    const data = await http.post(ROUTES.kyc.sendNotifRejectLevelOne(id));
+    return data;
+  },
 };

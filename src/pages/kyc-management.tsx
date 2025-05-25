@@ -36,17 +36,19 @@ const columns = (props: {
       <Chip
         label={
           text == "REJECTED"
-            ? "Rejected"
+            ? "Ditolak"
             : text == "IN_PROGRESS"
-            ? "In Review"
+            ? "Sedang Berjalan"
+            : text == "IN_REVIEW"
+            ? "Sedang Ditinjau"
             : text == "APPROVED"
-            ? "Approved"
+            ? "Disetujui"
             : "-"
         }
         variant={
           text == "REJECTED"
             ? "danger"
-            : text == "IN_PROGRESS"
+            : text == "IN_PROGRESS" || text == "IN_REVIEW"
             ? "warning"
             : text == "APPROVED"
             ? "success"
@@ -59,22 +61,23 @@ const columns = (props: {
     title: "Status Level 2",
     dataIndex: "statusLevelTwo",
     key: "date",
-    width: 130,
     render: (text: string) => (
       <Chip
         label={
           text == "REJECTED"
-            ? "Rejected"
+            ? "Ditolak"
             : text == "IN_PROGRESS"
-            ? "In Review"
+            ? "Sedang Berjalan"
+            : text == "IN_REVIEW"
+            ? "Sedang Ditinjau"
             : text == "APPROVED"
-            ? "Approved"
+            ? "Disetujui"
             : "-"
         }
         variant={
           text == "REJECTED"
             ? "danger"
-            : text == "IN_PROGRESS"
+            : text == "IN_PROGRESS" || text == "IN_REVIEW"
             ? "warning"
             : text == "APPROVED"
             ? "success"
