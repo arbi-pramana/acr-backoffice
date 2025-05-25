@@ -245,10 +245,15 @@ const KloterForm = () => {
     enabled: isEditing,
   });
 
-  const { data: detailKloter, isLoading: loadingKloter } = useQuery({
+  const {
+    data: detailKloter,
+    isLoading: loadingDetailKloter,
+    isFetching: fetchingDetailKloter,
+  } = useQuery({
     queryKey: ["kloter", params.id],
     queryFn: () => kloterService.getKloterById(parseInt(params.id ?? "0")),
     enabled: isEditing,
+    staleTime: 1000 * 60 * 3, // 3 minutes
   });
   if (detailKloter) {
     form.setFieldsValue({
@@ -375,7 +380,7 @@ const KloterForm = () => {
               ) : null)}
           </div>
           <Divider />
-          {loadingKloter ? (
+          {loadingDetailKloter ? (
             <div className="flex justify-center">
               <Spin size="default" />
             </div>
@@ -611,13 +616,20 @@ const KloterForm = () => {
                 <label className="text-sm font-medium">
                   Pilih Respon Status
                 </label>
-                {/* hu {detailKloter?.status}
-                nih {`${Date.now()}-${detailKloter?.status}`}
-                kloter {kloterStatus} */}
                 <Select
                   value={kloterStatus ? kloterStatus : detailKloter?.status}
                   options={kloterNextStatus}
                   key={detailKloter?.status}
+                  loading={
+                    loadingDetailKloter ||
+                    fetchingDetailKloter ||
+                    isPendingUpdateKloter
+                  }
+                  disabled={
+                    loadingDetailKloter ||
+                    fetchingDetailKloter ||
+                    isPendingUpdateKloter
+                  }
                   className="w-48"
                   onChange={(val) => setKloterStatus(val)}
                 />
