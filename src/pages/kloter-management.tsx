@@ -156,6 +156,7 @@ const KloterManagement = () => {
     page: 0,
     size: 10,
     search: "",
+    sort: "createdAt,DESC",
   });
 
   const { data: kloters, isLoading: loadingKloter } = useQuery({
