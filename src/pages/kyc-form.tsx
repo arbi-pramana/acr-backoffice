@@ -13,6 +13,7 @@ import {
   Input,
   Modal,
   notification,
+  Popconfirm,
   Progress,
   Result,
   Select,
@@ -108,6 +109,19 @@ const KYCForm = () => {
         }
       },
     });
+
+  const {
+    mutate: mutateSendNotifRejectLevelOne,
+    isPending: pendingSendNotifRejectLevelOne,
+  } = useMutation({
+    mutationFn: () => kycService.sendNotifRejectLevelOne(id ?? ""),
+    mutationKey: ["reject-kyc-level-one", id],
+    onSuccess: (res) => {
+      if (!res) {
+        notification.success({ message: "Notifikasi berhasil dikirim" });
+      }
+    },
+  });
 
   const getBackground = () => {
     if (step == 1) {
@@ -917,9 +931,25 @@ const KYCForm = () => {
               <div className="text-white font-semibold">
                 Kirim pemberitahuan kepada user
               </div>
-              <button className="bg-primary-500 rounded-lg flex items-center px-2 text-white cursor-pointer">
-                Kirim Notifikasi
-              </button>
+              <Popconfirm
+                title="Yakin ingin mengirim notifikasi ke user ini?"
+                onConfirm={() => {
+                  console.log("mutate reject!");
+                  mutateSendNotifRejectLevelOne();
+                }}
+                placement="left"
+              >
+                <button
+                  className="bg-primary-500 rounded-lg flex items-center px-2 text-white cursor-pointer hover:bg-primary-500/70"
+                  // onClick={() => {
+                  //   Popconfirm({});
+                  // }}
+                >
+                  {pendingSendNotifRejectLevelOne
+                    ? "Sending..."
+                    : "Kirim Notifikasi"}
+                </button>
+              </Popconfirm>
             </div>
           </div>
           <div
