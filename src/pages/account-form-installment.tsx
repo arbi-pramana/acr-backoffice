@@ -192,7 +192,7 @@ const AccountInstallments = () => {
           <div className="w-[50%]">
             <div className="flex items-center gap-3 mb-1">
               <h1 className="text-4xl font-bold gradient">
-                Kloter {detailKloter.catalogId}
+                {detailKloterFromAPI?.title}
               </h1>
               {getCatalogStatus(detailKloter.status)}
             </div>
