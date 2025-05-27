@@ -1,6 +1,8 @@
 # Stage 1: Build the Vue.js app
 FROM node:18-alpine AS build-stage
 
+RUN apk add --no-cache git
+
 WORKDIR /app
 COPY package*.json ./
 RUN npm install
