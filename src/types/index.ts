@@ -45,6 +45,8 @@ export type createKloterParams = Omit<Kloter, "id" | "description">;
 // slot.service.ts
 export type Slot = {
   id: number;
+  userId: number;
+  uuid: string;
   catalogId: number;
   payoutAt: string;
   contribution: number;

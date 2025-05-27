@@ -11,7 +11,6 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Chip from "../components/chip";
 import { copyToClipboard } from "../helper/copy-to-clipboard";
-import { storage } from "../helper/local-storage";
 import { numberWithCommas } from "../helper/number-with-commas";
 import { accountService } from "../services/account.service";
 import { kloterService } from "../services/kloter.service";
@@ -167,12 +166,28 @@ const AccountInstallments = () => {
     ) : null;
   };
 
+  const { data: accountCatalog } = useQuery({
+    queryKey: ["detail-kloter", params.id],
+    queryFn: () =>
+      accountService.getAccountCatalog(params.id ?? "", {
+        statuses: "DRAFTED,ON_GOING,OPEN,CANCELLED,FINISHED",
+      }),
+    staleTime: 0,
+  });
+
   useEffect(() => {
-    setDetailKloter(storage.getItem("catalog", true));
-    // return () => {
-    //   localStorage.removeItem("catalog");
-    // };
-  }, []);
+    if (accountCatalog?.content && accountCatalog?.content.length > 0) {
+      const find = accountCatalog?.content.find(
+        (v) =>
+          v.catalogId == (params.catalogid ? parseInt(params.catalogid) : 0)
+      );
+
+      if (find) {
+        setDetailKloter(find);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [accountCatalog]);
 
   if (!detailKloter) return null;
 

@@ -48,8 +48,10 @@ const columns = (props: {
         variant={
           text == "REJECTED"
             ? "danger"
-            : text == "IN_PROGRESS" || text == "IN_REVIEW"
+            : text == "IN_REVIEW"
             ? "warning"
+            : text == "IN_PROGRESS"
+            ? "info"
             : text == "APPROVED"
             ? "success"
             : "default"
@@ -77,8 +79,11 @@ const columns = (props: {
         variant={
           text == "REJECTED"
             ? "danger"
-            : text == "IN_PROGRESS" || text == "IN_REVIEW"
-            ? "warning"
+            : text == "IN_REVIEW"
+            ? // inprogress biru
+              "warning"
+            : text == "IN_PROGRESS"
+            ? "info"
             : text == "APPROVED"
             ? "success"
             : "default"
@@ -143,7 +148,7 @@ const KYCManagement = () => {
     page: 0,
     size: 10,
     search: "",
-    sort: "desc",
+    sort: "createdAt,desc",
   });
 
   const { data: kycs, isLoading: loadingKycs } = useQuery({

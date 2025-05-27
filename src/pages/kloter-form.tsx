@@ -1,7 +1,10 @@
 import {
   ArrowLeftOutlined,
+  ArrowRightOutlined,
   CloudUploadOutlined,
+  DatabaseOutlined,
   InfoCircleFilled,
+  UserOutlined,
 } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -36,10 +39,12 @@ import {
   updateKloterByIdParams,
   updateSlotParams,
 } from "../types";
+import Chip from "../components/chip";
 
 const kloterNextStatus = [
   { label: "Drafted", value: "DRAFTED" },
   { label: "Tersedia", value: "OPEN" },
+  { label: "Sedang Berjalan", value: "ON_GOING" },
   { label: "Batal", value: "CANCELLED" },
 ];
 
@@ -56,6 +61,7 @@ const columnsSlot = (props: {
   setSlotModal: (val: boolean) => void;
   removeModal: (id: number) => void;
   updatePayout: (id: number, val: boolean) => void;
+  setDetailFromSlot: (val: Slot) => void;
 }): TableColumnsType<Slot> => [
   {
     title: "Urutan",
@@ -77,13 +83,37 @@ const columnsSlot = (props: {
     title: "Nama",
     dataIndex: "name",
     key: "name",
-    render: (val) => <div>{val ?? "-"}</div>,
+    render: (val, record) => (
+      <div
+        className="text-primary-500 font-semibold cursor-pointer"
+        onClick={() => props.setDetailFromSlot(record)}
+      >
+        {val ?? "-"}
+      </div>
+    ),
   },
   {
     title: "Kontribusi",
     dataIndex: "contribution",
     key: "contribution",
     render: (val) => <div>Rp{numberWithCommas(val)}</div>,
+  },
+  {
+    title: "Status",
+    dataIndex: "status",
+    key: "status",
+    render: (_, record) =>
+      record.status === "OPEN" ? (
+        <Chip label="Tersedia" variant="success" />
+      ) : record.status === "BOOKED" ? (
+        <Chip label="Dipesan" variant="warning" />
+      ) : record.status === "FILLED" ? (
+        <Chip label="Terisi" variant="primary" />
+      ) : record.status === "CLOSED" ? (
+        <Chip label="Selesai" variant="info" />
+      ) : (
+        "-"
+      ),
   },
   {
     title: "Aksi Pencairan",
@@ -127,6 +157,7 @@ const KloterForm = () => {
   const [form] = Form.useForm();
   const [formAddSlot] = Form.useForm();
   const [slotModal, setSlotModal] = useState(false);
+  const [detailFromSlot, setDetailFromSlot] = useState<null | Slot>(null);
   const [disabledForm, setDisabledForm] = useState(isEditing);
   const [kloterStatus, setKloterStatus] = useState("");
   const [updatedKloterDetail, setUpdatedKloterDetail] = useState(false);
@@ -166,7 +197,10 @@ const KloterForm = () => {
         });
 
         // mean that we update the kloter detail
-        if (Object.keys(variables.body).length > 1) {
+        if (
+          Object.keys(variables.body).length > 1 &&
+          "status" in variables.body
+        ) {
           setUpdatedKloterDetail(true);
         } else {
           setUpdatedKloterDetail(false);
@@ -314,6 +348,12 @@ const KloterForm = () => {
       ...values,
       status: "DRAFTED", // DRAFTED, CANCELLED, ON_GOING, FINISHED, OPEN
     };
+
+    if (detailKloter?.status === "ON_GOING") {
+      // @ts-expect-error body.status
+      delete body.status;
+    }
+
     if (isEditing) {
       if (!params.id) return;
       mutateKloterUpdate({ id: parseInt(params.id), body: body });
@@ -554,6 +594,7 @@ const KloterForm = () => {
               columns={columnsSlot({
                 setSlotModal,
                 removeModal,
+                setDetailFromSlot,
                 updatePayout: (id, val) =>
                   Modal.confirm({
                     title: `Yakin ingin ${
@@ -718,6 +759,42 @@ const KloterForm = () => {
             </Button>
           </div>
         </Form>
+      </Modal>
+      <Modal
+        open={!!detailFromSlot}
+        onCancel={() => setDetailFromSlot(null)}
+        title="Cek Detail KYC & Kloter"
+        footer={null}
+        destroyOnClose
+      >
+        {detailFromSlot && (
+          <div>
+            <div
+              className="flex items-center justify-between gap-4 mb-4 border rounded-lg p-2 border-gray-200 cursor-pointer hover:shadow-sm"
+              onClick={() => navigate(`/kyc-form?id=${detailFromSlot.uuid}`)}
+            >
+              <div className="flex gap-3">
+                <UserOutlined style={{ fontSize: 16, color: "#9f4abc" }} />
+                <div>Cek KYC</div>
+              </div>
+              <ArrowRightOutlined style={{ fontSize: 16, color: "#9f4abc" }} />
+            </div>
+            <div
+              className="flex items-center justify-between gap-4 mb-4 border rounded-lg p-2 border-gray-200 cursor-pointer hover:shadow-sm"
+              onClick={() =>
+                navigate(
+                  `/account-form/${detailFromSlot.userId}/${detailFromSlot.catalogId}`
+                )
+              }
+            >
+              <div className="flex gap-3">
+                <DatabaseOutlined style={{ fontSize: 16, color: "#9f4abc" }} />
+                <div>Kloter Management</div>
+              </div>
+              <ArrowRightOutlined style={{ fontSize: 16, color: "#9f4abc" }} />
+            </div>
+          </div>
+        )}
       </Modal>
     </>
   );
