@@ -11,11 +11,13 @@ import { generalService } from "../services/general.service";
 import AccountManagement from "./account-management";
 import KloterManagement from "./kloter-management";
 import KYCManagement from "./kyc-management";
+import {useAppVersion} from "../helper/useAppVersion.ts";
 
 const Dashboard = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [collapse, setCollapse] = useState(false);
   const currentTab = searchParams.get("tab") ?? "kyc";
+  const appVersion = useAppVersion();
 
   const menus = [
     {
@@ -124,7 +126,7 @@ const Dashboard = () => {
               ]}
             />
             {collapse ? null : (
-              <div className="px-5 text-xs text-gray-400">V0.0.1 (BX)</div>
+              <div className="px-5 text-xs text-gray-400">V{appVersion} (BX)</div>
             )}
             <Divider style={{ marginTop: 12 }} />
             {collapse ? (
