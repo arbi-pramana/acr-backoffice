@@ -446,6 +446,10 @@ const AccountInstallments = () => {
                         </div>
                       </div>
                       <div className="flex justify-between">
+                        <div>Jumlah Pembayaran</div>
+                        <div>Rp {numberWithCommas(v.paymentAmount)}</div>
+                      </div>
+                      <div className="flex justify-between">
                         <div>Status</div>
                         <Chip
                           label={
