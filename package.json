@@ -8,7 +8,7 @@
     "prod": "vite --mode production --port 3000",
     "bump:major": "node scripts/update-version.mjs --major",
     "bump:minor": "node scripts/update-version.mjs --minor",
-    "prebuild": "node scripts/update-version.mjs",
+    "bump:patch": "node scripts/update-version.mjs",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
