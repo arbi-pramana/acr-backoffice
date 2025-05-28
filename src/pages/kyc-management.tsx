@@ -63,6 +63,7 @@ const columns = (props: {
     title: "Status Level 2",
     dataIndex: "statusLevelTwo",
     key: "date",
+    minWidth: 100,
     render: (text: string) => (
       <Chip
         label={
