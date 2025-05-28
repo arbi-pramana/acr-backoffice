@@ -28,6 +28,7 @@ import {
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import Chip from "../components/chip";
 import { constants } from "../helper/constant";
 import { numberWithCommas } from "../helper/number-with-commas";
 import { kloterService } from "../services/kloter.service";
@@ -39,7 +40,6 @@ import {
   updateKloterByIdParams,
   updateSlotParams,
 } from "../types";
-import Chip from "../components/chip";
 
 const kloterNextStatus = [
   { label: "Drafted", value: "DRAFTED" },
@@ -85,8 +85,10 @@ const columnsSlot = (props: {
     key: "name",
     render: (val, record) => (
       <div
-        className="text-primary-500 font-semibold cursor-pointer"
-        onClick={() => props.setDetailFromSlot(record)}
+        className={`text-primary-500 font-semibold ${
+          record.userId ? "cursor-pointer" : ""
+        }`}
+        onClick={() => record.userId && props.setDetailFromSlot(record)}
       >
         {val ?? "-"}
       </div>
