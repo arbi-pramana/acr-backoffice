@@ -28,9 +28,9 @@ import Switch from "../components/switch";
 import { getChangedFields } from "../helper/changed-value";
 import ProtectedFile from "../helper/protected-file";
 import provinceJson from "../helper/province.json";
+import useCurrentAddress from "../helper/useCurrentAddress";
 import { generalService } from "../services/general.service";
 import { kycService } from "../services/kyc.service";
-import useCurrentAddress from "../helper/useCurrentAddress";
 
 const KYCForm = () => {
   const navigate = useNavigate();
@@ -337,9 +337,9 @@ const KYCForm = () => {
                     <div className="flex items-center gap-3">
                       <Select
                         options={[
-                          { value: "MALE", label: "Laki-laki" },
-                          { value: "FEMALE", label: "Perempuan" },
-                          { value: "OTHER", label: "Lainnya" },
+                          { value: "Laki-laki", label: "Laki-laki" },
+                          { value: "Perempuan", label: "Perempuan" },
+                          { value: "Lainnya", label: "Lainnya" },
                         ]}
                         defaultValue={kyc?.gender}
                         disabled={kycMatch?.gender?.isMatch}
@@ -464,13 +464,13 @@ const KYCForm = () => {
                     <div className="flex items-center gap-3">
                       <Select
                         options={[
-                          { value: "ISLAM", label: "Islam" },
-                          { value: "KRISTEN", label: "Kristen" },
-                          { value: "KATOLIK", label: "Katolik" },
-                          { value: "HINDU", label: "Hindu" },
-                          { value: "BUDHA", label: "Budha" },
-                          { value: "KONGHUCHU", label: "Konghucu" },
-                          { value: "OTHER", label: "Lainnya" },
+                          { value: "Islam", label: "Islam" },
+                          { value: "Kristen", label: "Kristen" },
+                          { value: "Katolik", label: "Katolik" },
+                          { value: "Hindu", label: "Hindu" },
+                          { value: "Budha", label: "Budha" },
+                          { value: "Konghucu", label: "Konghucu" },
+                          { value: "Lainnya", label: "Lainnya" },
                         ]}
                         defaultValue={kyc?.religion}
                         disabled={kycMatch?.religion?.isMatch}
@@ -485,10 +485,10 @@ const KYCForm = () => {
                     <div className="flex items-center gap-3">
                       <Select
                         options={[
-                          { value: "MARRIED", label: "Menikah" },
-                          { value: "SINGLE", label: "Belum Menikah" },
-                          { value: "DIVORCED", label: "Bercerai" },
-                          { value: "OTHER", label: "Lainnya" },
+                          { value: "Menikah", label: "Menikah" },
+                          { value: "Belum Menikah", label: "Belum Menikah" },
+                          { value: "Bercerai", label: "Bercerai" },
+                          { value: "Lainnya", label: "Lainnya" },
                         ]}
                         defaultValue={kyc?.maritalStatus}
                         disabled={kycMatch?.maritalStatus?.isMatch}
@@ -505,17 +505,20 @@ const KYCForm = () => {
                         options={[
                           {
                             label: "Pelajar / Mahasiswa",
-                            value: "student",
+                            value: "Pelajar / Mahasiswa",
                           },
                           {
                             label: "Pegawai Swasta",
-                            value: "private employee",
+                            value: "Pegawai Swasta",
                           },
-                          { label: "PNS / ASN", value: "civil servant" },
-                          { label: "Wirausaha", value: "entrepreneur" },
-                          { label: "Ibu Rumah Tangga", value: "housewife" },
-                          { label: "Tidak Bekerja", value: "unemployed" },
-                          { label: "Lainnya", value: "others" },
+                          { label: "PNS / ASN", value: "PNS / ASN" },
+                          { label: "Wirausaha", value: "Wirausaha" },
+                          {
+                            label: "Ibu Rumah Tangga",
+                            value: "Ibu Rumah Tangga",
+                          },
+                          { label: "Tidak Bekerja", value: "Tidak Bekerja" },
+                          { label: "Lainnya", value: "Lainnya" },
                         ]}
                         defaultValue={kyc?.occupation}
                         disabled={kycMatch?.occupation?.isMatch}
@@ -749,16 +752,19 @@ const KYCForm = () => {
             <Form.Item label="Pekerjaan" name={["occupation"]}>
               <Select
                 options={[
-                  { label: "Pelajar / Mahasiswa", value: "student" },
+                  {
+                    label: "Pelajar / Mahasiswa",
+                    value: "Pelajar / Mahasiswa",
+                  },
                   {
                     label: "Pegawai Swasta",
-                    value: "private employee",
+                    value: "Pegawai Swasta",
                   },
-                  { label: "PNS / ASN", value: "civil servant" },
-                  { label: "Wirausaha", value: "entrepreneur" },
-                  { label: "Ibu Rumah Tangga", value: "housewife" },
-                  { label: "Tidak Bekerja", value: "unemployed" },
-                  { label: "Lainnya", value: "others" },
+                  { label: "PNS / ASN", value: "PNS / ASN" },
+                  { label: "Wirausaha", value: "Wirausaha" },
+                  { label: "Ibu Rumah Tangga", value: "Ibu Rumah Tangga" },
+                  { label: "Tidak Bekerja", value: "Tidak Bekerja" },
+                  { label: "Lainnya", value: "Lainnya" },
                 ]}
                 defaultValue={kyc?.occupation}
                 disabled={kycMatch?.occupation?.isMatch}
@@ -773,14 +779,17 @@ const KYCForm = () => {
             <Form.Item label="Penghasilan per Tahun" name={["annualIncome"]}>
               <Select
                 options={[
-                  { label: "< Rp 10 juta", value: "<10jt" },
-                  { label: "Rp 10 – 30 juta", value: "10-30jt" },
-                  { label: "Rp 30 – 50 juta", value: "30-50jt" },
-                  { label: "Rp 50 – 100 juta", value: "50-100jt" },
-                  { label: "Rp 100 – 300 juta", value: "100-300jt" },
-                  { label: "Rp 300 – 500 juta", value: "300-500jt" },
-                  { label: "Rp 500 juta – 1 Miliar", value: "500jt-1M" },
-                  { label: "> Rp 1 Miliar", value: ">1M" },
+                  { label: "< Rp 10 juta", value: "< Rp 10 juta" },
+                  { label: "Rp 10 – 30 juta", value: "Rp 10 – 30 juta" },
+                  { label: "Rp 30 – 50 juta", value: "Rp 30 – 50 juta" },
+                  { label: "Rp 50 – 100 juta", value: "Rp 50 – 100 juta" },
+                  { label: "Rp 100 – 300 juta", value: "Rp 100 – 300 juta" },
+                  { label: "Rp 300 – 500 juta", value: "Rp 300 – 500 juta" },
+                  {
+                    label: "Rp 500 juta – 1 Miliar",
+                    value: "Rp 500 juta – 1 Miliar",
+                  },
+                  { label: "> Rp 1 Miliar", value: "> Rp 1 Miliar" },
                 ]}
                 onChange={(val) => {
                   formKYC2.setFieldValue("annualIncome", val);
