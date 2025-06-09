@@ -118,7 +118,7 @@ const columnsSlot = (props: {
       ),
   },
   {
-    title: "Status",
+    title: "Status Pembayaran",
     dataIndex: "installmentStatus",
     key: "installment-status-installment",
     render: (value: string) =>
