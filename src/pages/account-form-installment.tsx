@@ -42,11 +42,10 @@ const installmentColumns = (props: {
     title: "Status",
     dataIndex: "installmentStatus",
     key: "installment-status-installment",
-    render: (value: string, record) =>
+    render: (value: string) =>
       value == "PAID" ? (
         <Chip variant="success" label="Sudah Lunas" />
-      ) : (value == "UNPAID" || value == "PARTIALLY_PAID") &&
-        record.rotationStatus == "FINISHED" ? (
+      ) : value == "OVERDUE" ? (
         <Chip variant="danger" label="Menunggak" />
       ) : value == "UNPAID" ? (
         <Chip variant="warning" label="Belum Dibayar" />

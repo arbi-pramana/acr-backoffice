@@ -118,9 +118,26 @@ const columnsSlot = (props: {
       ),
   },
   {
+    title: "Status",
+    dataIndex: "installmentStatus",
+    key: "installment-status-installment",
+    render: (value: string) =>
+      value == "PAID" ? (
+        <Chip variant="success" label="Sudah Lunas" />
+      ) : value == "OVERDUE" ? (
+        <Chip variant="danger" label="Menunggak" />
+      ) : value == "UNPAID" ? (
+        <Chip variant="warning" label="Belum Dibayar" />
+      ) : value == "PARTIALLY_PAID" ? (
+        <Chip variant="primary" label="Bayar Sebagian" />
+      ) : null,
+  },
+  {
     title: "Aksi Pencairan",
     dataIndex: "isPayoutAllowed",
     key: "isPayoutAllowed",
+    width: 130,
+    align: "center",
     render: (val, record) => (
       <Switch
         value={val}
