@@ -438,7 +438,7 @@ const KloterForm = () => {
                 </div>
               ) : null)}
           </div>
-          <Divider />
+          <Divider style={{ margin: 12 }} />
           {loadingDetailKloter ? (
             <div className="flex justify-center">
               <Spin size="default" />
@@ -457,7 +457,11 @@ const KloterForm = () => {
                     name="title"
                     rules={[{ required: true }]}
                   >
-                    <Input disabled={disabledForm} data-testid="title" />
+                    <Input
+                      disabled={disabledForm}
+                      placeholder="Title Katalog"
+                      data-testid="title"
+                    />
                   </Form.Item>
                 </Col>
                 <Col span={12}>
@@ -466,7 +470,11 @@ const KloterForm = () => {
                     name="groupId"
                     rules={[{ required: true }]}
                   >
-                    <Input disabled={disabledForm} data-testid="groupId" />
+                    <Input
+                      disabled={disabledForm}
+                      placeholder="Group ID"
+                      data-testid="groupId"
+                    />
                   </Form.Item>
                 </Col>
                 <Col span={12}>
@@ -483,7 +491,11 @@ const KloterForm = () => {
                       },
                     ]}
                   >
-                    <Input disabled={disabledForm} data-testid="capacity" />
+                    <Input
+                      disabled={disabledForm}
+                      placeholder="Slot"
+                      data-testid="capacity"
+                    />
                   </Form.Item>
                 </Col>
                 <Col span={12}>
@@ -500,7 +512,11 @@ const KloterForm = () => {
                       },
                     ]}
                   >
-                    <Input disabled={disabledForm} data-testid="cycleDay" />
+                    <Input
+                      disabled={disabledForm}
+                      placeholder="Rotasi"
+                      data-testid="cycleDay"
+                    />
                   </Form.Item>
                 </Col>
                 <Col span={12}>
@@ -538,6 +554,7 @@ const KloterForm = () => {
                     <Input
                       addonBefore="Rp"
                       disabled={disabledForm}
+                      placeholder="Pencairan"
                       data-testid="payout"
                     />
                   </Form.Item>
@@ -551,6 +568,7 @@ const KloterForm = () => {
                     <Input
                       addonBefore="Rp"
                       disabled={disabledForm}
+                      placeholder="Biaya Admin"
                       data-testid="adminFee"
                     />
                   </Form.Item>
@@ -564,6 +582,7 @@ const KloterForm = () => {
                     <Input
                       addonBefore="Rp"
                       disabled={disabledForm}
+                      placeholder="Minimum Uang Muka"
                       data-testid="minimumInitialAmount"
                     />
                   </Form.Item>
@@ -579,6 +598,19 @@ const KloterForm = () => {
                       style={{ width: "100%" }}
                       disabled={disabledForm}
                       data-testid="availableAt"
+                    />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item
+                    label="Input WhatsApp Link"
+                    name="whatsappGroupUrl"
+                    rules={[{ required: true }]}
+                  >
+                    <Input
+                      disabled={disabledForm}
+                      placeholder="Whatsapp Link"
+                      data-testid="whatsappGroupUrl"
                     />
                   </Form.Item>
                 </Col>
