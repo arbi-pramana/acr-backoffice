@@ -684,7 +684,7 @@ const KloterForm = () => {
         <div
           className={`bg-white p-6 rounded-lg flex flex-col ${
             isEditing ? "justify-between sticky" : "justify-end fixed"
-          }  gap-3 items-center w-full bottom-0`}
+          }  gap-3 items-center w-full bottom-0 sticky`}
         >
           {updatedKloterDetail && (
             <div className=" flex justify-start w-full">
