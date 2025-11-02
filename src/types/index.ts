@@ -16,6 +16,9 @@ export type Kloter = {
   cycleDay: number;
   startAt: string;
   endAt: string;
+  estimateStartDate: string;
+  estimateEndDate: string;
+  startDateLocked: boolean;
   availableAt: string;
   payout: number;
   adminFee: number;
