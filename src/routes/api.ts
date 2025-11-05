@@ -41,6 +41,14 @@ export const ROUTES = {
     create: `/${version}/backoffice/catalogs`,
     uploadCatalogCSV: `/${version}/backoffice/catalogs/csv`,
   },
+  voucher: {
+    list: `/${version}/vouchers`,
+    byCode: (code: string) => `${version}/vouchers/` + code,
+    dashboard: `/${version}/vouchers/dashboard`,
+    updateById: (id: number) => `/${version}/vouchers/` + id,
+    create: `/${version}/vouchers`,
+    uploadCatalogCSV: `/${version}/vouchers/csv`,
+  },
   slot: {
     create: `/${version}/backoffice/slots`,
     update: (id: number) => `/${version}/backoffice/slots/` + id,

@@ -12,6 +12,7 @@ import AccountManagement from "./account-management";
 import KloterManagement from "./kloter-management";
 import KYCManagement from "./kyc-management";
 import {useAppVersion} from "../helper/useAppVersion.ts";
+import VoucherManagement from "./voucher-management.tsx";
 
 const Dashboard = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -37,6 +38,12 @@ const Dashboard = () => {
       iconWhite: "/account-white.svg",
       iconGrey: "/account-grey.svg",
       tab: "account",
+    },
+    {
+      title: "Voucher Management",
+      iconWhite: "/voucher-white.svg",
+      iconGrey: "/voucher-grey.svg",
+      tab: "voucher",
     },
   ];
 
@@ -73,6 +80,7 @@ const Dashboard = () => {
     kyc: <KYCManagement />,
     kloter: <KloterManagement />,
     account: <AccountManagement />,
+    voucher: <VoucherManagement />
   };
 
   return (

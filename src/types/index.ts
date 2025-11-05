@@ -24,6 +24,36 @@ export type Kloter = {
   adminFee: number;
   status: string;
 };
+
+export type VoucherType = "percentage" | "fixed";
+
+export type Voucher = {
+  id: number;
+  code: string;
+  name: string;
+  description: string | null;
+  type: VoucherType;
+  transactionTypes: string[];
+  value: number;
+  quota: number;
+  quotaUsed: number;
+  startDate: string | null;
+  endDate: string | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type createVoucherParams = Omit<Voucher, "id" | "createdAt" | "updatedAt" | "quotaUsed">;
+export type updateVoucherByIdParams = { id: number; body: Partial<Voucher> };
+
+export type VoucherDashboard = {
+  totalVouchers: number;
+  activeVouchers: number;
+  inactiveVouchers: number;
+  expiringVouchers: number;
+};
+
 export type KloterDashboard = {
   totalCatalogs: number;
   releasedCatalogs: number;
