@@ -166,13 +166,13 @@ const VoucherManagement = () => {
             itemRender={() => null}
             maxCount={1}
           >
-            <Button
+            {/* <Button
               loading={pendingUploadVoucherCSV}
               disabled={pendingUploadVoucherCSV}
               icon={<CloudUploadOutlined />}
             >
               Import CSV
-            </Button>
+            </Button> */}
           </Upload>
           <Button
             icon={<PlusOutlined />}
