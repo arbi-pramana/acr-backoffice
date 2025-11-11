@@ -44,7 +44,10 @@ export type Voucher = {
   updatedAt: string;
 };
 
-export type createVoucherParams = Omit<Voucher, "id" | "createdAt" | "updatedAt" | "quotaUsed">;
+export type createVoucherParams = Omit<
+  Voucher,
+  "id" | "createdAt" | "updatedAt" | "quotaUsed"
+>;
 export type updateVoucherByIdParams = { id: number; body: Partial<Voucher> };
 
 export type VoucherDashboard = {
@@ -52,6 +55,37 @@ export type VoucherDashboard = {
   activeVouchers: number;
   inactiveVouchers: number;
   expiringVouchers: number;
+};
+
+// INVOICE GET
+
+export type InvoiceGet = {
+  id: number;
+  uuid: string;
+  number: string;
+  description: string;
+  catalogId: number;
+  slotId: number;
+  slotUserId: number;
+  transactionId: number;
+  type: string;
+  amount: number;
+  statusTrigger: boolean;
+  status: string;
+  createdBy: number;
+  executedBy: number;
+  metadata: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type createInvoiceGetParams = Omit<
+  InvoiceGet,
+  "id" | "createdAt" | "updatedAt" | "quotaUsed"
+>;
+export type updateInvoiceGetByIdParams = {
+  id: number;
+  body: Partial<InvoiceGet>;
 };
 
 export type KloterDashboard = {
@@ -80,6 +114,7 @@ export type Slot = {
   id: number;
   userId: number;
   uuid: string;
+  name: string;
   catalogId: number;
   payoutAt: string;
   contribution: number;

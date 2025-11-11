@@ -11,8 +11,9 @@ import { generalService } from "../services/general.service";
 import AccountManagement from "./account-management";
 import KloterManagement from "./kloter-management";
 import KYCManagement from "./kyc-management";
-import {useAppVersion} from "../helper/useAppVersion.ts";
+import { useAppVersion } from "../helper/useAppVersion.ts";
 import VoucherManagement from "./voucher-management.tsx";
+import InvoiceGetManagement from "./invoice-get-management.tsx";
 
 const Dashboard = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -44,6 +45,12 @@ const Dashboard = () => {
       iconWhite: "/voucher-white.svg",
       iconGrey: "/voucher-grey.svg",
       tab: "voucher",
+    },
+    {
+      title: "Invoice Get Management",
+      iconWhite: "/voucher-white.svg",
+      iconGrey: "/voucher-grey.svg",
+      tab: "invoiceGet",
     },
   ];
 
@@ -80,7 +87,8 @@ const Dashboard = () => {
     kyc: <KYCManagement />,
     kloter: <KloterManagement />,
     account: <AccountManagement />,
-    voucher: <VoucherManagement />
+    voucher: <VoucherManagement />,
+    invoiceGet: <InvoiceGetManagement />,
   };
 
   return (
@@ -134,7 +142,9 @@ const Dashboard = () => {
               ]}
             />
             {collapse ? null : (
-              <div className="px-5 text-xs text-gray-400">V{appVersion} (BX)</div>
+              <div className="px-5 text-xs text-gray-400">
+                V{appVersion} (BX)
+              </div>
             )}
             <Divider style={{ marginTop: 12 }} />
             {collapse ? (

@@ -49,6 +49,14 @@ export const ROUTES = {
     create: `/${version}/vouchers`,
     uploadCatalogCSV: `/${version}/vouchers/csv`,
   },
+  invoiceGet: {
+    list: `/${version}/invoice-gets`,
+    byUuid: (uuid: string) => `${version}/invoice-gets/` + uuid,
+    dashboard: `/${version}/invoice-gets/dashboard`,
+    updateById: (id: number) => `/${version}/invoice-gets/` + id,
+    create: `/${version}/invoice-gets`,
+    uploadCatalogCSV: `/${version}/invoice-gets/csv`,
+  },
   slot: {
     create: `/${version}/backoffice/slots`,
     update: (id: number) => `/${version}/backoffice/slots/` + id,
