@@ -400,10 +400,7 @@ const InvoiceGetForm = () => {
                 type="primary"
                 className="w-[200px]"
                 data-testid="submit-down"
-                disabled={
-                  (isEditing && disabledForm == false) ||
-                  isPendingUpdateInvoiceGet
-                }
+                disabled={isPendingUpdateInvoiceGet}
                 loading={isPendingUpdateInvoiceGet}
                 onClick={() => {
                   form.submit();
