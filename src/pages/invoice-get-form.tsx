@@ -12,7 +12,7 @@ import {
   Select,
   Spin,
 } from "antd";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import { constants } from "../helper/constant";
@@ -20,6 +20,7 @@ import { invoiceGetService } from "../services/invoice-get.service";
 import { kloterService } from "../services/kloter.service";
 import { slotService } from "../services/slot.service";
 import { createInvoiceGetParams, updateInvoiceGetByIdParams } from "../types";
+import { accountService } from "../services/account.service";
 
 const InvoiceGetForm = () => {
   const navigate = useNavigate();
@@ -195,6 +196,43 @@ const InvoiceGetForm = () => {
   };
 
   const typeValue = Form.useWatch("type", form);
+  const catalogIdValue = Form.useWatch("catalogId", form);
+  const slotIdValue = Form.useWatch("slotId", form);
+
+  const updateAmountForFinalDeduction = useCallback(
+    async (catalogId: number, slotId: number) => {
+      const slot = slotOptions?.find((s) => s.id === slotId);
+      const userId = slot?.userId;
+      if (userId) {
+        const result = await accountService.getAccountInstallment(
+          userId.toString(),
+          catalogId
+        );
+        form.setFieldValue(
+          "amount",
+          result.reduce((acc, curr) => acc + curr.remainingAmount, 0)
+        );
+      }
+    },
+    [slotOptions, form]
+  );
+
+  useEffect(() => {
+    if (
+      typeValue === "FINAL_DEDUCTION" ||
+      (typeValue === "FINAL_DEPOSIT" && catalogIdValue && slotIdValue)
+    ) {
+      updateAmountForFinalDeduction(catalogIdValue, slotIdValue);
+    } else {
+      form.setFieldValue("amount", 0);
+    }
+  }, [
+    catalogIdValue,
+    typeValue,
+    slotIdValue,
+    form,
+    updateAmountForFinalDeduction,
+  ]);
 
   return (
     <>
@@ -363,7 +401,7 @@ const InvoiceGetForm = () => {
                   >
                     <Input
                       type="number"
-                      disabled={disabledForm || typeValue !== "GET_DEDUCTION"}
+                      disabled={disabledForm}
                       placeholder="Amount"
                       data-testid="amount"
                       addonBefore="Rp"

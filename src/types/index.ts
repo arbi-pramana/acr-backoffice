@@ -364,6 +364,8 @@ export type AccountInstallment = {
   catalogId: number;
   dueAt: string;
   totalAmount: number;
+  totalPaidAmount: number;
+  remainingAmount: number;
   installmentIds: number[];
   slots: [
     {
