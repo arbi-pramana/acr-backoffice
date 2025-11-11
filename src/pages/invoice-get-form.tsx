@@ -1,9 +1,8 @@
-import { ArrowLeftOutlined, InfoCircleFilled } from "@ant-design/icons";
+import { ArrowLeftOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Button,
   Col,
-  DatePicker,
   Divider,
   Form,
   Input,
@@ -15,12 +14,12 @@ import {
 } from "antd";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { v4 as uuidv4 } from "uuid";
 import { constants } from "../helper/constant";
 import { invoiceGetService } from "../services/invoice-get.service";
-import { createInvoiceGetParams, updateInvoiceGetByIdParams } from "../types";
 import { kloterService } from "../services/kloter.service";
 import { slotService } from "../services/slot.service";
-import { v4 } from "uuid";
+import { createInvoiceGetParams, updateInvoiceGetByIdParams } from "../types";
 
 const InvoiceGetForm = () => {
   const navigate = useNavigate();
@@ -30,7 +29,7 @@ const InvoiceGetForm = () => {
   const [catalogId, setCatalogId] = useState<number | null>(null);
   const [form] = Form.useForm();
   const [disabledForm, setDisabledForm] = useState(isEditing);
-  const [updatedInvoiceGetDetail, setUpdatedInvoiceGetDetail] = useState(false);
+  const [, setUpdatedInvoiceGetDetail] = useState(false);
   const queryClient = useQueryClient();
 
   const invoiceTypes = [
@@ -167,17 +166,10 @@ const InvoiceGetForm = () => {
         body: { ...values, uuid: detailInvoiceGet!.uuid },
       });
     } else {
-      mutateInvoiceGetCreate({ ...values, uuid: v4() });
+      mutateInvoiceGetCreate({ ...values, uuid: uuidv4() });
     }
   };
 
-  // groupId dpt drmn, status isi apa
-  // list slot itu gmn? soalnya abis create catalog, get slot by id, return array kosong
-  // udh coba create slot, pas get slot by id, bener return yg baru dibuat td
-  // method patch kena cors
-  // di list slot blm ada nama
-  // di list invoiceGet blm ada kontribusi
-  // di form, status bawah apa aja
   return (
     <>
       <div className="bg-[#F9F9F9] min-h-screen">
@@ -204,7 +196,7 @@ const InvoiceGetForm = () => {
                 >
                   Edit
                 </Button>
-              ) : !disabledForm ? (
+              ) : (
                 <div className="flex gap-3">
                   <Button onClick={() => setDisabledForm(true)}>Cancel</Button>
                   <Button
@@ -216,7 +208,7 @@ const InvoiceGetForm = () => {
                     Simpan
                   </Button>
                 </div>
-              ) : null)}
+              ))}
           </div>
           <Divider style={{ margin: 12 }} />
           {loadingDetailInvoiceGet ? (

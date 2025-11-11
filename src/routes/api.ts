@@ -51,7 +51,7 @@ export const ROUTES = {
   },
   invoiceGet: {
     list: `/${version}/invoice-gets`,
-    byUuid: (uuid: string) => `${version}/invoice-gets/` + uuid,
+    byUuid: (uuid: string) => `/${version}/invoice-gets/` + uuid,
     dashboard: `/${version}/invoice-gets/dashboard`,
     updateById: (id: number) => `/${version}/invoice-gets/` + id,
     create: `/${version}/invoice-gets`,

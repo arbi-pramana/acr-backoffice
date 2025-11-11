@@ -48,8 +48,8 @@ const Dashboard = () => {
     },
     {
       title: "Invoice Get Management",
-      iconWhite: "/voucher-white.svg",
-      iconGrey: "/voucher-grey.svg",
+      iconWhite: "/invoice-white.svg",
+      iconGrey: "/invoice-grey.svg",
       tab: "invoiceGet",
     },
   ];
