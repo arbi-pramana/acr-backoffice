@@ -37,6 +37,14 @@ const InvoiceGetForm = () => {
       value: "GET_DEDUCTION",
       label: "Get Deduction",
     },
+    {
+      value: "FINAL_DEDUCTION",
+      label: "Final Deduction",
+    },
+    {
+      value: "FINAL_DEPOSIT",
+      label: "Final Deposit",
+    },
   ];
 
   const statusOptions = [
@@ -132,6 +140,14 @@ const InvoiceGetForm = () => {
     }
   }, [detailInvoiceGet, form]);
 
+  useEffect(() => {
+    if (!isEditing) {
+      form.setFieldValue("status", "PENDING");
+    } else {
+      form.setFieldValue("status", detailInvoiceGet?.status);
+    }
+  }, [isEditing, form, detailInvoiceGet]);
+
   const showConfirm = (values: createInvoiceGetParams, isEditing: boolean) => {
     if (!isEditing) {
       submitInvoiceGet(values);
@@ -177,6 +193,8 @@ const InvoiceGetForm = () => {
       mutateInvoiceGetCreate({ ...values, uuid: uuidv4() });
     }
   };
+
+  const typeValue = Form.useWatch("type", form);
 
   return (
     <>
@@ -345,7 +363,7 @@ const InvoiceGetForm = () => {
                   >
                     <Input
                       type="number"
-                      disabled={disabledForm}
+                      disabled={disabledForm || typeValue !== "GET_DEDUCTION"}
                       placeholder="Amount"
                       data-testid="amount"
                       addonBefore="Rp"
@@ -359,7 +377,7 @@ const InvoiceGetForm = () => {
                     rules={[{ required: true }]}
                   >
                     <Select
-                      disabled={disabledForm}
+                      disabled={true}
                       placeholder="Pilih Status"
                       data-testid="status"
                       options={statusOptions}
