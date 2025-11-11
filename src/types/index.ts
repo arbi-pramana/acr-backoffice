@@ -81,7 +81,7 @@ export type InvoiceGet = {
 
 export type createInvoiceGetParams = Omit<
   InvoiceGet,
-  "id" | "createdAt" | "updatedAt" | "quotaUsed"
+  "id" | "createdAt" | "updatedAt"
 >;
 export type updateInvoiceGetByIdParams = {
   id: number;
