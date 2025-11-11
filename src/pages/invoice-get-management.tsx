@@ -91,14 +91,14 @@ const InvoiceGetManagement = () => {
     sort: "createdAt,DESC",
   });
 
-  const { data: invoieGets, isLoading: loadingInvoiceGet } = useQuery({
+  const { data: invoiceGets, isLoading: loadingInvoiceGet } = useQuery({
     queryFn: () => invoiceGetService.getInvoiceGets(params),
-    queryKey: ["invoieGets", params],
+    queryKey: ["invoiceGets", params],
   });
 
-  // const { data: invoieGetDashboard } = useQuery({
+  // const { data: invoiceGetDashboard } = useQuery({
   //   queryFn: () => invoiceGetService.getInvoiceGetDashboard(),
-  //   queryKey: ["invoieGetDashboard"],
+  //   queryKey: ["invoiceGetDashboard"],
   // });
 
   const { mutate: mutateUploadInvoiceGetCSV } = useMutation({
@@ -111,7 +111,7 @@ const InvoiceGetManagement = () => {
       ) {
         return;
       }
-      queryClient.invalidateQueries({ queryKey: ["invoieGets"] });
+      queryClient.invalidateQueries({ queryKey: ["invoiceGets"] });
       notification.success({
         message: "Upload InvoiceGet berhasil",
       });
@@ -159,25 +159,25 @@ const InvoiceGetManagement = () => {
         <div className="border border-solid rounded-md border-gray-200 p-6 w-full">
           <div className="font-semibold text-sm">Jumlah InvoiceGet</div>
           <div className="font-semibold text-4xl">
-            {invoieGetDashboard?.totalInvoiceGets ?? <Spin size="small" />}
+            {invoiceGetDashboard?.totalInvoiceGets ?? <Spin size="small" />}
           </div>
         </div>
         <div className="border border-solid rounded-md border-gray-200 p-6 w-full">
           <div className="font-semibold text-sm">InvoiceGet Aktif</div>
           <div className="font-semibold text-4xl">
-            {invoieGetDashboard?.activeInvoiceGets ?? <Spin size="small" />}
+            {invoiceGetDashboard?.activeInvoiceGets ?? <Spin size="small" />}
           </div>
         </div>
         <div className="border border-solid rounded-md border-gray-200 p-6 w-full">
           <div className="font-semibold text-sm">InvoiceGet Batal</div>
           <div className="font-semibold text-4xl">
-            {invoieGetDashboard?.inactiveInvoiceGets ?? <Spin size="small" />}
+            {invoiceGetDashboard?.inactiveInvoiceGets ?? <Spin size="small" />}
           </div>
         </div>
         <div className="border border-solid rounded-md border-gray-200 p-6 w-full">
           <div className="font-semibold text-sm">InvoiceGet Expired</div>
           <div className="font-semibold text-4xl">
-            {invoieGetDashboard?.expiringInvoiceGets ?? <Spin size="small" />}
+            {invoiceGetDashboard?.expiringInvoiceGets ?? <Spin size="small" />}
           </div>
         </div>
       </div> */}
@@ -212,23 +212,23 @@ const InvoiceGetManagement = () => {
       <Table
         scroll={{ x: "max-content", y: "auto" }}
         columns={columns({ navigate })}
-        dataSource={invoieGets?.content ?? []}
+        dataSource={invoiceGets?.content ?? []}
         pagination={false}
         loading={loadingInvoiceGet}
         rowKey="id"
       />
-      {invoieGets && (
+      {invoiceGets && (
         <div className="mt-4">
           <Pagination
             pageNumber={
-              invoieGets.pageable.pageNumber !== null
-                ? invoieGets.pageable.pageNumber
+              invoiceGets.pageable.pageNumber !== null
+                ? invoiceGets.pageable.pageNumber
                 : 0
             }
-            totalPages={invoieGets.totalPages}
+            totalPages={invoiceGets.totalPages}
             pageSize={
-              invoieGets.pageable.pageSize !== null
-                ? invoieGets.pageable.pageSize
+              invoiceGets.pageable.pageSize !== null
+                ? invoiceGets.pageable.pageSize
                 : 0
             }
             onChange={(val) => setParams((prev) => ({ ...prev, page: val }))}
