@@ -161,9 +161,17 @@ const InvoiceGetForm = () => {
 
   const submitInvoiceGet = (values: createInvoiceGetParams) => {
     if (isEditing) {
+      if (!detailInvoiceGet) {
+        notification.error({
+          message: "Gagal mengubah invoice",
+          description: "Data invoice tidak ditemukan.",
+        });
+        return;
+      }
+
       mutateInvoiceGetUpdate({
-        id: detailInvoiceGet!.id,
-        body: { ...values, uuid: detailInvoiceGet!.uuid },
+        id: detailInvoiceGet.id,
+        body: { ...values, uuid: detailInvoiceGet.uuid },
       });
     } else {
       mutateInvoiceGetCreate({ ...values, uuid: uuidv4() });
