@@ -16,6 +16,21 @@ export const kloterService = {
     })) as ListResponse<Kloter>;
     return data;
   },
+  async getAllKloters() {
+    const allKloters: Kloter[] = [];
+    let page = 0;
+    const size = 100;
+    let hasMore = true;
+
+    while (hasMore) {
+      const response = await this.getKloters({ page, size, search: "" });
+      allKloters.push(...response.content);
+      page++;
+      hasMore = page < response.totalPages;
+    }
+
+    return allKloters;
+  },
   async getKloterById(id: number) {
     const data = (await http.get(ROUTES.kloter.byId(id))) as Kloter;
     return data;
