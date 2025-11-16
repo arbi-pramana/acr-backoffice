@@ -883,7 +883,7 @@ const PayoutDateColumn = ({ record }: { record: Slot }) => {
 
   return (
     <div className="flex items-center gap-2">
-      <span>{val ? dayjs(val).format("DD MMM YYYY HH:mm:ss") : "-"}</span>
+      <span>{val ? dayjs(val).format("DD MMM YYYY") : "-"}</span>
       {val && (
         <Popover
           open={open}
