@@ -1,8 +1,10 @@
 import {
   ArrowLeftOutlined,
   ArrowRightOutlined,
+  CheckOutlined,
   CloudUploadOutlined,
   DatabaseOutlined,
+  EditOutlined,
   InfoCircleFilled,
   UserOutlined,
 } from "@ant-design/icons";
@@ -16,6 +18,7 @@ import {
   Input,
   Modal,
   notification,
+  Popover,
   Row,
   Select,
   Space,
@@ -73,11 +76,7 @@ const columnsSlot = (props: {
     title: "Tanggal Pencairan",
     dataIndex: "payoutAt",
     key: "payoutAt",
-    render: (val) => {
-      return (
-        <span>{val ? dayjs(val).format("DD MMM YYYY HH:MM:ss") : "-"} </span>
-      );
-    },
+    render: (_, record) => <PayoutDateColumn record={record} />,
   },
   {
     title: "Nama",
@@ -522,38 +521,6 @@ const KloterForm = () => {
                   </Form.Item>
                 </Col>
                 <Col xs={24} lg={12}>
-                  <Form.Item label="Estimasi Periode" name="periode">
-                    <Row gutter={8}>
-                      <Col span={12}>
-                        <Form.Item
-                          name="estimateStartDate"
-                          rules={[{ required: true }]}
-                        >
-                          <DatePicker
-                            placeholder="Awal Periode"
-                            style={{ width: "100%" }}
-                            disabled={disabledForm}
-                            data-testid="estimateStartDate"
-                          />
-                        </Form.Item>
-                      </Col>
-                      <Col span={12}>
-                        <Form.Item
-                          name="estimateEndDate"
-                          rules={[{ required: true }]}
-                        >
-                          <DatePicker
-                            placeholder="Akhir Periode"
-                            style={{ width: "100%" }}
-                            disabled={disabledForm}
-                            data-testid="estimateEndDate"
-                          />
-                        </Form.Item>
-                      </Col>
-                    </Row>
-                  </Form.Item>
-                </Col>
-                <Col xs={24} lg={12}>
                   <Form.Item label="Periode" name="periode">
                     <Row gutter={8}>
                       <Col span={12}>
@@ -634,20 +601,6 @@ const KloterForm = () => {
                       data-testid="availableAt"
                     />
                   </Form.Item>
-                </Col>
-                <Col span={12}>
-                  <div>
-                    <Form.Item
-                      label="Kunci Tanggal Mulai"
-                      name="startDateLocked"
-                      rules={[{ required: true }]}
-                    >
-                      <Switch
-                        disabled={disabledForm}
-                        data-testid="startDateLocked"
-                      />
-                    </Form.Item>
-                  </div>
                 </Col>
                 <Col span={12}>
                   <Form.Item
@@ -896,6 +849,73 @@ const KloterForm = () => {
         )}
       </Modal>
     </>
+  );
+};
+
+const PayoutDateColumn = ({ record }: { record: Slot }) => {
+  const [open, setOpen] = useState(false);
+  const [dateValue, setDateValue] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    setDateValue(record.payoutAt || null);
+  }, [record.payoutAt]);
+
+  const { mutate: mutateUpdatePayoutDate } = useMutation({
+    mutationKey: ["updateSlotPayoutDate", record.id],
+    mutationFn: (data: updateSlotParams) => slotService.updateSlot(data),
+    onSuccess: () => {
+      notification.success({
+        message: "Tanggal pencairan berhasil diupdate",
+      });
+      setOpen(false);
+      queryClient.invalidateQueries({ queryKey: ["slot"] });
+    },
+  });
+
+  const updatePayoutDate = () => {
+    if (!dateValue) return;
+    mutateUpdatePayoutDate({
+      id: record.id,
+      body: {
+        payoutAt: dateValue,
+        isPayoutAllowed: record.isPayoutAllowed || false,
+      },
+    });
+  };
+
+  return (
+    <div className="flex items-center gap-2">
+      <span>
+        {record.payoutAt ? dayjs(record.payoutAt).format("DD MMM YYYY") : "-"}
+      </span>
+      {dateValue && (
+        <Popover
+          open={open}
+          onOpenChange={(open) => setOpen(open)}
+          trigger="click"
+          placement="bottomLeft"
+          content={
+            <div className="p-3 gap-3 flex">
+              <DatePicker
+                defaultValue={dateValue ? dayjs(dateValue) : undefined}
+                minDate={dayjs(new Date())}
+                onChange={(date) => {
+                  setDateValue(date ? date.toDate().toISOString() : null);
+                }}
+              />
+              <div>
+                <Button type="primary" onClick={updatePayoutDate}>
+                  <CheckOutlined />
+                </Button>
+              </div>
+            </div>
+          }
+        >
+          <Button type="default" size="small" icon={<EditOutlined />} />
+        </Popover>
+      )}
+    </div>
   );
 };
 
