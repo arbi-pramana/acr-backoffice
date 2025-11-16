@@ -853,10 +853,13 @@ const KloterForm = () => {
 };
 
 const PayoutDateColumn = ({ record }: { record: Slot }) => {
-  const val = record.payoutAt;
   const [open, setOpen] = useState(false);
-  const [dateValue, setDateValue] = useState<string | null>(val || null);
+  const [dateValue, setDateValue] = useState<string | null>(null);
   const queryClient = useQueryClient();
+
+  useEffect(() => {
+    setDateValue(record.payoutAt || null);
+  }, [record.payoutAt]);
 
   const { mutate: mutateUpdatePayoutDate } = useMutation({
     mutationKey: ["updateSlotPayoutDate", record.id],
@@ -883,8 +886,10 @@ const PayoutDateColumn = ({ record }: { record: Slot }) => {
 
   return (
     <div className="flex items-center gap-2">
-      <span>{val ? dayjs(val).format("DD MMM YYYY") : "-"}</span>
-      {val && (
+      <span>
+        {record.payoutAt ? dayjs(record.payoutAt).format("DD MMM YYYY") : "-"}
+      </span>
+      {dateValue && (
         <Popover
           open={open}
           onOpenChange={(open) => setOpen(open)}
@@ -893,7 +898,7 @@ const PayoutDateColumn = ({ record }: { record: Slot }) => {
           content={
             <div className="p-3 gap-3 flex">
               <DatePicker
-                defaultValue={val ? dayjs(val) : undefined}
+                defaultValue={dateValue ? dayjs(dateValue) : undefined}
                 minDate={dayjs(new Date())}
                 onChange={(date) => {
                   setDateValue(date ? date.toDate().toISOString() : null);
