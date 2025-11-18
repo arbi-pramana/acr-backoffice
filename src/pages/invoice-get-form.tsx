@@ -218,7 +218,7 @@ const InvoiceGetForm = () => {
   );
 
   const updateAmountForFinalDeposit = useCallback(
-    async (catalogId: number) => {
+    (catalogId: number) => {
       const catalog = kloterOptions?.find((k) => k.id === catalogId);
       if (catalog?.payout) {
         const amount = catalog.payout * 0.1;
