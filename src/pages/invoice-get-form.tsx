@@ -217,12 +217,22 @@ const InvoiceGetForm = () => {
     [slotOptions, form]
   );
 
+  const updateAmountForFinalDeposit = useCallback(
+    (catalogId: number) => {
+      const catalog = kloterOptions?.find((k) => k.id === catalogId);
+      if (catalog?.payout) {
+        const amount = catalog.payout * 0.1;
+        form.setFieldValue("amount", Math.round(amount));
+      }
+    },
+    [kloterOptions, form]
+  );
+
   useEffect(() => {
-    if (
-      typeValue === "FINAL_DEDUCTION" ||
-      (typeValue === "FINAL_DEPOSIT" && catalogIdValue && slotIdValue)
-    ) {
+    if (typeValue === "FINAL_DEDUCTION" && catalogIdValue && slotIdValue) {
       updateAmountForFinalDeduction(catalogIdValue, slotIdValue);
+    } else if (typeValue === "FINAL_DEPOSIT" && catalogIdValue) {
+      updateAmountForFinalDeposit(catalogIdValue);
     } else {
       form.setFieldValue("amount", 0);
     }
@@ -232,6 +242,7 @@ const InvoiceGetForm = () => {
     slotIdValue,
     form,
     updateAmountForFinalDeduction,
+    updateAmountForFinalDeposit,
   ]);
 
   return (
