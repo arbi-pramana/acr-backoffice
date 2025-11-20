@@ -6,6 +6,7 @@ import {
   DatabaseOutlined,
   EditOutlined,
   InfoCircleFilled,
+  SettingOutlined,
   UserOutlined,
 } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -194,6 +195,7 @@ const KloterForm = () => {
   const [disabledForm, setDisabledForm] = useState(isEditing);
   const [kloterStatus, setKloterStatus] = useState("");
   const [updatedKloterDetail, setUpdatedKloterDetail] = useState(false);
+  const [requestFeeModalVisible, setRequestFeeModalVisible] = useState(false);
   const queryClient = useQueryClient();
 
   const { mutate: mutateKloterCreate } = useMutation({
@@ -405,6 +407,15 @@ const KloterForm = () => {
       status: "OPEN",
     };
     mutateSlotCreate(body);
+  };
+
+  // Dummy implementation handleRequestFeeSubmit
+  const handleRequestFeeSubmit = (values: unknown) => {
+    alert("Request Fee Values:\n" + JSON.stringify(values));
+    setRequestFeeModalVisible(false);
+    notification.success({
+      message: "Request fee berhasil disimpan",
+    });
   };
 
   // groupId dpt drmn, status isi apa
@@ -684,24 +695,33 @@ const KloterForm = () => {
           <div className="p-6 m-6 rounded-md bg-white">
             <div className="flex justify-between mb-4">
               <div className="font-semibold text-xl mb-4">Daftar Slot</div>
-              <Upload
-                beforeUpload={(file: File) => {
-                  mutateUploadSlotCSV(file);
-                  return false;
-                }}
-                maxCount={1}
-                itemRender={() => null}
-              >
+              <div className="flex gap-3">
                 <Button
-                  // onClick={() => setSlotModal(true)}
-                  disabled={pendingUploadSlotCSV}
-                  loading={pendingUploadSlotCSV}
-                  icon={<CloudUploadOutlined />}
+                  onClick={() => setRequestFeeModalVisible(true)}
+                  icon={<SettingOutlined />}
                   iconPosition="start"
                 >
-                  Import CSV
+                  Request Fee
                 </Button>
-              </Upload>
+                <Upload
+                  beforeUpload={(file: File) => {
+                    mutateUploadSlotCSV(file);
+                    return false;
+                  }}
+                  maxCount={1}
+                  itemRender={() => null}
+                >
+                  <Button
+                    // onClick={() => setSlotModal(true)}
+                    disabled={pendingUploadSlotCSV}
+                    loading={pendingUploadSlotCSV}
+                    icon={<CloudUploadOutlined />}
+                    iconPosition="start"
+                  >
+                    Import CSV
+                  </Button>
+                </Upload>
+              </div>
             </div>
             <Table
               columns={columnsSlot({
@@ -931,6 +951,52 @@ const KloterForm = () => {
             </div>
           </div>
         )}
+      </Modal>
+      <Modal
+        open={requestFeeModalVisible}
+        onCancel={() => setRequestFeeModalVisible(false)}
+        title="Pengaturan Request Fee"
+        footer={null}
+        destroyOnClose
+      >
+        <Form layout="vertical" onFinish={handleRequestFeeSubmit}>
+          <Table
+            dataSource={Array.from({
+              length: Math.max(0, (detailKloter?.capacity || 5) - 5),
+            }).map((_, index) => ({
+              key: index,
+              percentage: "",
+            }))}
+            columns={[
+              {
+                title: "Urutan",
+                dataIndex: "key",
+                render: (text, record) => `Urutan ${record.key + 1}`,
+              },
+              {
+                title: "Persentase",
+                dataIndex: "percentage",
+                render: (_, record) => (
+                  <Form.Item
+                    name={`percentage_${record.key}`}
+                    rules={[
+                      { required: true, message: "Please input percentage!" },
+                    ]}
+                    style={{ margin: 0 }}
+                  >
+                    <Input placeholder="Input persentase" suffix="%" />
+                  </Form.Item>
+                ),
+              },
+            ]}
+            pagination={false}
+          />
+          <div className="flex justify-end mt-4">
+            <Button type="primary" htmlType="submit" className="w-[100px]">
+              Simpan
+            </Button>
+          </div>
+        </Form>
       </Modal>
     </>
   );
