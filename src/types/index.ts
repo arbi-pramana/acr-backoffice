@@ -120,6 +120,7 @@ export type Slot = {
   contribution: number;
   status: string;
   isPayoutAllowed: boolean;
+  enableSlotRequest: boolean;
 };
 
 export type createSlotParams = Omit<Slot, "id" | "isPayoutAllowed">;

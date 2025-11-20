@@ -64,6 +64,7 @@ const columnsSlot = (props: {
   setSlotModal: (val: boolean) => void;
   removeModal: (id: number) => void;
   updatePayout: (id: number, val: boolean) => void;
+  updateEnableSlotRequest: (record: Slot, val: boolean) => void;
   setDetailFromSlot: (val: Slot) => void;
 }): TableColumnsType<Slot> => [
   {
@@ -130,6 +131,20 @@ const columnsSlot = (props: {
       ) : value == "PARTIALLY_PAID" ? (
         <Chip variant="primary" label="Bayar Sebagian" />
       ) : null,
+  },
+  {
+    title: "Slot Request",
+    dataIndex: "enableSlotRequest",
+    key: "enableSlotRequest",
+    width: 130,
+    align: "center",
+    render: (val, record) => (
+      <Switch
+        value={val}
+        disabled={record.id == 0}
+        onClick={(val) => props.updateEnableSlotRequest(record, val)}
+      />
+    ),
   },
   {
     title: "Aksi Pencairan",
@@ -707,7 +722,30 @@ const KloterForm = () => {
                     onOk() {
                       mutateSlotUpdate({
                         id: id,
-                        body: { isPayoutAllowed: val },
+                        body: {
+                          isPayoutAllowed: val,
+                        },
+                      });
+                    },
+                  }),
+                updateEnableSlotRequest: (record, val) =>
+                  Modal.confirm({
+                    title: `Yakin ingin ${
+                      val ? "mengaktifkan" : "menonaktifkan"
+                    } slot request?`,
+                    content:
+                      "Dengan mengaktifkan slot request, user dapat melakukan request penambahan slot pada kloter ini.",
+                    okButtonProps: constants.okButtonProps,
+                    cancelButtonProps: constants.cancelButtonProps,
+                    okText: val ? "Aktifkan" : "Nonaktifkan",
+                    cancelText: "Batal",
+                    onOk() {
+                      mutateSlotUpdate({
+                        id: record.id,
+                        body: {
+                          enableSlotRequest: val,
+                          isPayoutAllowed: record.isPayoutAllowed,
+                        },
                       });
                     },
                   }),
