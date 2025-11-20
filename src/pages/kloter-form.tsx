@@ -521,6 +521,38 @@ const KloterForm = () => {
                   </Form.Item>
                 </Col>
                 <Col xs={24} lg={12}>
+                  <Form.Item label="Estimasi Periode" name="periode">
+                    <Row gutter={8}>
+                      <Col span={12}>
+                        <Form.Item
+                          name="estimateStartDate"
+                          rules={[{ required: true }]}
+                        >
+                          <DatePicker
+                            placeholder="Awal Periode"
+                            style={{ width: "100%" }}
+                            disabled={disabledForm}
+                            data-testid="estimateStartDate"
+                          />
+                        </Form.Item>
+                      </Col>
+                      <Col span={12}>
+                        <Form.Item
+                          name="estimateEndDate"
+                          rules={[{ required: true }]}
+                        >
+                          <DatePicker
+                            placeholder="Akhir Periode"
+                            style={{ width: "100%" }}
+                            disabled={disabledForm}
+                            data-testid="estimateEndDate"
+                          />
+                        </Form.Item>
+                      </Col>
+                    </Row>
+                  </Form.Item>
+                </Col>
+                <Col xs={24} lg={12}>
                   <Form.Item label="Periode" name="periode">
                     <Row gutter={8}>
                       <Col span={12}>
@@ -601,6 +633,20 @@ const KloterForm = () => {
                       data-testid="availableAt"
                     />
                   </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <div>
+                    <Form.Item
+                      label="Kunci Tanggal Mulai"
+                      name="startDateLocked"
+                      rules={[{ required: true }]}
+                    >
+                      <Switch
+                        disabled={disabledForm}
+                        data-testid="startDateLocked"
+                      />
+                    </Form.Item>
+                  </div>
                 </Col>
                 <Col span={12}>
                   <Form.Item
