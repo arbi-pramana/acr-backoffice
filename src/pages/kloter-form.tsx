@@ -661,18 +661,21 @@ const KloterForm = () => {
                   </Form.Item>
                 </Col>
                 <Col span={12}>
-                  <div>
-                    <Form.Item
-                      label="Kunci Tanggal Mulai"
-                      name="startDateLocked"
-                      rules={[{ required: true }]}
-                    >
-                      <Switch
-                        disabled={disabledForm}
-                        data-testid="startDateLocked"
-                      />
-                    </Form.Item>
-                  </div>
+                  <Form.Item
+                    label="Jenis Kloter"
+                    name="type"
+                    rules={[{ required: true }]}
+                  >
+                    <Select
+                      disabled={disabledForm}
+                      placeholder="Pilih Jenis Kloter"
+                      data-testid="type"
+                      options={[
+                        { label: "Arisan Menurun", value: "sorted" },
+                        { label: "Arisan Kocok", value: "random" },
+                      ]}
+                    />
+                  </Form.Item>
                 </Col>
                 <Col span={12}>
                   <Form.Item
@@ -686,6 +689,20 @@ const KloterForm = () => {
                       data-testid="whatsappGroupUrl"
                     />
                   </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <div>
+                    <Form.Item
+                      label="Kunci Tanggal Mulai"
+                      name="startDateLocked"
+                      rules={[{ required: true }]}
+                    >
+                      <Switch
+                        disabled={disabledForm}
+                        data-testid="startDateLocked"
+                      />
+                    </Form.Item>
+                  </div>
                 </Col>
               </Row>
             </Form>
