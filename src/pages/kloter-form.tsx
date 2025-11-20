@@ -695,7 +695,7 @@ const KloterForm = () => {
                     <Form.Item
                       label="Kunci Tanggal Mulai"
                       name="startDateLocked"
-                      rules={[{ required: true }]}
+                      rules={[{ required: false }]}
                     >
                       <Switch
                         disabled={disabledForm}
