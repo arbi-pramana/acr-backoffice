@@ -23,6 +23,10 @@ export type Kloter = {
   payout: number;
   adminFee: number;
   status: string;
+  requestFeeSettings: {
+    no: number;
+    percentage: number;
+  }[];
 };
 
 export type VoucherType = "percentage" | "fixed";
@@ -120,9 +124,13 @@ export type Slot = {
   contribution: number;
   status: string;
   isPayoutAllowed: boolean;
+  enableSlotRequest: boolean;
 };
 
-export type createSlotParams = Omit<Slot, "id" | "isPayoutAllowed">;
+export type createSlotParams = Omit<
+  Slot,
+  "id" | "isPayoutAllowed" | "enableSlotRequest"
+>;
 export type updateSlotParams = { id: number; body: Partial<Slot> };
 
 export type KYCList = {

@@ -6,6 +6,7 @@ import {
   DatabaseOutlined,
   EditOutlined,
   InfoCircleFilled,
+  SettingOutlined,
   UserOutlined,
 } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -29,7 +30,7 @@ import {
   Upload,
 } from "antd";
 import dayjs from "dayjs";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Chip from "../components/chip";
 import { constants } from "../helper/constant";
@@ -64,6 +65,7 @@ const columnsSlot = (props: {
   setSlotModal: (val: boolean) => void;
   removeModal: (id: number) => void;
   updatePayout: (id: number, val: boolean) => void;
+  updateEnableSlotRequest: (record: Slot, val: boolean) => void;
   setDetailFromSlot: (val: Slot) => void;
 }): TableColumnsType<Slot> => [
   {
@@ -132,6 +134,20 @@ const columnsSlot = (props: {
       ) : null,
   },
   {
+    title: "Slot Request",
+    dataIndex: "enableSlotRequest",
+    key: "enableSlotRequest",
+    width: 130,
+    align: "center",
+    render: (val, record) => (
+      <Switch
+        value={val}
+        disabled={record.id === 0}
+        onClick={(val) => props.updateEnableSlotRequest(record, val)}
+      />
+    ),
+  },
+  {
     title: "Aksi Pencairan",
     dataIndex: "isPayoutAllowed",
     key: "isPayoutAllowed",
@@ -140,7 +156,7 @@ const columnsSlot = (props: {
     render: (val, record) => (
       <Switch
         value={val}
-        disabled={record.id == 0}
+        disabled={record.id === 0}
         onClick={(val) => props.updatePayout(record.id, val)}
       />
     ),
@@ -168,6 +184,17 @@ const columnsSlot = (props: {
   },
 ];
 
+function generateDefaultRequestFeeSetings(capacity: number) {
+  // Generate capacity - 5, where first capacity is 35, then decrease by 5 until 5
+  const settings = [];
+  let percentage = 35;
+  for (let i = 1; i < capacity - 4; i++) {
+    settings.push({ no: i, percentage: percentage < 5 ? 5 : percentage });
+    percentage -= 5;
+  }
+  return settings;
+}
+
 const KloterForm = () => {
   const navigate = useNavigate();
   const params = useParams();
@@ -179,11 +206,16 @@ const KloterForm = () => {
   const [disabledForm, setDisabledForm] = useState(isEditing);
   const [kloterStatus, setKloterStatus] = useState("");
   const [updatedKloterDetail, setUpdatedKloterDetail] = useState(false);
+  const [requestFeeModalVisible, setRequestFeeModalVisible] = useState(false);
   const queryClient = useQueryClient();
 
   const { mutate: mutateKloterCreate } = useMutation({
     mutationKey: ["createKloter"],
-    mutationFn: (body: createKloterParams) => kloterService.createKloter(body),
+    mutationFn: (body: createKloterParams) =>
+      kloterService.createKloter({
+        ...body,
+        requestFeeSettings: generateDefaultRequestFeeSetings(body.capacity),
+      }),
     onSuccess: (data) => {
       if (!data) {
         queryClient.invalidateQueries({ queryKey: ["kloters"] });
@@ -323,6 +355,12 @@ const KloterForm = () => {
     setKloterStatus("");
   }, [detailKloter]);
 
+  const requestSlotCount = useMemo(() => {
+    if (!detailKloter) return 0;
+    const count = (detailKloter.capacity || 5) - 5;
+    return count > 0 ? count : 0;
+  }, [detailKloter]);
+
   const showConfirm = (values: createKloterParams, isEditing: boolean) => {
     if (!isEditing) {
       submitKloter(values);
@@ -390,6 +428,15 @@ const KloterForm = () => {
       status: "OPEN",
     };
     mutateSlotCreate(body);
+  };
+
+  // Dummy implementation handleRequestFeeSubmit
+  const handleRequestFeeSubmit = (values: unknown) => {
+    console.log("Request Fee Values:", values);
+    setRequestFeeModalVisible(false);
+    notification.success({
+      message: "Request fee berhasil disimpan",
+    });
   };
 
   // groupId dpt drmn, status isi apa
@@ -521,6 +568,58 @@ const KloterForm = () => {
                   </Form.Item>
                 </Col>
                 <Col xs={24} lg={12}>
+                  <Form.Item label="Estimasi Periode">
+                    <Row gutter={8}>
+                      <Col span={12}>
+                        <Form.Item
+                          name="estimateStartDate"
+                          rules={[{ required: true }]}
+                        >
+                          <DatePicker
+                            placeholder="Awal Periode"
+                            style={{ width: "100%" }}
+                            disabled={disabledForm}
+                            data-testid="estimateStartDate"
+                          />
+                        </Form.Item>
+                      </Col>
+                      <Col span={12}>
+                        <Form.Item
+                          name="estimateEndDate"
+                          rules={[
+                            { required: true },
+                            ({ getFieldValue }) => ({
+                              validator(_, value) {
+                                const startDate =
+                                  getFieldValue("estimateStartDate");
+                                if (
+                                  !value ||
+                                  !startDate ||
+                                  value.isAfter(startDate)
+                                ) {
+                                  return Promise.resolve();
+                                }
+                                return Promise.reject(
+                                  new Error(
+                                    "Tanggal akhir harus setelah tanggal awal"
+                                  )
+                                );
+                              },
+                            }),
+                          ]}
+                        >
+                          <DatePicker
+                            placeholder="Akhir Periode"
+                            style={{ width: "100%" }}
+                            disabled={disabledForm}
+                            data-testid="estimateEndDate"
+                          />
+                        </Form.Item>
+                      </Col>
+                    </Row>
+                  </Form.Item>
+                </Col>
+                <Col xs={24} lg={12}>
                   <Form.Item label="Periode" name="periode">
                     <Row gutter={8}>
                       <Col span={12}>
@@ -604,6 +703,23 @@ const KloterForm = () => {
                 </Col>
                 <Col span={12}>
                   <Form.Item
+                    label="Jenis Kloter"
+                    name="type"
+                    rules={[{ required: true }]}
+                  >
+                    <Select
+                      disabled={disabledForm}
+                      placeholder="Pilih Jenis Kloter"
+                      data-testid="type"
+                      options={[
+                        { label: "Arisan Menurun", value: "sorted" },
+                        { label: "Arisan Kocok", value: "random" },
+                      ]}
+                    />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item
                     label="Input WhatsApp Link"
                     name="whatsappGroupUrl"
                     rules={[{ required: true }]}
@@ -615,6 +731,20 @@ const KloterForm = () => {
                     />
                   </Form.Item>
                 </Col>
+                <Col span={12}>
+                  <div>
+                    <Form.Item
+                      label="Kunci Tanggal Mulai"
+                      name="startDateLocked"
+                      rules={[{ required: false }]}
+                    >
+                      <Switch
+                        disabled={disabledForm}
+                        data-testid="startDateLocked"
+                      />
+                    </Form.Item>
+                  </div>
+                </Col>
               </Row>
             </Form>
           )}
@@ -623,24 +753,33 @@ const KloterForm = () => {
           <div className="p-6 m-6 rounded-md bg-white">
             <div className="flex justify-between mb-4">
               <div className="font-semibold text-xl mb-4">Daftar Slot</div>
-              <Upload
-                beforeUpload={(file: File) => {
-                  mutateUploadSlotCSV(file);
-                  return false;
-                }}
-                maxCount={1}
-                itemRender={() => null}
-              >
+              <div className="flex gap-3">
                 <Button
-                  // onClick={() => setSlotModal(true)}
-                  disabled={pendingUploadSlotCSV}
-                  loading={pendingUploadSlotCSV}
-                  icon={<CloudUploadOutlined />}
+                  onClick={() => setRequestFeeModalVisible(true)}
+                  icon={<SettingOutlined />}
                   iconPosition="start"
                 >
-                  Import CSV
+                  Request Fee
                 </Button>
-              </Upload>
+                <Upload
+                  beforeUpload={(file: File) => {
+                    mutateUploadSlotCSV(file);
+                    return false;
+                  }}
+                  maxCount={1}
+                  itemRender={() => null}
+                >
+                  <Button
+                    // onClick={() => setSlotModal(true)}
+                    disabled={pendingUploadSlotCSV}
+                    loading={pendingUploadSlotCSV}
+                    icon={<CloudUploadOutlined />}
+                    iconPosition="start"
+                  >
+                    Import CSV
+                  </Button>
+                </Upload>
+              </div>
             </div>
             <Table
               columns={columnsSlot({
@@ -661,7 +800,30 @@ const KloterForm = () => {
                     onOk() {
                       mutateSlotUpdate({
                         id: id,
-                        body: { isPayoutAllowed: val },
+                        body: {
+                          isPayoutAllowed: val,
+                        },
+                      });
+                    },
+                  }),
+                updateEnableSlotRequest: (record, val) =>
+                  Modal.confirm({
+                    title: `Yakin ingin ${
+                      val ? "mengaktifkan" : "menonaktifkan"
+                    } slot request?`,
+                    content:
+                      "Dengan mengaktifkan slot request, user dapat melakukan request penambahan slot pada kloter ini.",
+                    okButtonProps: constants.okButtonProps,
+                    cancelButtonProps: constants.cancelButtonProps,
+                    okText: val ? "Aktifkan" : "Nonaktifkan",
+                    cancelText: "Batal",
+                    onOk() {
+                      mutateSlotUpdate({
+                        id: record.id,
+                        body: {
+                          enableSlotRequest: val,
+                          isPayoutAllowed: record.isPayoutAllowed,
+                        },
                       });
                     },
                   }),
@@ -847,6 +1009,55 @@ const KloterForm = () => {
             </div>
           </div>
         )}
+      </Modal>
+      <Modal
+        open={requestFeeModalVisible}
+        onCancel={() => setRequestFeeModalVisible(false)}
+        title="Pengaturan Request Fee"
+        footer={null}
+        destroyOnClose
+      >
+        <Form layout="vertical" onFinish={handleRequestFeeSubmit}>
+          <Table
+            dataSource={Array.from({
+              length: Math.max(0, requestSlotCount),
+            }).map((_, index) => ({
+              key: index,
+              percentage: "",
+            }))}
+            columns={[
+              {
+                title: "Urutan",
+                dataIndex: "key",
+                render: (text, record) => `Urutan ${record.key + 1}`,
+              },
+              {
+                title: "Persentase",
+                dataIndex: "percentage",
+                render: (_, record) => (
+                  <Form.Item
+                    name={`percentage_${record.key}`}
+                    rules={[
+                      {
+                        required: true,
+                        message: "Silakan masukkan persentase!",
+                      },
+                    ]}
+                    style={{ margin: 0 }}
+                  >
+                    <Input placeholder="Input persentase" suffix="%" />
+                  </Form.Item>
+                ),
+              },
+            ]}
+            pagination={false}
+          />
+          <div className="flex justify-end mt-4">
+            <Button type="primary" htmlType="submit" className="w-[100px]">
+              Simpan
+            </Button>
+          </div>
+        </Form>
       </Modal>
     </>
   );
