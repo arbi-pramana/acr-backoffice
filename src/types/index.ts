@@ -123,7 +123,10 @@ export type Slot = {
   enableSlotRequest: boolean;
 };
 
-export type createSlotParams = Omit<Slot, "id" | "isPayoutAllowed">;
+export type createSlotParams = Omit<
+  Slot,
+  "id" | "isPayoutAllowed" | "enableSlotRequest"
+>;
 export type updateSlotParams = { id: number; body: Partial<Slot> };
 
 export type KYCList = {

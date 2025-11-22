@@ -30,7 +30,7 @@ import {
   Upload,
 } from "antd";
 import dayjs from "dayjs";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Chip from "../components/chip";
 import { constants } from "../helper/constant";
@@ -142,7 +142,7 @@ const columnsSlot = (props: {
     render: (val, record) => (
       <Switch
         value={val}
-        disabled={record.id == 0}
+        disabled={record.id === 0}
         onClick={(val) => props.updateEnableSlotRequest(record, val)}
       />
     ),
@@ -156,7 +156,7 @@ const columnsSlot = (props: {
     render: (val, record) => (
       <Switch
         value={val}
-        disabled={record.id == 0}
+        disabled={record.id === 0}
         onClick={(val) => props.updatePayout(record.id, val)}
       />
     ),
@@ -340,6 +340,12 @@ const KloterForm = () => {
     setKloterStatus("");
   }, [detailKloter]);
 
+  const requestSlotCount = useMemo(() => {
+    if (!detailKloter) return 0;
+    const count = (detailKloter.capacity || 5) - 5;
+    return count > 0 ? count : 0;
+  }, [detailKloter]);
+
   const showConfirm = (values: createKloterParams, isEditing: boolean) => {
     if (!isEditing) {
       submitKloter(values);
@@ -411,7 +417,7 @@ const KloterForm = () => {
 
   // Dummy implementation handleRequestFeeSubmit
   const handleRequestFeeSubmit = (values: unknown) => {
-    alert("Request Fee Values:\n" + JSON.stringify(values));
+    console.log("Request Fee Values:", values);
     setRequestFeeModalVisible(false);
     notification.success({
       message: "Request fee berhasil disimpan",
@@ -547,7 +553,7 @@ const KloterForm = () => {
                   </Form.Item>
                 </Col>
                 <Col xs={24} lg={12}>
-                  <Form.Item label="Estimasi Periode" name="periode">
+                  <Form.Item label="Estimasi Periode">
                     <Row gutter={8}>
                       <Col span={12}>
                         <Form.Item
@@ -565,7 +571,27 @@ const KloterForm = () => {
                       <Col span={12}>
                         <Form.Item
                           name="estimateEndDate"
-                          rules={[{ required: true }]}
+                          rules={[
+                            { required: true },
+                            ({ getFieldValue }) => ({
+                              validator(_, value) {
+                                const startDate =
+                                  getFieldValue("estimateStartDate");
+                                if (
+                                  !value ||
+                                  !startDate ||
+                                  value.isAfter(startDate)
+                                ) {
+                                  return Promise.resolve();
+                                }
+                                return Promise.reject(
+                                  new Error(
+                                    "Tanggal akhir harus setelah tanggal awal"
+                                  )
+                                );
+                              },
+                            }),
+                          ]}
                         >
                           <DatePicker
                             placeholder="Akhir Periode"
@@ -979,7 +1005,7 @@ const KloterForm = () => {
         <Form layout="vertical" onFinish={handleRequestFeeSubmit}>
           <Table
             dataSource={Array.from({
-              length: Math.max(0, (detailKloter?.capacity || 5) - 5),
+              length: Math.max(0, requestSlotCount),
             }).map((_, index) => ({
               key: index,
               percentage: "",
@@ -997,7 +1023,10 @@ const KloterForm = () => {
                   <Form.Item
                     name={`percentage_${record.key}`}
                     rules={[
-                      { required: true, message: "Please input percentage!" },
+                      {
+                        required: true,
+                        message: "Silakan masukkan persentase!",
+                      },
                     ]}
                     style={{ margin: 0 }}
                   >
