@@ -23,6 +23,10 @@ export type Kloter = {
   payout: number;
   adminFee: number;
   status: string;
+  requestFeeSettings: {
+    no: number;
+    percentage: number;
+  }[];
 };
 
 export type VoucherType = "percentage" | "fixed";

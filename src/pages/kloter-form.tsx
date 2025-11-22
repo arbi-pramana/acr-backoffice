@@ -184,6 +184,17 @@ const columnsSlot = (props: {
   },
 ];
 
+function generateDefaultRequestFeeSetings(capacity: number) {
+  // Generate capacity - 5, where first capacity is 35, then decrease by 5 until 5
+  const settings = [];
+  let percentage = 35;
+  for (let i = 1; i < capacity - 4; i++) {
+    settings.push({ no: i, percentage: percentage < 5 ? 5 : percentage });
+    percentage -= 5;
+  }
+  return settings;
+}
+
 const KloterForm = () => {
   const navigate = useNavigate();
   const params = useParams();
@@ -200,7 +211,11 @@ const KloterForm = () => {
 
   const { mutate: mutateKloterCreate } = useMutation({
     mutationKey: ["createKloter"],
-    mutationFn: (body: createKloterParams) => kloterService.createKloter(body),
+    mutationFn: (body: createKloterParams) =>
+      kloterService.createKloter({
+        ...body,
+        requestFeeSettings: generateDefaultRequestFeeSetings(body.capacity),
+      }),
     onSuccess: (data) => {
       if (!data) {
         queryClient.invalidateQueries({ queryKey: ["kloters"] });
