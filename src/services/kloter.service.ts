@@ -40,14 +40,17 @@ export const kloterService = {
     return data;
   },
   async updateKloterById(params: updateKloterByIdParams) {
-    const data = await http.patch(
-      ROUTES.kloter.updateById(params.id),
-      params.body
-    );
+    const data = await http.patch(ROUTES.kloter.updateById(params.id), {
+      ...params.body,
+      requestFeeSettings: JSON.stringify(params.body.requestFeeSettings),
+    });
     return data;
   },
   async createKloter(body: createKloterParams) {
-    const data = await http.post(ROUTES.kloter.create, body);
+    const data = await http.post(ROUTES.kloter.create, {
+      ...body,
+      requestFeeSettings: JSON.stringify(body.requestFeeSettings),
+    });
     return data;
   },
   async uploadCSV(body: File) {
