@@ -185,13 +185,16 @@ const columnsSlot = (props: {
 ];
 
 function generateDefaultRequestFeeSetings(capacity: number) {
-  // Generate capacity - 5, where first capacity is 35, then decrease by 5 until 5
-  const settings = [];
-  let percentage = 35;
-  for (let i = 1; i < capacity - 4; i++) {
-    settings.push({ no: i, percentage: percentage < 5 ? 5 : percentage });
-    percentage -= 5;
-  }
+  const percentages = [35, 30, 30, 25, 25, 10];
+  const count = Math.max(0, capacity - 5);
+
+  const settings = Array(count)
+    .fill(null)
+    .map((_, index) => ({
+      no: index + 1,
+      percentage: percentages[index] !== undefined ? percentages[index] : 5,
+    }));
+
   return settings;
 }
 
