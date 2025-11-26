@@ -8,6 +8,7 @@ import KloterForm from "./pages/kloter-form";
 import KYCForm from "./pages/kyc-form";
 import Login from "./pages/login";
 import VoucherForm from "./pages/voucher-form";
+import InvoiceGetForm from "./pages/invoice-get-form";
 // import utc from "dayjs/plugin/utc";
 // import timezone from "dayjs/plugin/timezone";
 // import dayjs from "dayjs";
@@ -85,6 +86,22 @@ function App() {
           element={
             <ProtectedRoute>
               <VoucherForm />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/invoice-get"
+          element={
+            <ProtectedRoute>
+              <InvoiceGetForm />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/invoice-get/:uuid"
+          element={
+            <ProtectedRoute>
+              <InvoiceGetForm />
             </ProtectedRoute>
           }
         />
