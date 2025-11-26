@@ -46,7 +46,7 @@ import {
 } from "../types";
 
 type RequestFeeSettingsForm = {
-  requestFeeSettings: {
+  settings: {
     no: number;
     percentage: number;
   }[];
@@ -364,14 +364,6 @@ const KloterForm = () => {
         estimateEndDate: dayjs(detailKloter.estimateEndDate),
         availableAt: dayjs(detailKloter.availableAt),
       });
-
-      const reqFeeSettings = detailKloter.requestFeeSettings
-        ? JSON.parse(detailKloter.requestFeeSettings)
-        : [];
-
-      formRequestFee.setFieldsValue({
-        requestFeeSettings: reqFeeSettings,
-      });
     }
   }, [detailKloter, form, formRequestFee]);
 
@@ -385,6 +377,17 @@ const KloterForm = () => {
     const count = (detailKloter.capacity || 5) - 5;
     return count > 0 ? count : 0;
   }, [detailKloter]);
+
+  useEffect(() => {
+    if (requestFeeModalVisible && detailKloter?.requestFeeSettings) {
+      try {
+        const settings = JSON.parse(detailKloter.requestFeeSettings);
+        formRequestFee.setFieldsValue({ settings });
+      } catch (error) {
+        console.error("Failed to parse requestFeeSettings:", error);
+      }
+    }
+  }, [requestFeeModalVisible, detailKloter, formRequestFee]);
 
   const showConfirm = (values: createKloterParams, isEditing: boolean) => {
     if (!isEditing) {
@@ -458,7 +461,7 @@ const KloterForm = () => {
   const handleRequestFeeSubmit = (values: RequestFeeSettingsForm) => {
     mutateKloterUpdate({
       body: {
-        requestFeeSettings: JSON.stringify(values.requestFeeSettings),
+        requestFeeSettings: JSON.stringify(values.settings),
       },
       id: params.id ? parseInt(params.id) : 0,
     });
@@ -774,6 +777,18 @@ const KloterForm = () => {
             </Form>
           )}
         </div>
+
+        {/* {isEditing && (
+          <div className="p-6 m-6 rounded-md bg-white">
+            <div className="font-semibold text-xl mb-4">
+              Debug: Request Fee Settings
+            </div>
+            <pre className="bg-gray-100 p-4 rounded overflow-auto">
+              {JSON.stringify(formRequestFee.getFieldsValue(), null, 2)}
+            </pre>
+          </div>
+        )} */}
+
         {isEditing && detailKloter && detailSlot ? (
           <div className="p-6 m-6 rounded-md bg-white">
             <div className="flex justify-between mb-4">
@@ -1047,49 +1062,46 @@ const KloterForm = () => {
           form={formRequestFee}
           onFinish={handleRequestFeeSubmit}
         >
-          <Table
-            dataSource={Array.from({
-              length: Math.max(0, requestSlotCount),
-            }).map((_, index) => ({
-              key: index,
-              percentage: "",
-            }))}
-            columns={[
-              {
-                title: "Urutan",
-                dataIndex: "key",
-                render: (text, record) => `Urutan ${record.key + 1}`,
-              },
-              {
-                title: "Persentase",
-                dataIndex: "percentage",
-                render: (_, record) => (
-                  <>
-                    <Form.Item
-                      name={["requestFeeSettings", record.key, "no"]}
-                      hidden
-                      initialValue={record.key + 1}
-                    >
-                      <Input type="hidden" />
-                    </Form.Item>
-                    <Form.Item
-                      name={["requestFeeSettings", record.key, "percentage"]}
-                      rules={[
-                        {
-                          required: true,
-                          message: "Silakan masukkan persentase!",
-                        },
-                      ]}
-                      style={{ margin: 0 }}
-                    >
-                      <Input placeholder="Input persentase" suffix="%" />
-                    </Form.Item>
-                  </>
-                ),
-              },
-            ]}
-            pagination={false}
-          />
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="border-b border-gray-100">
+                  <th className="text-left p-3 bg-gray-50">Urutan</th>
+                  <th className="text-left p-3 bg-gray-50">Persentase</th>
+                </tr>
+              </thead>
+              <tbody>
+                {Array.from({
+                  length: Math.max(0, requestSlotCount),
+                }).map((_, index) => (
+                  <tr key={index} className="border-b border-gray-100">
+                    <td className="p-3">Urutan {index + 1}</td>
+                    <td className="p-3">
+                      <Form.Item
+                        name={["settings", index, "no"]}
+                        hidden
+                        initialValue={index + 1}
+                      >
+                        <Input type="hidden" />
+                      </Form.Item>
+                      <Form.Item
+                        name={["settings", index, "percentage"]}
+                        rules={[
+                          {
+                            required: true,
+                            message: "Silakan masukkan persentase!",
+                          },
+                        ]}
+                        style={{ margin: 0 }}
+                      >
+                        <Input placeholder="Input persentase" suffix="%" />
+                      </Form.Item>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
           <div className="flex justify-end mt-4">
             <Button type="primary" htmlType="submit" className="w-[100px]">
               Simpan
