@@ -45,6 +45,13 @@ import {
   updateSlotParams,
 } from "../types";
 
+type RequestFeeSettingsForm = {
+  requestFeeSettings: {
+    no: number;
+    percentage: number;
+  }[];
+};
+
 const kloterNextStatus = [
   { label: "Drafted", value: "DRAFTED" },
   { label: "Tersedia", value: "OPEN" },
@@ -203,6 +210,7 @@ const KloterForm = () => {
   const params = useParams();
   const isEditing = params.id !== undefined;
   const [form] = Form.useForm();
+  const [formRequestFee] = Form.useForm();
   const [formAddSlot] = Form.useForm();
   const [slotModal, setSlotModal] = useState(false);
   const [detailFromSlot, setDetailFromSlot] = useState<null | Slot>(null);
@@ -217,7 +225,9 @@ const KloterForm = () => {
     mutationFn: (body: createKloterParams) =>
       kloterService.createKloter({
         ...body,
-        requestFeeSettings: generateDefaultRequestFeeSetings(body.capacity),
+        requestFeeSettings: JSON.stringify(
+          generateDefaultRequestFeeSetings(body.capacity)
+        ),
       }),
     onSuccess: (data) => {
       if (!data) {
@@ -258,6 +268,8 @@ const KloterForm = () => {
         } else {
           setUpdatedKloterDetail(false);
         }
+
+        setRequestFeeModalVisible(false);
       },
     });
 
@@ -342,16 +354,26 @@ const KloterForm = () => {
     enabled: isEditing,
     staleTime: 1000 * 60 * 3, // 3 minutes
   });
-  if (detailKloter) {
-    form.setFieldsValue({
-      ...detailKloter,
-      startAt: dayjs(detailKloter.startAt),
-      endAt: dayjs(detailKloter.endAt),
-      estimateStartDate: dayjs(detailKloter.estimateStartDate),
-      estimateEndDate: dayjs(detailKloter.estimateEndDate),
-      availableAt: dayjs(detailKloter.availableAt),
-    });
-  }
+  useEffect(() => {
+    if (detailKloter) {
+      form.setFieldsValue({
+        ...detailKloter,
+        startAt: dayjs(detailKloter.startAt),
+        endAt: dayjs(detailKloter.endAt),
+        estimateStartDate: dayjs(detailKloter.estimateStartDate),
+        estimateEndDate: dayjs(detailKloter.estimateEndDate),
+        availableAt: dayjs(detailKloter.availableAt),
+      });
+
+      const reqFeeSettings = detailKloter.requestFeeSettings
+        ? JSON.parse(detailKloter.requestFeeSettings)
+        : [];
+
+      formRequestFee.setFieldsValue({
+        requestFeeSettings: reqFeeSettings,
+      });
+    }
+  }, [detailKloter, form, formRequestFee]);
 
   // reset value in select so it always refer value from api after refetch
   useEffect(() => {
@@ -433,12 +455,12 @@ const KloterForm = () => {
     mutateSlotCreate(body);
   };
 
-  // Dummy implementation handleRequestFeeSubmit
-  const handleRequestFeeSubmit = (values: unknown) => {
-    console.log("Request Fee Values:", values);
-    setRequestFeeModalVisible(false);
-    notification.success({
-      message: "Request fee berhasil disimpan",
+  const handleRequestFeeSubmit = (values: RequestFeeSettingsForm) => {
+    mutateKloterUpdate({
+      body: {
+        requestFeeSettings: JSON.stringify(values.requestFeeSettings),
+      },
+      id: params.id ? parseInt(params.id) : 0,
     });
   };
 
@@ -1020,7 +1042,11 @@ const KloterForm = () => {
         footer={null}
         destroyOnClose
       >
-        <Form layout="vertical" onFinish={handleRequestFeeSubmit}>
+        <Form
+          layout="vertical"
+          form={formRequestFee}
+          onFinish={handleRequestFeeSubmit}
+        >
           <Table
             dataSource={Array.from({
               length: Math.max(0, requestSlotCount),
@@ -1038,18 +1064,27 @@ const KloterForm = () => {
                 title: "Persentase",
                 dataIndex: "percentage",
                 render: (_, record) => (
-                  <Form.Item
-                    name={`percentage_${record.key}`}
-                    rules={[
-                      {
-                        required: true,
-                        message: "Silakan masukkan persentase!",
-                      },
-                    ]}
-                    style={{ margin: 0 }}
-                  >
-                    <Input placeholder="Input persentase" suffix="%" />
-                  </Form.Item>
+                  <>
+                    <Form.Item
+                      name={["requestFeeSettings", record.key, "no"]}
+                      hidden
+                      initialValue={record.key + 1}
+                    >
+                      <Input type="hidden" />
+                    </Form.Item>
+                    <Form.Item
+                      name={["requestFeeSettings", record.key, "percentage"]}
+                      rules={[
+                        {
+                          required: true,
+                          message: "Silakan masukkan persentase!",
+                        },
+                      ]}
+                      style={{ margin: 0 }}
+                    >
+                      <Input placeholder="Input persentase" suffix="%" />
+                    </Form.Item>
+                  </>
                 ),
               },
             ]}
