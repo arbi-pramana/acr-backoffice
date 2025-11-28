@@ -732,7 +732,7 @@ const KloterForm = () => {
                 <Col span={12}>
                   <Form.Item
                     label="Jenis Kloter"
-                    name="type"
+                    name="catalogType"
                     rules={[{ required: true }]}
                   >
                     <Select
