@@ -42,14 +42,14 @@ export const kloterService = {
   async updateKloterById(params: updateKloterByIdParams) {
     const data = await http.patch(ROUTES.kloter.updateById(params.id), {
       ...params.body,
-      requestFeeSettings: JSON.stringify(params.body.requestFeeSettings),
+      requestFeeSettings: params.body.requestFeeSettings,
     });
     return data;
   },
   async createKloter(body: createKloterParams) {
     const data = await http.post(ROUTES.kloter.create, {
       ...body,
-      requestFeeSettings: JSON.stringify(body.requestFeeSettings),
+      requestFeeSettings: body.requestFeeSettings,
     });
     return data;
   },
