@@ -740,8 +740,8 @@ const KloterForm = () => {
                       placeholder="Pilih Jenis Kloter"
                       data-testid="type"
                       options={[
-                        { label: "Arisan Menurun", value: "sorted" },
-                        { label: "Arisan Kocok", value: "random" },
+                        { label: "Arisan Menurun", value: "DESCENDING" },
+                        { label: "Arisan Kocok", value: "RANDOM" },
                       ]}
                     />
                   </Form.Item>
