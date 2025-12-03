@@ -58,6 +58,53 @@ export type VoucherDashboard = {
   expiringVouchers: number;
 };
 
+// USER SLOT REPLACEMENT
+
+export type UserSlotReplacement = {
+  id: number;
+  catalogId: number;
+  catalogTitle: string;
+  slotId: number;
+  oldUserId: number;
+  oldUserEmail: string;
+  oldUserName: string;
+  newUserId: number;
+  newUserEmail: string;
+  newUserName: string;
+  fee: number;
+  description: string;
+  status: string;
+  executedById: number;
+  executedByEmail: string;
+  createdById: number;
+  createdByEmail: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type createUserSlotReplacementParams = {
+  catalogId: number;
+  slotId: number;
+  oldUserId: number;
+  newUserId: number;
+  fee: number;
+  description: string;
+  status: "WAITING_PAYMENT";
+  executedBy: number;
+};
+
+export type updateUserSlotReplacementByIdParams = {
+  id: number;
+  body: Partial<createUserSlotReplacementParams>;
+};
+
+export type UserSlotReplacementDashboard = {
+  totalUserSlotReplacements: number;
+  activeUserSlotReplacements: number;
+  inactiveUserSlotReplacements: number;
+  expiringUserSlotReplacements: number;
+};
+
 // INVOICE GET
 
 export type InvoiceGet = {
