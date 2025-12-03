@@ -32,6 +32,7 @@ export const ROUTES = {
       `${version}/backoffice/kycs/level-two/` + id,
     sendNotifRejectLevelOne: (id: string) =>
       `${version}/notifications/kyc-one-rejected/` + id,
+    export: `/${version}/backoffice/kycs/export`,
   },
   kloter: {
     list: `/${version}/backoffice/catalogs`,

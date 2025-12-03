@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   CloudUploadOutlined,
   FileSearchOutlined,
@@ -157,6 +158,26 @@ const KYCManagement = () => {
     queryKey: ["kycs", params],
   });
 
+  const handleExport = async () => {
+    const response: unknown = await kycService.exportKycs(params);
+    const filename = `kycs_${dayjs().format("YYYYMMDD_HHmmss")}.csv`;
+
+    // normalize to Blob
+    const blob = new Blob([response as string], {
+      type: "text/csv;charset=utf-8;",
+    });
+
+    // create temporary link and trigger download
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", filename);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+  };
+
   return (
     <>
       <div className="bg-white flex justify-between items-center">
@@ -168,7 +189,9 @@ const KYCManagement = () => {
             </div>
           </div>
         </div>
-        <Button icon={<CloudUploadOutlined />}>Export</Button>
+        <Button icon={<CloudUploadOutlined />} onClick={handleExport}>
+          Export
+        </Button>
       </div>
       <div className="flex justify-between my-3">
         <div className="flex gap-2">
