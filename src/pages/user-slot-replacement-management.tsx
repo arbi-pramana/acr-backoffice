@@ -161,7 +161,7 @@ const UserSlotReplacementManagement = () => {
                 createdAtFrom: dayjs(v[0]).format("YYYY-MM-DDTHH:mm:ss+00:00"),
                 createdAtTo: dayjs(v[1]).format("YYYY-MM-DDTHH:mm:ss+00:00"),
               }));
-            } else if (v == null) {
+            } else if (v === null) {
               setParams((prev) => ({
                 ...prev,
                 createdAtFrom: "",
