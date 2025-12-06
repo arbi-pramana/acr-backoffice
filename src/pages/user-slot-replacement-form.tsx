@@ -371,7 +371,7 @@ const UserSlotReplacementForm = () => {
         <div
           className={`bg-white p-6 rounded-lg flex flex-col ${
             isEditing ? "justify-between sticky" : "justify-end fixed"
-          }  gap-3 items-center w-full bottom-0 sticky`}
+          }  gap-3 items-center w-full bottom-0`}
         >
           {updatedUserSlotReplacementDetail && (
             <div className=" flex justify-start w-full">
