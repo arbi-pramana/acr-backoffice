@@ -399,7 +399,7 @@ const UserSlotReplacementForm = () => {
                 className="w-[200px]"
                 data-testid="submit-down"
                 disabled={
-                  (isEditing && disabledForm == false) ||
+                  (isEditing && !disabledForm) ||
                   isPendingUpdateUserSlotReplacement
                 }
                 loading={isPendingUpdateUserSlotReplacement}
