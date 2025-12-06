@@ -168,7 +168,6 @@ const UserSlotReplacementForm = () => {
         submitUserSlotReplacement(values);
       },
       onCancel() {
-        console.log("Canceled");
       },
     });
   };
