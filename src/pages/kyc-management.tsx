@@ -1,11 +1,10 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   CloudUploadOutlined,
   FileSearchOutlined,
   SearchOutlined,
 } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-import { Button, DatePicker, Input, Select, Table } from "antd";
+import { Button, DatePicker, Input, notification, Select, Table } from "antd";
 import { ColumnsType } from "antd/es/table";
 import dayjs from "dayjs";
 import { useState } from "react";
@@ -153,29 +152,41 @@ const KYCManagement = () => {
     sort: "createdAt,desc",
   });
 
+  const [loadingExport, setLoadingExport] = useState(false);
+
   const { data: kycs, isLoading: loadingKycs } = useQuery({
     queryFn: () => kycService.getKycs(params),
     queryKey: ["kycs", params],
   });
 
   const handleExport = async () => {
-    const response: unknown = await kycService.exportKycs(params);
-    const filename = `kycs_${dayjs().format("YYYYMMDD_HHmmss")}.csv`;
+    try {
+      setLoadingExport(true);
+      const response = await kycService.exportKycs(params);
+      const filename = `kycs_${dayjs().format("YYYYMMDD_HHmmss")}.csv`;
 
-    // normalize to Blob
-    const blob = new Blob([response as string], {
-      type: "text/csv;charset=utf-8;",
-    });
+      // normalize to Blob
+      const blob = new Blob([response], {
+        type: "text/csv;charset=utf-8;",
+      });
 
-    // create temporary link and trigger download
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.setAttribute("download", filename);
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    window.URL.revokeObjectURL(url);
+      // create temporary link and trigger download
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", filename);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      setLoadingExport(false);
+    } catch {
+      setLoadingExport(false);
+      notification.error({
+        message: "Export Failed",
+        description: "There was an error exporting the KYC data.",
+      });
+    }
   };
 
   return (
@@ -190,7 +201,7 @@ const KYCManagement = () => {
           </div>
         </div>
         <Button icon={<CloudUploadOutlined />} onClick={handleExport}>
-          Export
+          {loadingExport ? "Exporting..." : "Export"}
         </Button>
       </div>
       <div className="flex justify-between my-3">
