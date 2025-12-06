@@ -67,7 +67,6 @@ const UserSlotReplacementForm = () => {
   const { mutate: mutateUserSlotReplacementCreate } = useMutation({
     mutationKey: ["createUserSlotReplacement"],
     mutationFn: (body: createUserSlotReplacementParams) => {
-      
       return userSlotReplacementService.createUserSlotReplacement(body);
     },
     onSuccess: (data) => {
@@ -166,8 +165,7 @@ const UserSlotReplacementForm = () => {
       onOk() {
         submitUserSlotReplacement(values);
       },
-      onCancel() {
-      },
+      onCancel() {},
     });
   };
 
@@ -212,7 +210,7 @@ const UserSlotReplacementForm = () => {
                 >
                   Edit
                 </Button>
-              ) : !disabledForm ? (
+              ) : (
                 <div className="flex gap-3">
                   <Button onClick={() => setDisabledForm(true)}>Cancel</Button>
                   <Button
@@ -224,7 +222,7 @@ const UserSlotReplacementForm = () => {
                     Simpan
                   </Button>
                 </div>
-              ) : null)}
+              ))}
           </div>
           <Divider style={{ margin: 12 }} />
           {loadingDetailUserSlotReplacement ? (
