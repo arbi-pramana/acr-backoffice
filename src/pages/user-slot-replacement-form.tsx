@@ -67,7 +67,7 @@ const UserSlotReplacementForm = () => {
   const { mutate: mutateUserSlotReplacementCreate } = useMutation({
     mutationKey: ["createUserSlotReplacement"],
     mutationFn: (body: createUserSlotReplacementParams) => {
-      console.log("create userSlotReplacement", { body });
+      
       return userSlotReplacementService.createUserSlotReplacement(body);
     },
     onSuccess: (data) => {
