@@ -99,7 +99,6 @@ const UserSlotReplacementForm = () => {
         queryKey: ["userSlotReplacement", params.code],
       });
       setDisabledForm(true);
-      console.log("update userSlotReplacement", variables);
 
       notification.success({
         message: "User slot replacement berhasil diubah.",
