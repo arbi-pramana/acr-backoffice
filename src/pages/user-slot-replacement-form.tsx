@@ -244,7 +244,14 @@ const UserSlotReplacementForm = () => {
               layout="vertical"
               form={form}
               onFinish={(values) => showConfirm(values, isEditing)}
-              onFinishFailed={(err) => console.log(err)}
+              onFinishFailed={(err) =>
+                notification.error({
+                  message: "Form submission failed",
+                  description:
+                    err?.errorFields?.[0]?.errors?.[0] ||
+                    "Please check the form for errors and try again.",
+                })
+              }
             >
               <Row gutter={16}>
                 <Col span={12}>
