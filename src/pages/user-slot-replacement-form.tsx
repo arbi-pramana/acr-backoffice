@@ -185,13 +185,6 @@ const UserSlotReplacementForm = () => {
     }
   };
 
-  // groupId dpt drmn, status isi apa
-  // list slot itu gmn? soalnya abis create catalog, get slot by id, return array kosong
-  // udh coba create slot, pas get slot by id, bener return yg baru dibuat td
-  // method patch kena cors
-  // di list slot blm ada nama
-  // di list userSlotReplacement blm ada kontribusi
-  // di form, status bawah apa aja
   return (
     <>
       <div className="bg-[#F9F9F9] min-h-screen">
