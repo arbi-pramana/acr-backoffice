@@ -151,7 +151,7 @@ const UserSlotReplacementForm = () => {
       return;
     }
     const titleContent =
-      "Apakah anda yakin kamu mengubah data userSlotReplacement?";
+      "Apakah anda yakin ingin mengubah data userSlotReplacement?";
     const textContent =
       "Data yang anda ubah dapat mengubah data yang ditampilkan di UI user";
 
