@@ -31,10 +31,6 @@ export const accountService = {
       hasMore = page < response.totalPages;
     }
 
-    console.log(`Fetched total ${allAccounts.length} accounts`, {
-      allAccounts,
-    });
-
     return allAccounts;
   },
   async getAccountById(id: string) {
