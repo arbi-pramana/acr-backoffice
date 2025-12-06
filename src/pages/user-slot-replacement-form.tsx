@@ -87,7 +87,6 @@ const UserSlotReplacementForm = () => {
   } = useMutation({
     mutationKey: ["updateUserSlotReplacement"],
     mutationFn: (data: updateUserSlotReplacementByIdParams) => {
-      console.log("update userSlotReplacement", { data });
       return userSlotReplacementService.updateUserSlotReplacementById(data);
     },
     onSuccess: (data, variables) => {
