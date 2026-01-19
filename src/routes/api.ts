@@ -58,6 +58,7 @@ export const ROUTES = {
     create: `/${version}/user-slot-replacements`,
     uploadCatalogCSV: `/${version}/user-slot-replacements/csv`,
     fee: `/${version}/user-slot-replacements/fee`,
+    approveById: (id: number) => `/${version}/user-slot-replacements/` + id + "/approve",
   },
   invoiceGet: {
     list: `/${version}/invoice-gets`,

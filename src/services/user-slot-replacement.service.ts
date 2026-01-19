@@ -50,4 +50,8 @@ export const userSlotReplacementService = {
     );
     return data;
   },
+  async approveById(id: number) {
+    const data = await http.post(ROUTES.userSlotReplacement.approveById(id));
+    return data;
+  },
 };

@@ -1,6 +1,6 @@
 import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-import { Button, DatePicker, Input, Table } from "antd";
+import { Button, DatePicker, Input, Table, Modal, message } from "antd";
 import { ColumnsType } from "antd/es/table";
 import dayjs from "dayjs";
 import { useState } from "react";
@@ -13,6 +13,7 @@ import { UserSlotReplacement } from "../types";
 
 const columns = (props: {
   navigate: (val: string) => void;
+  onApprove: (id: number) => void;
 }): ColumnsType<UserSlotReplacement> => [
   {
     title: "ID",
@@ -64,7 +65,9 @@ const columns = (props: {
     dataIndex: "status",
     key: "status",
     render: (value) =>
-      value === "EXECUTED" ? (
+      value === "APPROVED" ? (
+        <Chip variant="success" label="Approved" />
+      ) : value === "EXECUTED" ? (
         <Chip variant="success" label="Executed" />
       ) : value === "PENDING" ? (
         <Chip variant="warning" label="Pending" />
@@ -101,13 +104,20 @@ const columns = (props: {
     key: "action",
     fixed: "right",
     dataIndex: "id",
-    render: (id) => (
-      <Button
-        type="default"
-        onClick={() => props.navigate("/user-slot-replacement-form/" + id)}
-      >
-        Detail
-      </Button>
+    render: (id, record) => (
+      <div className="flex gap-2">
+        {record.status === "WAITING_PAYMENT" && (
+          <Button type="primary" onClick={() => props.onApprove(id)}>
+            Approve
+          </Button>
+        )}
+        <Button
+          type="default"
+          onClick={() => props.navigate("/user-slot-replacement-form/" + id)}
+        >
+          Detail
+        </Button>
+      </div>
     ),
   },
 ];
@@ -121,11 +131,30 @@ const UserSlotReplacementManagement = () => {
     sort: "createdAt,DESC",
   });
 
-  const { data: userSlotReplacements, isLoading: loadingUserSlotReplacement } =
-    useQuery({
-      queryFn: () => userSlotReplacementService.getUserSlotReplacements(params),
-      queryKey: ["userSlotReplacements", params],
+  const {
+    data: userSlotReplacements,
+    isLoading: loadingUserSlotReplacement,
+    refetch,
+  } = useQuery({
+    queryFn: () => userSlotReplacementService.getUserSlotReplacements(params),
+    queryKey: ["userSlotReplacements", params],
+  });
+
+  const handleApprove = (id: number) => {
+    Modal.confirm({
+      title: "Konfirmasi",
+      content: "apakah anda ingin approve user replacement ini",
+      onOk: async () => {
+        try {
+          await userSlotReplacementService.approveById(id);
+          message.success("User replacement berhasil di-approve");
+          await refetch();
+        } catch (e: any) {
+          message.error(e?.message ?? "Gagal approve user replacement");
+        }
+      },
     });
+  };
 
   // const { data: userSlotReplacementDashboard } = useQuery({
   //   queryFn: () => userSlotReplacementService.getUserSlotReplacementDashboard(),
@@ -181,7 +210,7 @@ const UserSlotReplacementManagement = () => {
       </div>
       <Table
         scroll={{ x: "max-content", y: "auto" }}
-        columns={columns({ navigate })}
+        columns={columns({ navigate, onApprove: handleApprove })}
         dataSource={userSlotReplacements?.content ?? []}
         pagination={false}
         loading={loadingUserSlotReplacement}
