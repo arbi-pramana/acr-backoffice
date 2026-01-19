@@ -18,16 +18,16 @@ export const userSlotReplacementService = {
   },
   async getUserSlotReplacementById(id: number) {
     const data = (await http.get(
-      ROUTES.userSlotReplacement.byId(id)
+      ROUTES.userSlotReplacement.byId(id),
     )) as UserSlotReplacement;
     return data;
   },
   async updateUserSlotReplacementById(
-    params: updateUserSlotReplacementByIdParams
+    params: updateUserSlotReplacementByIdParams,
   ) {
     const data = await http.patch(
       ROUTES.userSlotReplacement.updateById(params.id),
-      params.body
+      params.body,
     );
     return data;
   },
@@ -35,12 +35,18 @@ export const userSlotReplacementService = {
     const data = await http.post(ROUTES.userSlotReplacement.create, body);
     return data;
   },
+  async getFee(slotUserId: number) {
+    const data: unknown = await http.post(ROUTES.userSlotReplacement.fee, {
+      slotUserId,
+    });
+    return data as { fee: number };
+  },
   async uploadCSV(body: File) {
     const formData = new FormData();
     formData.append("file", body);
     const data = await http.post(
       ROUTES.userSlotReplacement.uploadCatalogCSV,
-      formData
+      formData,
     );
     return data;
   },

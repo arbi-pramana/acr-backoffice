@@ -130,6 +130,7 @@ const UserSlotReplacementForm = () => {
   }
 
   const slotId = Form.useWatch("slotId", form);
+  const oldUserId = Form.useWatch("oldUserId", form);
   const selectedSlot = useMemo(() => {
     return slotOptions?.find((slot) => slot.id === slotId);
   }, [slotId, slotOptions]);
@@ -140,9 +141,17 @@ const UserSlotReplacementForm = () => {
     });
   }, [selectedSlot, form]);
 
+  useEffect(() => {
+    userSlotReplacementService.getFee(oldUserId).then((res) => {
+      form.setFieldsValue({
+        fee: res.fee,
+      });
+    });
+  }, [oldUserId, form]);
+
   const showConfirm = (
     values: createUserSlotReplacementParams,
-    isEditing: boolean
+    isEditing: boolean,
   ) => {
     if (!isEditing) {
       submitUserSlotReplacement(values);
@@ -170,7 +179,7 @@ const UserSlotReplacementForm = () => {
   };
 
   const submitUserSlotReplacement = (
-    values: createUserSlotReplacementParams
+    values: createUserSlotReplacementParams,
   ) => {
     if (isEditing) {
       mutateUserSlotReplacementUpdate({
@@ -300,7 +309,7 @@ const UserSlotReplacementForm = () => {
                     rules={[{ required: true }]}
                   >
                     <Select
-                      disabled={disabledForm}
+                      disabled={disabledForm || oldUserId}
                       placeholder="Pilih User Lama"
                       data-testid="oldUserId"
                       showSearch
