@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import http from "../helper/http";
 import { ROUTES } from "../routes/api";
 import {
@@ -16,6 +17,21 @@ export const accountService = {
       params,
     })) as ListResponse<AccountList>;
     return data;
+  },
+  async getAllAccounts() {
+    const allAccounts: AccountList[] = [];
+    let page = 0;
+    const size = 100;
+    let hasMore = true;
+
+    while (hasMore) {
+      const response = await this.getAccounts({ page, size });
+      allAccounts.push(...response.content);
+      page++;
+      hasMore = page < response.totalPages;
+    }
+
+    return allAccounts;
   },
   async getAccountById(id: string) {
     const data = (await http.get(ROUTES.account.byId(id))) as AccountDetail;

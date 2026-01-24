@@ -36,4 +36,10 @@ export const kycService = {
     const data = await http.post(ROUTES.kyc.sendNotifRejectLevelOne(id));
     return data;
   },
+  async exportKycs(params: unknown): Promise<string> {
+    const data = await http.get(ROUTES.kyc.export, {
+      params,
+    });
+    return data as unknown as string;
+  },
 };

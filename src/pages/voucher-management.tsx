@@ -1,8 +1,4 @@
-import {
-  CloudUploadOutlined,
-  PlusOutlined,
-  SearchOutlined,
-} from "@ant-design/icons";
+import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button, DatePicker, Input, notification, Table, Upload } from "antd";
 import { ColumnsType } from "antd/es/table";
@@ -128,23 +124,22 @@ const VoucherManagement = () => {
   //   queryKey: ["voucherDashboard"],
   // });
 
-  const { mutate: mutateUploadVoucherCSV, isPending: pendingUploadVoucherCSV } =
-    useMutation({
-      mutationFn: (data: File) => voucherService.uploadCSV(data),
-      onSuccess: (data) => {
-        if (
-          data.status &&
-          (data.status.toString().startsWith("5") ||
-            data.status.toString().startsWith("4"))
-        ) {
-          return;
-        }
-        queryClient.invalidateQueries({ queryKey: ["vouchers"] });
-        notification.success({
-          message: "Upload Voucher berhasil",
-        });
-      },
-    });
+  const { mutate: mutateUploadVoucherCSV } = useMutation({
+    mutationFn: (data: File) => voucherService.uploadCSV(data),
+    onSuccess: (data) => {
+      if (
+        data.status &&
+        (data.status.toString().startsWith("5") ||
+          data.status.toString().startsWith("4"))
+      ) {
+        return;
+      }
+      queryClient.invalidateQueries({ queryKey: ["vouchers"] });
+      notification.success({
+        message: "Upload Voucher berhasil",
+      });
+    },
+  });
 
   return (
     <>

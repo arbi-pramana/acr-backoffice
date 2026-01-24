@@ -9,6 +9,8 @@ import KYCForm from "./pages/kyc-form";
 import Login from "./pages/login";
 import VoucherForm from "./pages/voucher-form";
 import InvoiceGetForm from "./pages/invoice-get-form";
+import UserSlotReplacementManagement from "./pages/user-slot-replacement-management";
+import UserSlotReplacementForm from "./pages/user-slot-replacement-form";
 // import utc from "dayjs/plugin/utc";
 // import timezone from "dayjs/plugin/timezone";
 // import dayjs from "dayjs";
@@ -102,6 +104,30 @@ function App() {
           element={
             <ProtectedRoute>
               <InvoiceGetForm />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/user-slot-replacements"
+          element={
+            <ProtectedRoute>
+              <UserSlotReplacementManagement />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/user-slot-replacement-form"
+          element={
+            <ProtectedRoute>
+              <UserSlotReplacementForm />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/user-slot-replacement-form/:id"
+          element={
+            <ProtectedRoute>
+              <UserSlotReplacementForm />
             </ProtectedRoute>
           }
         />

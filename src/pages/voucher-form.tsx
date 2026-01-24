@@ -75,11 +75,7 @@ const VoucherForm = () => {
       },
     });
 
-  const {
-    data: detailVoucher,
-    isLoading: loadingDetailVoucher,
-    isFetching: fetchingDetailVoucher,
-  } = useQuery({
+  const { data: detailVoucher, isLoading: loadingDetailVoucher } = useQuery({
     queryKey: ["voucher", params.code],
     queryFn: () => voucherService.getVoucherByCode(params.code || ""),
     enabled: isEditing,

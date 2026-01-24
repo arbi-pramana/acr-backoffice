@@ -14,6 +14,7 @@ import KYCManagement from "./kyc-management";
 import { useAppVersion } from "../helper/useAppVersion.ts";
 import VoucherManagement from "./voucher-management.tsx";
 import InvoiceGetManagement from "./invoice-get-management.tsx";
+import UserSlotReplacementManagement from "./user-slot-replacement-management.tsx";
 
 const Dashboard = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -52,6 +53,12 @@ const Dashboard = () => {
       iconGrey: "/invoice-grey.svg",
       tab: "invoiceGet",
     },
+    {
+      title: "User Slot Replacement Management",
+      iconWhite: "/user-setting-white.svg",
+      iconGrey: "/user-setting-grey.svg",
+      tab: "userSlotReplacement",
+    },
   ];
 
   const generateMenus = () => {
@@ -89,6 +96,7 @@ const Dashboard = () => {
     account: <AccountManagement />,
     voucher: <VoucherManagement />,
     invoiceGet: <InvoiceGetManagement />,
+    userSlotReplacement: <UserSlotReplacementManagement />,
   };
 
   return (
