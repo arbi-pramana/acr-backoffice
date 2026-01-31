@@ -32,7 +32,13 @@ http.interceptors.response.use(
     notification.error({ message: errorMessage });
 
     return error;
-  }
+  },
 );
+
+const httpWithoutInterceptor = axios.create({
+  baseURL: import.meta.env.VITE_APP_BASE_URL,
+});
+
+export { httpWithoutInterceptor };
 
 export default http;

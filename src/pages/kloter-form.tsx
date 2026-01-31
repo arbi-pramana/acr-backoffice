@@ -34,6 +34,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Chip from "../components/chip";
 import { constants } from "../helper/constant";
+import { httpWithoutInterceptor } from "../helper/http";
 import { numberWithCommas } from "../helper/number-with-commas";
 import { kloterService } from "../services/kloter.service";
 import { slotService } from "../services/slot.service";
@@ -44,6 +45,8 @@ import {
   updateKloterByIdParams,
   updateSlotParams,
 } from "../types";
+import { AxiosError } from "axios";
+import { useDebounce } from "../hooks/use-debounce";
 
 type RequestFeeSettingsForm = {
   settings: {
@@ -226,7 +229,7 @@ const KloterForm = () => {
       kloterService.createKloter({
         ...body,
         requestFeeSettings: JSON.stringify(
-          generateDefaultRequestFeeSetings(body.capacity)
+          generateDefaultRequestFeeSetings(body.capacity),
         ),
       }),
     onSuccess: (data) => {
@@ -389,6 +392,12 @@ const KloterForm = () => {
     }
   }, [requestFeeModalVisible, detailKloter, formRequestFee]);
 
+  const checkGroupId = async (value: string) => {
+    return httpWithoutInterceptor.get(`/v1/slots/public/${value}`);
+  };
+
+  const debouncedCheckGroupId = useDebounce(checkGroupId, 500);
+
   const showConfirm = (values: createKloterParams, isEditing: boolean) => {
     if (!isEditing) {
       submitKloter(values);
@@ -544,7 +553,36 @@ const KloterForm = () => {
                   <Form.Item
                     label="Group ID"
                     name="groupId"
-                    rules={[{ required: true }]}
+                    rules={[
+                      { required: true },
+                      {
+                        validator: async (_, value) => {
+                          if (!value) return Promise.resolve();
+
+                          try {
+                            await debouncedCheckGroupId(value);
+
+                            return Promise.reject(
+                              new Error("Group ID sudah digunakan."),
+                            );
+                          } catch (error: unknown) {
+                            if (
+                              error instanceof AxiosError &&
+                              error.response &&
+                              error.response.status === 404
+                            ) {
+                              return Promise.resolve();
+                            } else {
+                              return Promise.reject(
+                                new Error(
+                                  "Terjadi kesalahan saat memeriksa Group ID.",
+                                ),
+                              );
+                            }
+                          }
+                        },
+                      },
+                    ]}
                   >
                     <Input
                       disabled={disabledForm}
@@ -629,8 +667,8 @@ const KloterForm = () => {
                                 }
                                 return Promise.reject(
                                   new Error(
-                                    "Tanggal akhir harus setelah tanggal awal"
-                                  )
+                                    "Tanggal akhir harus setelah tanggal awal",
+                                  ),
                                 );
                               },
                             }),
@@ -877,7 +915,7 @@ const KloterForm = () => {
               dataSource={[
                 ...detailSlot,
                 ...Array(
-                  Math.abs(detailKloter.capacity - detailSlot.length)
+                  Math.abs(detailKloter.capacity - detailSlot.length),
                 ).fill(emptySlotItem),
               ]}
               pagination={false}
@@ -960,7 +998,7 @@ const KloterForm = () => {
                       mutateKloterUpdate({
                         body: {
                           status: kloterNextStatus.find(
-                            (v) => v.value == status
+                            (v) => v.value == status,
                           )?.value,
                         },
                         id: params.id ? parseInt(params.id) : 0,
@@ -1037,7 +1075,7 @@ const KloterForm = () => {
               className="flex items-center justify-between gap-4 mb-4 border rounded-lg p-2 border-gray-200 cursor-pointer hover:shadow-sm"
               onClick={() =>
                 navigate(
-                  `/account-form/${detailFromSlot.userId}/${detailFromSlot.catalogId}`
+                  `/account-form/${detailFromSlot.userId}/${detailFromSlot.catalogId}`,
                 )
               }
             >
