@@ -396,7 +396,7 @@ const KloterForm = () => {
   }, [requestFeeModalVisible, detailKloter, formRequestFee]);
 
   const checkGroupId = async (value: string) => {
-    return httpWithoutInterceptor.get(`/v1/slots/public/${value}`);
+    return httpWithoutInterceptor.get(`/v1/catalogs/public/${value}`);
   };
 
   const debouncedCheckGroupId = useDebounce(checkGroupId, 500);
@@ -563,11 +563,21 @@ const KloterForm = () => {
                           if (!value) return Promise.resolve();
 
                           try {
-                            await debouncedCheckGroupId(value);
-
-                            return Promise.reject(
-                              new Error("Group ID sudah digunakan."),
-                            );
+                            const result = await debouncedCheckGroupId(value);
+                            if (isEditing) {
+                              const data = result.data;
+                              if (data.id == parseInt(params.id || "0")) {
+                                return Promise.resolve();
+                              } else {
+                                return Promise.reject(
+                                  "Group ID sudah digunakan.",
+                                );
+                              }
+                            } else {
+                              return Promise.reject(
+                                new Error("Group ID sudah digunakan."),
+                              );
+                            }
                           } catch (error: unknown) {
                             if (
                               error instanceof AxiosError &&
