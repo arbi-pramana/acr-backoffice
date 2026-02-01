@@ -72,6 +72,7 @@ const emptySlotItem = {
 };
 
 const columnsSlot = (props: {
+  capacity?: number;
   setSlotModal: (val: boolean) => void;
   removeModal: (id: number) => void;
   updatePayout: (id: number, val: boolean) => void;
@@ -149,13 +150,15 @@ const columnsSlot = (props: {
     key: "enableSlotRequest",
     width: 130,
     align: "center",
-    render: (val, record) => (
-      <Switch
-        value={val}
-        disabled={record.id === 0}
-        onClick={(val) => props.updateEnableSlotRequest(record, val)}
-      />
-    ),
+    render: (val, record, index) =>
+      props.capacity &&
+      index < props.capacity - 4 && (
+        <Switch
+          value={val}
+          disabled={record.id === 0}
+          onClick={(val) => props.updateEnableSlotRequest(record, val)}
+        />
+      ),
   },
   {
     title: "Aksi Pencairan",
@@ -861,6 +864,7 @@ const KloterForm = () => {
             </div>
             <Table
               columns={columnsSlot({
+                capacity: detailKloter.capacity,
                 setSlotModal,
                 removeModal,
                 setDetailFromSlot,
