@@ -206,15 +206,15 @@ const InvoiceGetForm = () => {
       if (userId) {
         const result = await accountService.getAccountInstallment(
           userId.toString(),
-          catalogId
+          catalogId,
         );
         form.setFieldValue(
           "amount",
-          result.reduce((acc, curr) => acc + curr.remainingAmount, 0)
+          result.reduce((acc, curr) => acc + curr.remainingAmount, 0),
         );
       }
     },
-    [slotOptions, form]
+    [slotOptions, form],
   );
 
   const updateAmountForFinalDeposit = useCallback(
@@ -225,7 +225,7 @@ const InvoiceGetForm = () => {
         form.setFieldValue("amount", Math.round(amount));
       }
     },
-    [kloterOptions, form]
+    [kloterOptions, form],
   );
 
   useEffect(() => {
@@ -234,10 +234,13 @@ const InvoiceGetForm = () => {
     } else if (typeValue === "FINAL_DEPOSIT" && catalogIdValue) {
       updateAmountForFinalDeposit(catalogIdValue);
     } else {
-      form.setFieldValue("amount", 0);
+      if (!isEditing) {
+        form.setFieldValue("amount", 0);
+      }
     }
   }, [
     catalogIdValue,
+    isEditing,
     typeValue,
     slotIdValue,
     form,
