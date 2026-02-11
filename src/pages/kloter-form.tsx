@@ -380,7 +380,7 @@ const KloterForm = () => {
 
   const requestSlotCount = useMemo(() => {
     if (!detailKloter) return 0;
-    const count = (detailKloter.capacity || 5) - 5;
+    const count = (detailKloter.capacity || 4) - 4;
     return count > 0 ? count : 0;
   }, [detailKloter]);
 
