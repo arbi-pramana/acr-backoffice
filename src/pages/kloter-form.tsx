@@ -185,13 +185,6 @@ const columnsSlot = (props: {
         {record.id ? (
           <Button onClick={() => props.removeModal(record.id)}>Hapus</Button>
         ) : null}
-        <Button
-          type="primary"
-          onClick={() => props.setSlotModal(true)}
-          data-testid="add-slot"
-        >
-          Isi Data
-        </Button>
       </Space>
     ),
   },
@@ -870,6 +863,13 @@ const KloterForm = () => {
                     Import CSV
                   </Button>
                 </Upload>
+                <Button
+                  type="primary"
+                  onClick={() => setSlotModal(true)}
+                  data-testid="add-slot"
+                >
+                  Isi Data
+                </Button>
               </div>
             </div>
             <Table
