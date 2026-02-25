@@ -359,7 +359,7 @@ const VoucherForm = () => {
                         key: "email",
                       },
                       {
-                        title: "Mobile",
+                        title: "Phone Number",
                         dataIndex: "mobile",
                         key: "mobile",
                       },
