@@ -13,13 +13,17 @@ import {
   Select,
   Spin,
   Switch,
+  Table,
 } from "antd";
 import dayjs from "dayjs";
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { constants } from "../helper/constant";
 import { voucherService } from "../services/voucher.service";
-import { createVoucherParams, updateVoucherByIdParams } from "../types";
+import {
+  createVoucherParams,
+  updateVoucherByIdParams,
+} from "../types";
 
 const VoucherForm = () => {
   const navigate = useNavigate();
@@ -81,6 +85,7 @@ const VoucherForm = () => {
     enabled: isEditing,
     staleTime: 1000 * 60 * 3, // 3 minutes
   });
+  
   if (detailVoucher) {
     form.setFieldsValue({
       ...detailVoucher,
@@ -325,6 +330,35 @@ const VoucherForm = () => {
                   </Form.Item>
                 </Col>
               </Row>
+              {isEditing && (
+                <div className="mt-6">
+                  <Divider />
+                  <div className="font-semibold text-lg mb-3">
+                    Pengguna Voucher
+                  </div>
+                  <Table
+                    dataSource={detailVoucher?.users || []}
+                    columns={[
+                      {
+                        title: "Username",
+                        dataIndex: "username",
+                        key: "username",
+                      },
+                      {
+                        title: "Email",
+                        dataIndex: "email",
+                        key: "email",
+                      },
+                      {
+                        title: "Mobile",
+                        dataIndex: "mobile",
+                        key: "mobile",
+                      },
+                    ]}
+                    rowKey="id"
+                  />
+                </div>
+              )}
             </Form>
           )}
         </div>
