@@ -334,7 +334,7 @@ const VoucherForm = () => {
                 <div className="mt-6">
                   <Divider />
                   <div className="font-semibold text-lg mb-3">
-                    Pengguna Voucher ({(detailVoucher as { users?: unknown })?.users ? (detailVoucher as { users?: unknown })?.users?.length : 0})
+                    Pengguna Voucher ({(detailVoucher as { users?: Array<{ id: number; username: string; email: string; mobile: string }> })?.users ? (detailVoucher as { users?: Array<{ id: number; username: string; email: string; mobile: string }> })?.users?.length : 0})
                   </div>
                   <Table
                     dataSource={
