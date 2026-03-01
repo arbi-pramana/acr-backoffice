@@ -203,29 +203,33 @@ const InvoiceGetForm = () => {
     async (catalogId: number, slotId: number) => {
       const slot = slotOptions?.find((s) => s.id === slotId);
       const userId = slot?.userId;
-      if (userId) {
+      if (userId && !isEditing) {
         const result = await accountService.getAccountInstallment(
           userId.toString(),
-          catalogId
+          catalogId,
         );
         form.setFieldValue(
           "amount",
-          result.reduce((acc, curr) => acc + curr.remainingAmount, 0)
+          result.reduce((acc, curr) => acc + curr.remainingAmount, 0),
         );
+      } else {
+        form.setFieldValue("amount", detailInvoiceGet?.amount || 0);
       }
     },
-    [slotOptions, form]
+    [slotOptions, form, isEditing, detailInvoiceGet],
   );
 
   const updateAmountForFinalDeposit = useCallback(
     (catalogId: number) => {
       const catalog = kloterOptions?.find((k) => k.id === catalogId);
-      if (catalog?.payout) {
+      if (catalog?.payout && !isEditing) {
         const amount = catalog.payout * 0.1;
         form.setFieldValue("amount", Math.round(amount));
+      } else {
+        form.setFieldValue("amount", detailInvoiceGet?.amount || 0);
       }
     },
-    [kloterOptions, form]
+    [kloterOptions, form, isEditing, detailInvoiceGet],
   );
 
   useEffect(() => {
