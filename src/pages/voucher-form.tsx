@@ -13,13 +13,17 @@ import {
   Select,
   Spin,
   Switch,
+  Table,
 } from "antd";
 import dayjs from "dayjs";
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { constants } from "../helper/constant";
 import { voucherService } from "../services/voucher.service";
-import { createVoucherParams, updateVoucherByIdParams } from "../types";
+import {
+  createVoucherParams,
+  updateVoucherByIdParams,
+} from "../types";
 
 const VoucherForm = () => {
   const navigate = useNavigate();
@@ -81,6 +85,7 @@ const VoucherForm = () => {
     enabled: isEditing,
     staleTime: 1000 * 60 * 3, // 3 minutes
   });
+  
   if (detailVoucher) {
     form.setFieldsValue({
       ...detailVoucher,
@@ -325,6 +330,44 @@ const VoucherForm = () => {
                   </Form.Item>
                 </Col>
               </Row>
+              {isEditing && (
+                <div className="mt-6">
+                  <Divider />
+                  <div className="font-semibold text-lg mb-3">
+                    Pengguna Voucher ({(detailVoucher as { users?: Array<{ id: number; username: string; email: string; mobile: string }> })?.users ? (detailVoucher as { users?: Array<{ id: number; username: string; email: string; mobile: string }> })?.users?.length : 0})
+                  </div>
+                  <Table
+                    dataSource={
+                      (detailVoucher as {
+                        users?: {
+                          id: number;
+                          username: string;
+                          email: string;
+                          mobile: string;
+                        }[];
+                      })?.users || []
+                    }
+                    columns={[
+                      {
+                        title: "Username",
+                        dataIndex: "username",
+                        key: "username",
+                      },
+                      {
+                        title: "Email",
+                        dataIndex: "email",
+                        key: "email",
+                      },
+                      {
+                        title: "Phone Number",
+                        dataIndex: "mobile",
+                        key: "mobile",
+                      },
+                    ]}
+                    rowKey="id"
+                  />
+                </div>
+              )}
             </Form>
           )}
         </div>
