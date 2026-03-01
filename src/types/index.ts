@@ -23,6 +23,7 @@ export type Kloter = {
   payout: number;
   adminFee: number;
   status: string;
+  catalogType: string;
   requestFeeSettings: string;
 };
 
@@ -405,7 +406,7 @@ export type AccountCatalog = {
       payoutStatus: string;
       payoutAt: string;
       isPayoutReady: true;
-    }
+    },
   ];
   startAt: string;
   endAt: string;
@@ -423,7 +424,7 @@ export type AccountInstallment = {
     {
       id: number;
       amount: number;
-    }
+    },
   ];
   rotationStatus: string;
   installmentStatus: string;
