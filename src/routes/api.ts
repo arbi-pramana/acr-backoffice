@@ -42,6 +42,7 @@ export const ROUTES = {
     updateById: (id: number) => `/${version}/backoffice/catalogs/` + id,
     create: `/${version}/backoffice/catalogs`,
     uploadCatalogCSV: `/${version}/backoffice/catalogs/csv`,
+    setWinner: (id: number) => `/${version}/backoffice/catalogs/${id}/winner`,
   },
   voucher: {
     list: `/${version}/vouchers`,

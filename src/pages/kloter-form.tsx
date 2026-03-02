@@ -49,6 +49,7 @@ import { AxiosError } from "axios";
 import { useDebounce } from "../hooks/use-debounce";
 import { useRandomCatalogLogic } from "../hooks/use-random-catalog-logic";
 import WinnerPickerModal from "../components/winner-picker-modal";
+import RouletteSpinner from "../components/roullete-spinner";
 
 type RequestFeeSettingsForm = {
   settings: {
@@ -840,6 +841,32 @@ const KloterForm = () => {
     });
   };
 
+  const { mutateAsync: mutateSubmitWinner } = useMutation({
+    mutationFn: (data: { date: string; slotUserId: number; catalogId: number; slotId: number }) =>
+      kloterService.setWinner({
+        kloterId: data.catalogId,
+        slotUserId: data.slotUserId,
+        date: data.date,
+        slotId: data.slotId,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["slot", params.id] });
+      notification.success({
+        message: "Pemenang berhasil dipilih",
+      });
+    },
+  });
+
+  const submitWinner = async (selectedSlot: Slot, winner: Slot) => {
+    const date = dayjs(selectedSlot.payoutAt).format("YYYY-MM-DD");
+    const slotUserId = winner.slotUserId!;
+    const catalogId = detailKloter?.id;
+    if (!catalogId) return;
+
+    await mutateSubmitWinner({ date, slotUserId, catalogId, slotId: selectedSlot.id });
+    setOpenWinnerPicker(false);
+  };
+
   // groupId dpt drmn, status isi apa
   // list slot itu gmn? soalnya abis create catalog, get slot by id, return array kosong
   // udh coba create slot, pas get slot by id, bener return yg baru dibuat td
@@ -1306,11 +1333,11 @@ const KloterForm = () => {
         )}
 
         {isEditing && isRandomCatalog && detailKloter && detailSlot ? (
-          <div className="grid grid-cols-3">
+          <div className="grid grid-cols-1 md:grid-cols-3">
             <div className="p-6 m-6 rounded-md bg-white">
-              <div className="flex justify-between mb-4">
+              <div className="flex flex-col md:flex-row justify-between mb-4">
                 <div className="font-semibold text-xl mb-4">Daftar Slot</div>
-                <div className="flex gap-3">
+                <div className="grid grid-cols-1 md:flex gap-3">
                   <Button
                     onClick={() => setRequestFeeModalVisible(true)}
                     icon={<SettingOutlined />}
@@ -1345,68 +1372,70 @@ const KloterForm = () => {
                   </Button>
                 </div>
               </div>
-              <Table
-                columns={slotColumnsForRandomCatalog({
-                  capacity: detailKloter.capacity,
-                  setSlotModal,
-                  removeModal,
-                  setDetailFromSlot,
-                  updatePayout: (id, val) =>
-                    Modal.confirm({
-                      title: `Yakin ingin ${
-                        val ? "mengaktifkan" : "menonaktifkan"
-                      } pencairan?`,
-                      content:
-                        "Dengan mengaktifkan pencairan, kontribusi pada slot ini akan diproses untuk dicairkan.",
-                      okButtonProps: constants.okButtonProps,
-                      cancelButtonProps: constants.cancelButtonProps,
-                      okText: val ? "Aktifkan" : "Nonaktifkan",
-                      cancelText: "Batal",
-                      onOk() {
-                        mutateSlotUpdate({
-                          id: id,
-                          body: {
-                            isPayoutAllowed: val,
-                          },
-                        });
-                      },
-                    }),
-                  updateEnableSlotRequest: (record, val) =>
-                    Modal.confirm({
-                      title: `Yakin ingin ${
-                        val ? "mengaktifkan" : "menonaktifkan"
-                      } slot request?`,
-                      content:
-                        "Dengan mengaktifkan slot request, user dapat melakukan request penambahan slot pada kloter ini.",
-                      okButtonProps: constants.okButtonProps,
-                      cancelButtonProps: constants.cancelButtonProps,
-                      okText: val ? "Aktifkan" : "Nonaktifkan",
-                      cancelText: "Batal",
-                      onOk() {
-                        mutateSlotUpdate({
-                          id: record.id,
-                          body: {
-                            enableSlotRequest: val,
-                            isPayoutAllowed: record.isPayoutAllowed,
-                          },
-                        });
-                      },
-                    }),
-                })}
-                loading={
-                  loadSlot ||
-                  pendingSlotUpdate ||
-                  pendingSlotDelete ||
-                  pendingSlotCreate
-                }
-                dataSource={[
-                  ...detailSlot,
-                  ...Array(
-                    Math.abs(detailKloter.capacity - detailSlot.length),
-                  ).fill(emptySlotItem),
-                ]}
-                pagination={false}
-              />
+              <div className="overflow-auto">
+                <Table
+                  columns={slotColumnsForRandomCatalog({
+                    capacity: detailKloter.capacity,
+                    setSlotModal,
+                    removeModal,
+                    setDetailFromSlot,
+                    updatePayout: (id, val) =>
+                      Modal.confirm({
+                        title: `Yakin ingin ${
+                          val ? "mengaktifkan" : "menonaktifkan"
+                        } pencairan?`,
+                        content:
+                          "Dengan mengaktifkan pencairan, kontribusi pada slot ini akan diproses untuk dicairkan.",
+                        okButtonProps: constants.okButtonProps,
+                        cancelButtonProps: constants.cancelButtonProps,
+                        okText: val ? "Aktifkan" : "Nonaktifkan",
+                        cancelText: "Batal",
+                        onOk() {
+                          mutateSlotUpdate({
+                            id: id,
+                            body: {
+                              isPayoutAllowed: val,
+                            },
+                          });
+                        },
+                      }),
+                    updateEnableSlotRequest: (record, val) =>
+                      Modal.confirm({
+                        title: `Yakin ingin ${
+                          val ? "mengaktifkan" : "menonaktifkan"
+                        } slot request?`,
+                        content:
+                          "Dengan mengaktifkan slot request, user dapat melakukan request penambahan slot pada kloter ini.",
+                        okButtonProps: constants.okButtonProps,
+                        cancelButtonProps: constants.cancelButtonProps,
+                        okText: val ? "Aktifkan" : "Nonaktifkan",
+                        cancelText: "Batal",
+                        onOk() {
+                          mutateSlotUpdate({
+                            id: record.id,
+                            body: {
+                              enableSlotRequest: val,
+                              isPayoutAllowed: record.isPayoutAllowed,
+                            },
+                          });
+                        },
+                      }),
+                  })}
+                  loading={
+                    loadSlot ||
+                    pendingSlotUpdate ||
+                    pendingSlotDelete ||
+                    pendingSlotCreate
+                  }
+                  dataSource={[
+                    ...detailSlot,
+                    ...Array(
+                      Math.abs(detailKloter.capacity - detailSlot.length),
+                    ).fill(emptySlotItem),
+                  ]}
+                  pagination={false}
+                />
+              </div>
             </div>
             <div className="p-6 m-6 rounded-md bg-white">
               <div className="flex justify-between mb-4">
@@ -1472,65 +1501,26 @@ const KloterForm = () => {
               />
             </div>
             <div className="flex flex-col gap-6 m-6">
-              <div className="p-6 rounded-md bg-white">
-                <div className="mb-4">
-                  <div className="font-semibold text-xl mb-3">
-                    Putaran Undian
-                  </div>
-                  <div className="grid grid-cols-4 gap-4">
-                    <WinnerPickerModal
-                      open={openWinnerPicker}
-                      onCancel={() => setOpenWinnerPicker(false)}
-                      catalogId={catalogId}
-                      slots={detailSlot}
-                      onSubmit={(slotId, winnerUserSlotId) => {
-                        alert(
-                          `Pilih pemenang untuk slot ${slotId} dengan user slot id ${winnerUserSlotId}`,
-                        );
-                      }}
-                    />
-
-                    <div className="bg-gradient-to-r from-primary-50 to-primary-100 border border-primary-200 rounded-lg p-3">
-                      <div className="text-xs font-semibold text-primary-600 uppercase tracking-wide">
-                        Putaran
-                      </div>
-                      <div className="text-2xl font-bold text-primary-700 mt-1">
-                        2
-                      </div>
-                    </div>
-                    <div className="col-span-3 bg-gradient-to-r from-blue-50 to-cyan-100 border border-blue-200 rounded-lg p-3">
-                      <div className="text-xs font-semibold text-cyan-600 uppercase tracking-wide">
-                        Tanggal Undian
-                      </div>
-                      <div className="text-sm font-semibold text-cyan-700 mt-1">
-                        {detailKloter?.estimateEndDate
-                          ? `${dayjs(detailKloter.estimateEndDate).format("DD MMMM YYYY")}`
-                          : "-"}
-                      </div>
-                      <div className="text-xs text-cyan-600 mt-1">
-                        {detailKloter?.estimateEndDate
-                          ? `${dayjs(detailKloter.estimateEndDate).diff(dayjs(), "day")} hari lagi`
-                          : ""}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="grid gap-4 grid-cols-2">
-                    <Button
-                      type="default"
-                      className="w-full mt-4"
-                      onClick={() => setOpenWinnerPicker(true)}
-                    >
-                      Pilih Pemenang
-                    </Button>
-                  </div>
-                </div>
-              </div>
               <div className="p-6 flex-1 rounded-md bg-white">
                 <div className="flex justify-between mb-4">
                   <div className="font-semibold text-xl mb-4">
                     Daftar Pemenang
                   </div>
-                  <div className="flex gap-3"></div>
+                  <div className="flex gap-3">
+                    <Button
+                      type="primary"
+                      onClick={() => setOpenWinnerPicker(true)}
+                    >
+                      Pilih Pemenang
+                    </Button>
+                    <WinnerPickerModal
+                      open={openWinnerPicker}
+                      onCancel={() => setOpenWinnerPicker(false)}
+                      catalogId={catalogId}
+                      slots={detailSlot}
+                      onSubmit={(selectedSlot, winner) => submitWinner(selectedSlot, winner)}
+                    />
+                  </div>
                 </div>
                 <Table
                   columns={winnerColumnsForRandomCatalog({
@@ -1856,7 +1846,7 @@ const PayoutDateColumn = ({ record }: { record: Slot }) => {
 
   return (
     <div className="flex items-center gap-2">
-      <span>
+      <span className="whitespace-nowrap">
         {record.payoutAt ? dayjs(record.payoutAt).format("DD MMM YYYY") : "-"}
       </span>
       {dateValue && (

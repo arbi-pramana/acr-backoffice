@@ -53,10 +53,20 @@ export const kloterService = {
     });
     return data;
   },
+
   async uploadCSV(body: File) {
     const formData = new FormData();
     formData.append("file", body);
     const data = await http.post(ROUTES.kloter.uploadCatalogCSV, formData);
+    return data;
+  },
+
+  async setWinner(params: { kloterId: number; slotUserId: number; date: string; slotId: number }) {
+    const data = await http.post(ROUTES.kloter.setWinner(params.kloterId), {
+      slotUserId: params.slotUserId,
+      date: params.date,
+      slotId: params.slotId,
+    });
     return data;
   },
 };

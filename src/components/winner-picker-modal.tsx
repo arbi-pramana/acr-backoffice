@@ -1,22 +1,25 @@
-import { StopOutlined, ThunderboltOutlined } from "@ant-design/icons";
 import { Button, Form, Modal, Select, Space, Table, Tag } from "antd";
 import { ColumnsType } from "antd/es/table";
 import React, {
-  useCallback,
   useEffect,
   useMemo,
   useRef,
-  useState,
+  useState
 } from "react";
 import { useRandomCatalogLogic } from "../hooks/use-random-catalog-logic";
 import { Slot } from "../types";
+import RouletteSpinner from "./roullete-spinner";
+
+interface SlotWithNumber extends Slot {
+  no: number;
+}
 
 interface WinnerPickerModalProps {
   open: boolean;
   catalogId: number;
   slots: Slot[];
   onCancel?: () => void;
-  onSubmit?: (slotId: number, winnerUserSlotId: number) => void;
+  onSubmit?: (selectedSlot: Slot, winnerSlot: Slot) => void;
 }
 
 const WinnerPickerModal: React.FC<WinnerPickerModalProps> = ({
@@ -39,33 +42,33 @@ const WinnerPickerModal: React.FC<WinnerPickerModalProps> = ({
   const [isSpinning, setIsSpinning] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState<number | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const currentIndexRef = useRef<number>(0);
+  // const currentIndexRef = useRef<number>(0);
 
-  const stopSpinning = useCallback(() => {
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    }
-    setIsSpinning(false);
-    if (members.length > 0) {
-      const chosen = members[currentIndexRef.current];
-      setWinnerUserSlotId(chosen.id);
-      setHighlightedIndex(currentIndexRef.current);
-    }
-  }, [members]);
+  // const stopSpinning = useCallback(() => {
+  //   if (intervalRef.current) {
+  //     clearInterval(intervalRef.current);
+  //     intervalRef.current = null;
+  //   }
+  //   setIsSpinning(false);
+  //   if (members.length > 0) {
+  //     const chosen = members[currentIndexRef.current];
+  //     setWinnerUserSlotId(chosen.slotUserId || undefined);
+  //     setHighlightedIndex(currentIndexRef.current);
+  //   }
+  // }, [members]);
 
-  const startSpinning = useCallback(() => {
-    if (members.length === 0) return;
-    setWinnerUserSlotId(undefined);
-    setIsSpinning(true);
+  // const startSpinning = useCallback(() => {
+  //   if (members.length === 0) return;
+  //   setWinnerUserSlotId(undefined);
+  //   setIsSpinning(true);
 
-    let idx = 0;
-    intervalRef.current = setInterval(() => {
-      idx = (idx + 1) % members.length;
-      currentIndexRef.current = idx;
-      setHighlightedIndex(idx);
-    }, 80);
-  }, [members]);
+  //   let idx = 0;
+  //   intervalRef.current = setInterval(() => {
+  //     idx = (idx + 1) % members.length;
+  //     currentIndexRef.current = idx;
+  //     setHighlightedIndex(idx);
+  //   }, 50);
+  // }, [members]);
 
   // Set isRequestedSlot to true if the selected slotId has a member that hasRequested
   const isRequestedSlot = useMemo(() => {
@@ -76,6 +79,10 @@ const WinnerPickerModal: React.FC<WinnerPickerModalProps> = ({
     return memberWithSlot?.hasRequested || false;
   }, [slotId, members, catalogId]);
 
+  const rouletteMembers = useMemo(() => {
+    return members.filter((m) => !m.hasRequested && !m.winningAt);
+  }, [members]);
+
   // On change slotId, check if members with that slotId hasRequested,
   // if yes, set that member as winner
   useEffect(() => {
@@ -85,7 +92,7 @@ const WinnerPickerModal: React.FC<WinnerPickerModalProps> = ({
     );
 
     if (memberWithSlot?.hasRequested) {
-      setWinnerUserSlotId(memberWithSlot.id);
+      setWinnerUserSlotId(memberWithSlot.slotUserId || undefined);
       setHighlightedIndex(members.findIndex((m) => m.id === memberWithSlot.id));
     } else {
       setWinnerUserSlotId(undefined);
@@ -113,7 +120,13 @@ const WinnerPickerModal: React.FC<WinnerPickerModalProps> = ({
 
   const handleSubmit = () => {
     if (slotId !== undefined && winnerUserSlotId !== undefined) {
-      onSubmit?.(slotId, winnerUserSlotId);
+      const winnerSlot = slots.find((s) => s.id === slotId);
+      const selectedSlot = slots.find((s) => s.id === slotId);
+      if (winnerSlot && selectedSlot) {
+        onSubmit?.(selectedSlot, winnerSlot);
+      } else {
+        throw new Error("Slot tidak ditemukan");
+      }
     }
   };
 
@@ -126,13 +139,13 @@ const WinnerPickerModal: React.FC<WinnerPickerModalProps> = ({
     onCancel?.();
   };
 
-  const columns: ColumnsType<Slot> = [
+  const columns: ColumnsType<SlotWithNumber> = [
     {
       title: "Nama",
       dataIndex: "name",
       key: "name",
       render: (name: string, record: Slot) => {
-        const isWinner = record.id === winnerUserSlotId && !isSpinning;
+        const isWinner = record.slotUserId === winnerUserSlotId && !isSpinning;
         return (
           <Space>
             <span>{name}</span>
@@ -145,24 +158,34 @@ const WinnerPickerModal: React.FC<WinnerPickerModalProps> = ({
       title: "Aksi",
       key: "action",
       width: 90,
-      render: (_: unknown, record: Slot) => {
+      render: (_: unknown, record: SlotWithNumber) => {
         if (isSpinning) return null;
 
-        if (isRequestedSlot && record.id === winnerUserSlotId) {
+        if (isRequestedSlot && record.slotUserId === winnerUserSlotId) {
           return <Tag color="gold">Requested</Tag>;
         }
 
-        if (isRequestedSlot && record.id !== winnerUserSlotId) {
+        if (isRequestedSlot && record.slotUserId !== winnerUserSlotId) {
           return null;
+        }
+
+        if (record.winningAt) {
+          return <Tag color="red">Pernah Menang</Tag>;
+        }
+
+        if (record.hasRequested) {
+          return <Tag color="default">Request Slot {record.no}</Tag>;
         }
 
         return (
           <Button
             size="small"
-            type={record.id === winnerUserSlotId ? "primary" : "default"}
+            type={
+              record.slotUserId === winnerUserSlotId ? "primary" : "default"
+            }
             disabled={isSpinning}
             onClick={() => {
-              setWinnerUserSlotId(record.id);
+              setWinnerUserSlotId(record.slotUserId || undefined);
               setHighlightedIndex(members.findIndex((m) => m.id === record.id));
             }}
           >
@@ -176,7 +199,7 @@ const WinnerPickerModal: React.FC<WinnerPickerModalProps> = ({
   const tableFooter = () =>
     !isRequestedSlot && (
       <div style={{ display: "flex", justifyContent: "flex-start" }}>
-        {!isSpinning ? (
+        {/* {!isSpinning ? (
           <Button
             icon={<ThunderboltOutlined />}
             onClick={startSpinning}
@@ -200,7 +223,7 @@ const WinnerPickerModal: React.FC<WinnerPickerModalProps> = ({
           >
             Berhenti
           </Button>
-        )}
+        )} */}
       </div>
     );
 
@@ -237,6 +260,8 @@ const WinnerPickerModal: React.FC<WinnerPickerModalProps> = ({
                 new Date(slot.payoutAt).toDateString() ===
                 new Date().toDateString();
 
+              const hasWinner = slot.winningAt;
+
               return (
                 <Space>
                   <span>
@@ -245,6 +270,11 @@ const WinnerPickerModal: React.FC<WinnerPickerModalProps> = ({
                   {isToday && (
                     <Tag color="blue" style={{ marginInlineEnd: 0 }}>
                       Hari ini
+                    </Tag>
+                  )}
+                  {hasWinner && (
+                    <Tag color="red" style={{ marginInlineEnd: 0 }}>
+                      Pemenang: {slot.name}
                     </Tag>
                   )}
                 </Space>
@@ -257,6 +287,8 @@ const WinnerPickerModal: React.FC<WinnerPickerModalProps> = ({
                 new Date(slot.payoutAt).toDateString() ===
                 new Date().toDateString();
 
+              const hasWinner = slot.winningAt;
+
               return (
                 <Space>
                   <span>
@@ -265,6 +297,11 @@ const WinnerPickerModal: React.FC<WinnerPickerModalProps> = ({
                   {isToday && (
                     <Tag color="blue" style={{ marginInlineEnd: 0 }}>
                       Hari ini
+                    </Tag>
+                  )}
+                  {hasWinner && (
+                    <Tag color="red" style={{ marginInlineEnd: 0 }}>
+                      Pemenang: {slot.name}
                     </Tag>
                   )}
                 </Space>
@@ -279,7 +316,18 @@ const WinnerPickerModal: React.FC<WinnerPickerModalProps> = ({
 
         {/* Pilih Pemenang - Table */}
         <Form.Item label="Pilih Pemenang">
-          <Table<Slot>
+          {!isRequestedSlot && <RouletteSpinner
+            items={rouletteMembers.map((s, i) => ({
+              value: s.slotUserId?.toString() || "-",
+              label: s.name || "-",
+              color: colorIndex(i),
+            }))}
+            onResult={(item) => {
+              setWinnerUserSlotId(Number(item.value));
+            }}
+          />}
+
+          <Table<SlotWithNumber>
             dataSource={members}
             columns={columns}
             rowKey="id"
@@ -291,7 +339,7 @@ const WinnerPickerModal: React.FC<WinnerPickerModalProps> = ({
                 return "row-spinning";
               if (
                 !isSpinning &&
-                record.id === winnerUserSlotId &&
+                record.slotUserId === winnerUserSlotId &&
                 highlightedIndex === index
               )
                 return "row-winner";
@@ -335,4 +383,13 @@ function dateFormat(dateString: string) {
     month: "long",
     year: "numeric",
   });
+}
+
+function colorIndex(i: number) {
+  const colors = [
+    "oklch(82.7% 0.119 306.383)",
+    "oklch(71.4% 0.203 305.504)",
+    "oklch(62.7% 0.265 303.9)",
+  ];
+  return colors[i % colors.length];
 }

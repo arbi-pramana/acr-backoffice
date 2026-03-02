@@ -172,6 +172,7 @@ export type Slot = {
   enableSlotRequest: boolean;
   winningAt: string | null;
   hasRequested: boolean;
+  slotUserId: number | null;
 };
 
 export type createSlotParams = Omit<
