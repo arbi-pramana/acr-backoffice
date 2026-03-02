@@ -170,6 +170,8 @@ export type Slot = {
   status: string;
   isPayoutAllowed: boolean;
   enableSlotRequest: boolean;
+  winningAt: string | null;
+  hasRequested: boolean;
 };
 
 export type createSlotParams = Omit<

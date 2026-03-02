@@ -47,6 +47,8 @@ import {
 } from "../types";
 import { AxiosError } from "axios";
 import { useDebounce } from "../hooks/use-debounce";
+import { useRandomCatalogLogic } from "../hooks/use-random-catalog-logic";
+import WinnerPickerModal from "../components/winner-picker-modal";
 
 type RequestFeeSettingsForm = {
   settings: {
@@ -700,15 +702,10 @@ const KloterForm = () => {
     enabled: isEditing,
   });
 
-  const registeredSlots = useMemo(() => {
-    if (!detailSlot) return [];
-    return detailSlot.filter((slot) => slot.userId !== null);
-  }, [detailSlot]);
-
-  const winnerSlots = useMemo(() => {
-    if (!detailSlot) return [];
-    return detailSlot.filter((slot) => slot.isPayoutAllowed);
-  }, [detailSlot]);
+  const catalogId = useMemo(() => parseInt(params.id ?? "0"), [params.id]);
+  const [openWinnerPicker, setOpenWinnerPicker] = useState(false);
+  const { numberedSlots, registeredSlots, winnerSlots, nonWinnerSlots } =
+    useRandomCatalogLogic(detailSlot);
 
   const {
     data: detailKloter,
@@ -1481,6 +1478,18 @@ const KloterForm = () => {
                     Putaran Undian
                   </div>
                   <div className="grid grid-cols-4 gap-4">
+                    <WinnerPickerModal
+                      open={openWinnerPicker}
+                      onCancel={() => setOpenWinnerPicker(false)}
+                      catalogId={catalogId}
+                      slots={detailSlot}
+                      onSubmit={(slotId, winnerUserSlotId) => {
+                        alert(
+                          `Pilih pemenang untuk slot ${slotId} dengan user slot id ${winnerUserSlotId}`,
+                        );
+                      }}
+                    />
+
                     <div className="bg-gradient-to-r from-primary-50 to-primary-100 border border-primary-200 rounded-lg p-3">
                       <div className="text-xs font-semibold text-primary-600 uppercase tracking-wide">
                         Putaran
@@ -1506,10 +1515,11 @@ const KloterForm = () => {
                     </div>
                   </div>
                   <div className="grid gap-4 grid-cols-2">
-                    <Button type="primary" className="w-full mt-4">
-                      Acak Pemenang
-                    </Button>
-                    <Button type="default" className="w-full mt-4">
+                    <Button
+                      type="default"
+                      className="w-full mt-4"
+                      onClick={() => setOpenWinnerPicker(true)}
+                    >
                       Pilih Pemenang
                     </Button>
                   </div>
@@ -1576,7 +1586,7 @@ const KloterForm = () => {
                     pendingSlotDelete ||
                     pendingSlotCreate
                   }
-                  dataSource={[...registeredSlots]}
+                  dataSource={[...winnerSlots]}
                   pagination={false}
                 />
               </div>
