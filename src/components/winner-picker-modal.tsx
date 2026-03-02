@@ -91,7 +91,7 @@ const WinnerPickerModal: React.FC<WinnerPickerModalProps> = ({
       (m) => m.catalogId === catalogId && m.id === slotId,
     );
 
-    if (memberWithSlot?.hasRequested) {
+    if (memberWithSlot?.hasRequested && !memberWithSlot.winningAt) {
       setWinnerUserSlotId(memberWithSlot.slotUserId || undefined);
       setHighlightedIndex(members.findIndex((m) => m.id === memberWithSlot.id));
     } else {
@@ -165,15 +165,15 @@ const WinnerPickerModal: React.FC<WinnerPickerModalProps> = ({
           return <Tag color="gold">Requested</Tag>;
         }
 
+        if (record.winningAt) {
+          return <Tag color="red">Pemenang Slot {record.no}</Tag>;
+        }
+
         if (isRequestedSlot && record.slotUserId !== winnerUserSlotId) {
           return null;
         }
 
-        if (record.winningAt) {
-          return <Tag color="red">Pernah Menang</Tag>;
-        }
-
-        if (record.hasRequested) {
+        if (record. hasRequested) {
           return <Tag color="default">Request Slot {record.no}</Tag>;
         }
 
@@ -316,7 +316,7 @@ const WinnerPickerModal: React.FC<WinnerPickerModalProps> = ({
 
         {/* Pilih Pemenang - Table */}
         <Form.Item label="Pilih Pemenang">
-          {!isRequestedSlot && <RouletteSpinner
+          {!isRequestedSlot && rouletteMembers.length > 0 && <RouletteSpinner
             items={rouletteMembers.map((s, i) => ({
               value: s.slotUserId?.toString() || "-",
               label: s.name || "-",

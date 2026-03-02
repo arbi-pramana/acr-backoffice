@@ -173,6 +173,7 @@ export type Slot = {
   winningAt: string | null;
   hasRequested: boolean;
   slotUserId: number | null;
+  sequence: number;
 };
 
 export type createSlotParams = Omit<
