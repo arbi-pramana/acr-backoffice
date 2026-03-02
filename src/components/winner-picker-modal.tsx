@@ -1,7 +1,13 @@
 import { StopOutlined, ThunderboltOutlined } from "@ant-design/icons";
 import { Button, Form, Modal, Select, Space, Table, Tag } from "antd";
 import { ColumnsType } from "antd/es/table";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useRandomCatalogLogic } from "../hooks/use-random-catalog-logic";
 import { Slot } from "../types";
 
@@ -61,6 +67,32 @@ const WinnerPickerModal: React.FC<WinnerPickerModalProps> = ({
     }, 80);
   }, [members]);
 
+  // Set isRequestedSlot to true if the selected slotId has a member that hasRequested
+  const isRequestedSlot = useMemo(() => {
+    if (slotId === undefined) return false;
+    const memberWithSlot = members.find(
+      (m) => m.catalogId === catalogId && m.id === slotId,
+    );
+    return memberWithSlot?.hasRequested || false;
+  }, [slotId, members, catalogId]);
+
+  // On change slotId, check if members with that slotId hasRequested,
+  // if yes, set that member as winner
+  useEffect(() => {
+    if (slotId === undefined) return;
+    const memberWithSlot = members.find(
+      (m) => m.catalogId === catalogId && m.id === slotId,
+    );
+
+    if (memberWithSlot?.hasRequested) {
+      setWinnerUserSlotId(memberWithSlot.id);
+      setHighlightedIndex(members.findIndex((m) => m.id === memberWithSlot.id));
+    } else {
+      setWinnerUserSlotId(undefined);
+      setHighlightedIndex(null);
+    }
+  }, [slotId, members, catalogId]);
+
   // Cleanup on close
   useEffect(() => {
     if (!open) {
@@ -113,51 +145,64 @@ const WinnerPickerModal: React.FC<WinnerPickerModalProps> = ({
       title: "Aksi",
       key: "action",
       width: 90,
-      render: (_: unknown, record: Slot) => (
-        <Button
-          size="small"
-          type={record.id === winnerUserSlotId ? "primary" : "default"}
-          disabled={isSpinning}
-          onClick={() => {
-            setWinnerUserSlotId(record.id);
-            setHighlightedIndex(members.findIndex((m) => m.id === record.id));
-          }}
-        >
-          Pilih
-        </Button>
-      ),
+      render: (_: unknown, record: Slot) => {
+        if (isSpinning) return null;
+
+        if (isRequestedSlot && record.id === winnerUserSlotId) {
+          return <Tag color="gold">Requested</Tag>;
+        }
+
+        if (isRequestedSlot && record.id !== winnerUserSlotId) {
+          return null;
+        }
+
+        return (
+          <Button
+            size="small"
+            type={record.id === winnerUserSlotId ? "primary" : "default"}
+            disabled={isSpinning}
+            onClick={() => {
+              setWinnerUserSlotId(record.id);
+              setHighlightedIndex(members.findIndex((m) => m.id === record.id));
+            }}
+          >
+            Pilih
+          </Button>
+        );
+      },
     },
   ];
 
-  const tableFooter = () => (
-    <div style={{ display: "flex", justifyContent: "flex-start" }}>
-      {!isSpinning ? (
-        <Button
-          icon={<ThunderboltOutlined />}
-          onClick={startSpinning}
-          disabled={members.length === 0}
-          style={{
-            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-            color: "#fff",
-            border: "none",
-            fontWeight: 600,
-          }}
-        >
-          Pilih Acak
-        </Button>
-      ) : (
-        <Button
-          icon={<StopOutlined />}
-          danger
-          type="primary"
-          onClick={stopSpinning}
-          style={{ fontWeight: 600 }}
-        >
-          Berhenti
-        </Button>
-      )}
-    </div>
-  );
+  const tableFooter = () =>
+    !isRequestedSlot && (
+      <div style={{ display: "flex", justifyContent: "flex-start" }}>
+        {!isSpinning ? (
+          <Button
+            icon={<ThunderboltOutlined />}
+            onClick={startSpinning}
+            disabled={members.length === 0}
+            style={{
+              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+              color: "#fff",
+              border: "none",
+              fontWeight: 600,
+            }}
+          >
+            Pilih Acak
+          </Button>
+        ) : (
+          <Button
+            icon={<StopOutlined />}
+            danger
+            type="primary"
+            onClick={stopSpinning}
+            style={{ fontWeight: 600 }}
+          >
+            Berhenti
+          </Button>
+        )}
+      </div>
+    );
 
   return (
     <Modal
