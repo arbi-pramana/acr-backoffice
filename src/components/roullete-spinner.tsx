@@ -1,5 +1,5 @@
 import { Button } from "antd";
-import { useState, useRef, useEffect, FC } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -111,7 +111,7 @@ const RouletteSpinner: FC<RouletteSpinnerProps> = ({ items, onResult }) => {
   const rotationRef = useRef<number>(0);
 
   const [spinning, setSpinning] = useState<boolean>(false);
-  const [result, setResult] = useState<RouletteItem | null>(null);
+  const [, setResult] = useState<RouletteItem | null>(null);
 
   // Initial draw & redraw on items change
   useEffect(() => {

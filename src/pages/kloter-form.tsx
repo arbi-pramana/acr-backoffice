@@ -29,13 +29,17 @@ import {
   TableColumnsType,
   Upload,
 } from "antd";
+import { AxiosError } from "axios";
 import dayjs from "dayjs";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Chip from "../components/chip";
+import WinnerPickerModal from "../components/winner-picker-modal";
 import { constants } from "../helper/constant";
 import { httpWithoutInterceptor } from "../helper/http";
 import { numberWithCommas } from "../helper/number-with-commas";
+import { useDebounce } from "../hooks/use-debounce";
+import { useRandomCatalogLogic } from "../hooks/use-random-catalog-logic";
 import { kloterService } from "../services/kloter.service";
 import { slotService } from "../services/slot.service";
 import {
@@ -45,11 +49,6 @@ import {
   updateKloterByIdParams,
   updateSlotParams,
 } from "../types";
-import { AxiosError } from "axios";
-import { useDebounce } from "../hooks/use-debounce";
-import { useRandomCatalogLogic } from "../hooks/use-random-catalog-logic";
-import WinnerPickerModal from "../components/winner-picker-modal";
-import RouletteSpinner from "../components/roullete-spinner";
 
 type RequestFeeSettingsForm = {
   settings: {
@@ -705,8 +704,7 @@ const KloterForm = () => {
 
   const catalogId = useMemo(() => parseInt(params.id ?? "0"), [params.id]);
   const [openWinnerPicker, setOpenWinnerPicker] = useState(false);
-  const { numberedSlots, registeredSlots, winnerSlots, nonWinnerSlots } =
-    useRandomCatalogLogic(detailSlot);
+  const { registeredSlots, winnerSlots } = useRandomCatalogLogic(detailSlot);
 
   const {
     data: detailKloter,
@@ -842,7 +840,12 @@ const KloterForm = () => {
   };
 
   const { mutateAsync: mutateSubmitWinner } = useMutation({
-    mutationFn: (data: { date: string; slotUserId: number; catalogId: number; slotId: number }) =>
+    mutationFn: (data: {
+      date: string;
+      slotUserId: number;
+      catalogId: number;
+      slotId: number;
+    }) =>
       kloterService.setWinner({
         kloterId: data.catalogId,
         slotUserId: data.slotUserId,
@@ -863,7 +866,12 @@ const KloterForm = () => {
     const catalogId = detailKloter?.id;
     if (!catalogId) return;
 
-    await mutateSubmitWinner({ date, slotUserId, catalogId, slotId: selectedSlot.id });
+    await mutateSubmitWinner({
+      date,
+      slotUserId,
+      catalogId,
+      slotId: selectedSlot.id,
+    });
     setOpenWinnerPicker(false);
   };
 
@@ -1518,7 +1526,9 @@ const KloterForm = () => {
                       onCancel={() => setOpenWinnerPicker(false)}
                       catalogId={catalogId}
                       slots={detailSlot}
-                      onSubmit={(selectedSlot, winner) => submitWinner(selectedSlot, winner)}
+                      onSubmit={(selectedSlot, winner) =>
+                        submitWinner(selectedSlot, winner)
+                      }
                     />
                   </div>
                 </div>
