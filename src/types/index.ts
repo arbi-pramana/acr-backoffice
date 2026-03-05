@@ -23,6 +23,7 @@ export type Kloter = {
   payout: number;
   adminFee: number;
   status: string;
+  catalogType: string;
   requestFeeSettings: string;
 };
 
@@ -169,6 +170,10 @@ export type Slot = {
   status: string;
   isPayoutAllowed: boolean;
   enableSlotRequest: boolean;
+  winningAt: string | null;
+  hasRequested: boolean;
+  slotUserId: number | null;
+  sequence: number;
 };
 
 export type createSlotParams = Omit<
@@ -405,7 +410,7 @@ export type AccountCatalog = {
       payoutStatus: string;
       payoutAt: string;
       isPayoutReady: true;
-    }
+    },
   ];
   startAt: string;
   endAt: string;
@@ -423,7 +428,7 @@ export type AccountInstallment = {
     {
       id: number;
       amount: number;
-    }
+    },
   ];
   rotationStatus: string;
   installmentStatus: string;

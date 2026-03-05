@@ -238,10 +238,13 @@ const InvoiceGetForm = () => {
     } else if (typeValue === "FINAL_DEPOSIT" && catalogIdValue) {
       updateAmountForFinalDeposit(catalogIdValue);
     } else {
-      form.setFieldValue("amount", 0);
+      if (!isEditing) {
+        form.setFieldValue("amount", 0);
+      }
     }
   }, [
     catalogIdValue,
+    isEditing,
     typeValue,
     slotIdValue,
     form,

@@ -37,10 +37,12 @@ export const ROUTES = {
   kloter: {
     list: `/${version}/backoffice/catalogs`,
     byId: (id: number) => `${version}/backoffice/catalogs/` + id,
+    byGroupId: (groupId: string) => `${version}/slots/public/` + groupId,
     dashboard: `/${version}/backoffice/catalogs/dashboard`,
     updateById: (id: number) => `/${version}/backoffice/catalogs/` + id,
     create: `/${version}/backoffice/catalogs`,
     uploadCatalogCSV: `/${version}/backoffice/catalogs/csv`,
+    setWinner: (id: number) => `/${version}/backoffice/catalogs/${id}/winner`,
   },
   voucher: {
     list: `/${version}/vouchers`,
@@ -58,7 +60,8 @@ export const ROUTES = {
     create: `/${version}/user-slot-replacements`,
     uploadCatalogCSV: `/${version}/user-slot-replacements/csv`,
     fee: `/${version}/user-slot-replacements/fee`,
-    approveById: (id: number) => `/${version}/user-slot-replacements/` + id + "/approve",
+    approveById: (id: number) =>
+      `/${version}/user-slot-replacements/` + id + "/approve",
   },
   invoiceGet: {
     list: `/${version}/invoice-gets`,

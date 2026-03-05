@@ -53,10 +53,23 @@ export const kloterService = {
     });
     return data;
   },
+
   async uploadCSV(body: File) {
     const formData = new FormData();
     formData.append("file", body);
     const data = await http.post(ROUTES.kloter.uploadCatalogCSV, formData);
+    return data;
+  },
+
+  async setWinner(params: {
+    kloterId: number;
+    slotIdTo: number;
+    slotIdFrom: number;
+  }) {
+    const data = await http.post(ROUTES.kloter.setWinner(params.kloterId), {
+      slotIdTo: params.slotIdTo,
+      slotIdFrom: params.slotIdFrom,
+    });
     return data;
   },
 };
