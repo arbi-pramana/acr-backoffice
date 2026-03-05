@@ -1,11 +1,6 @@
 import { Button, Form, Modal, Select, Space, Table, Tag } from "antd";
 import { ColumnsType } from "antd/es/table";
-import React, {
-  useEffect,
-  useMemo,
-  useRef,
-  useState
-} from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useRandomCatalogLogic } from "../hooks/use-random-catalog-logic";
 import { Slot } from "../types";
 import RouletteSpinner from "./roullete-spinner";
@@ -120,7 +115,7 @@ const WinnerPickerModal: React.FC<WinnerPickerModalProps> = ({
 
   const handleSubmit = () => {
     if (slotId !== undefined && winnerUserSlotId !== undefined) {
-      const winnerSlot = slots.find((s) => s.id === slotId);
+      const winnerSlot = slots.find((s) => s.slotUserId === winnerUserSlotId);
       const selectedSlot = slots.find((s) => s.id === slotId);
       if (winnerSlot && selectedSlot) {
         onSubmit?.(selectedSlot, winnerSlot);
@@ -173,7 +168,7 @@ const WinnerPickerModal: React.FC<WinnerPickerModalProps> = ({
           return null;
         }
 
-        if (record. hasRequested) {
+        if (record.hasRequested) {
           return <Tag color="default">Request Slot {record.no}</Tag>;
         }
 
@@ -316,16 +311,18 @@ const WinnerPickerModal: React.FC<WinnerPickerModalProps> = ({
 
         {/* Pilih Pemenang - Table */}
         <Form.Item label="Pilih Pemenang">
-          {!isRequestedSlot && rouletteMembers.length > 0 && <RouletteSpinner
-            items={rouletteMembers.map((s, i) => ({
-              value: s.slotUserId?.toString() || "-",
-              label: s.name || "-",
-              color: colorIndex(i),
-            }))}
-            onResult={(item) => {
-              setWinnerUserSlotId(Number(item.value));
-            }}
-          />}
+          {!isRequestedSlot && rouletteMembers.length > 0 && (
+            <RouletteSpinner
+              items={rouletteMembers.map((s, i) => ({
+                value: s.slotUserId?.toString() || "-",
+                label: s.name || "-",
+                color: colorIndex(i),
+              }))}
+              onResult={(item) => {
+                setWinnerUserSlotId(Number(item.value));
+              }}
+            />
+          )}
 
           <Table<SlotWithNumber>
             dataSource={members}

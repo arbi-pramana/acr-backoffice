@@ -61,11 +61,14 @@ export const kloterService = {
     return data;
   },
 
-  async setWinner(params: { kloterId: number; slotUserId: number; date: string; slotId: number }) {
+  async setWinner(params: {
+    kloterId: number;
+    slotIdTo: number;
+    slotIdFrom: number;
+  }) {
     const data = await http.post(ROUTES.kloter.setWinner(params.kloterId), {
-      slotUserId: params.slotUserId,
-      date: params.date,
-      slotId: params.slotId,
+      slotIdTo: params.slotIdTo,
+      slotIdFrom: params.slotIdFrom,
     });
     return data;
   },

@@ -841,16 +841,14 @@ const KloterForm = () => {
 
   const { mutateAsync: mutateSubmitWinner } = useMutation({
     mutationFn: (data: {
-      date: string;
-      slotUserId: number;
+      slotIdTo: number;
       catalogId: number;
-      slotId: number;
+      slotIdFrom: number;
     }) =>
       kloterService.setWinner({
         kloterId: data.catalogId,
-        slotUserId: data.slotUserId,
-        date: data.date,
-        slotId: data.slotId,
+        slotIdTo: data.slotIdTo,
+        slotIdFrom: data.slotIdFrom,
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["slot", params.id] });
@@ -861,16 +859,13 @@ const KloterForm = () => {
   });
 
   const submitWinner = async (selectedSlot: Slot, winner: Slot) => {
-    const date = dayjs(selectedSlot.payoutAt).format("YYYY-MM-DD");
-    const slotUserId = winner.slotUserId!;
     const catalogId = detailKloter?.id;
     if (!catalogId) return;
 
     await mutateSubmitWinner({
-      date,
-      slotUserId,
+      slotIdFrom: selectedSlot.id,
+      slotIdTo: winner.id,
       catalogId,
-      slotId: selectedSlot.id,
     });
     setOpenWinnerPicker(false);
   };
