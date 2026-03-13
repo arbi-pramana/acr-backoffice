@@ -35,9 +35,10 @@ export const userSlotReplacementService = {
     const data = await http.post(ROUTES.userSlotReplacement.create, body);
     return data;
   },
-  async getFee(slotUserId: number) {
+  async getFee(userId: number, catalogId: number) {
     const data: unknown = await http.post(ROUTES.userSlotReplacement.fee, {
-      slotUserId,
+      userId,
+      catalogId,
     });
     return data as { fee: number };
   },
