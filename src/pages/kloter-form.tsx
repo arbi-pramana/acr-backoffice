@@ -738,6 +738,19 @@ const KloterForm = () => {
     setKloterStatus("");
   }, [detailKloter]);
 
+  useEffect(() => {
+    if (slotModal && detailSlot && detailSlot.length > 0 && detailKloter) {
+      const lastSlot = detailSlot[detailSlot.length - 1];
+      const cycleDay = detailKloter.cycleDay || 0;
+      const newPayoutAt = dayjs(lastSlot.payoutAt).add(cycleDay, "day");
+
+      formAddSlot.setFieldsValue({
+        payoutAt: newPayoutAt,
+        contribution: lastSlot.contribution,
+      });
+    }
+  }, [slotModal, detailSlot, detailKloter]);
+
   const requestSlotCount = useMemo(() => {
     if (!detailKloter) return 0;
     const count = (detailKloter.capacity || 4) - 4;
