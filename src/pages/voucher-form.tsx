@@ -134,7 +134,7 @@ const VoucherForm = () => {
   // udh coba create slot, pas get slot by id, bener return yg baru dibuat td
   // method patch kena cors
   // di list slot blm ada nama
-  // di list voucher blm ada kontribusi
+  // di list voucher blm ada Iuran
   // di form, status bawah apa aja
   return (
     <>

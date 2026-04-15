@@ -51,9 +51,9 @@ const catalogColumns = (props: {
     ),
   },
   {
-    title: "Kontribusi",
+    title: "Iuran",
     dataIndex: "totalContribution",
-    key: "kontribusi-catalog",
+    key: "Iuran-catalog",
     render: (text: string) => (
       <span className="font-semibold">
         Rp{numberWithCommas(parseInt(text))}

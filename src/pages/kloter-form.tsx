@@ -109,7 +109,7 @@ const slotColumnsForDescendingCatalog = (props: {
     ),
   },
   {
-    title: "Kontribusi",
+    title: "Iuran",
     dataIndex: "contribution",
     key: "contribution",
     render: (val) => <div>Rp{numberWithCommas(val)}</div>,
@@ -228,7 +228,7 @@ const slotColumnsForRandomCatalog = (props: {
   //   ),
   // },
   // {
-  //   title: "Kontribusi",
+  //   title: "Iuran",
   //   dataIndex: "contribution",
   //   key: "contribution",
   //   render: (val) => <div>Rp{numberWithCommas(val)}</div>,
@@ -347,7 +347,7 @@ const memberColumnsForRandomCatalog = (props: {
     ),
   },
   // {
-  //   title: "Kontribusi",
+  //   title: "Iuran",
   //   dataIndex: "contribution",
   //   key: "contribution",
   //   render: (val) => <div>Rp{numberWithCommas(val)}</div>,
@@ -466,7 +466,7 @@ const winnerColumnsForRandomCatalog = (props: {
     ),
   },
   // {
-  //   title: "Kontribusi",
+  //   title: "Iuran",
   //   dataIndex: "contribution",
   //   key: "contribution",
   //   render: (val) => <div>Rp{numberWithCommas(val)}</div>,
@@ -889,7 +889,7 @@ const KloterForm = () => {
   // udh coba create slot, pas get slot by id, bener return yg baru dibuat td
   // method patch kena cors
   // di list slot blm ada nama
-  // di list kloter blm ada kontribusi
+  // di list kloter blm ada Iuran
   // di form, status bawah apa aja
   return (
     <>
@@ -1296,7 +1296,7 @@ const KloterForm = () => {
                       val ? "mengaktifkan" : "menonaktifkan"
                     } pencairan?`,
                     content:
-                      "Dengan mengaktifkan pencairan, kontribusi pada slot ini akan diproses untuk dicairkan.",
+                      "Dengan mengaktifkan pencairan, Iuran pada slot ini akan diproses untuk dicairkan.",
                     okButtonProps: constants.okButtonProps,
                     cancelButtonProps: constants.cancelButtonProps,
                     okText: val ? "Aktifkan" : "Nonaktifkan",
@@ -1402,7 +1402,7 @@ const KloterForm = () => {
                           val ? "mengaktifkan" : "menonaktifkan"
                         } pencairan?`,
                         content:
-                          "Dengan mengaktifkan pencairan, kontribusi pada slot ini akan diproses untuk dicairkan.",
+                          "Dengan mengaktifkan pencairan, Iuran pada slot ini akan diproses untuk dicairkan.",
                         okButtonProps: constants.okButtonProps,
                         cancelButtonProps: constants.cancelButtonProps,
                         okText: val ? "Aktifkan" : "Nonaktifkan",
@@ -1471,7 +1471,7 @@ const KloterForm = () => {
                         val ? "mengaktifkan" : "menonaktifkan"
                       } pencairan?`,
                       content:
-                        "Dengan mengaktifkan pencairan, kontribusi pada slot ini akan diproses untuk dicairkan.",
+                        "Dengan mengaktifkan pencairan, Iuran pada slot ini akan diproses untuk dicairkan.",
                       okButtonProps: constants.okButtonProps,
                       cancelButtonProps: constants.cancelButtonProps,
                       okText: val ? "Aktifkan" : "Nonaktifkan",
@@ -1553,7 +1553,7 @@ const KloterForm = () => {
                           val ? "mengaktifkan" : "menonaktifkan"
                         } pencairan?`,
                         content:
-                          "Dengan mengaktifkan pencairan, kontribusi pada slot ini akan diproses untuk dicairkan.",
+                          "Dengan mengaktifkan pencairan, Iuran pada slot ini akan diproses untuk dicairkan.",
                         okButtonProps: constants.okButtonProps,
                         cancelButtonProps: constants.cancelButtonProps,
                         okText: val ? "Aktifkan" : "Nonaktifkan",
@@ -1719,7 +1719,7 @@ const KloterForm = () => {
             />
           </Form.Item>
           <Form.Item
-            label="Kontribusi"
+            label="Iuran"
             name="contribution"
             rules={[{ required: true }]}
           >
