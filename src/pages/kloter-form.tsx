@@ -578,7 +578,8 @@ const KloterForm = () => {
   const [requestFeeModalVisible, setRequestFeeModalVisible] = useState(false);
   const queryClient = useQueryClient();
 
-  const { mutate: mutateKloterCreate } = useMutation({
+  const { mutate: mutateKloterCreate, isPending: isPendingCreateKloter } =
+    useMutation({
     mutationKey: ["createKloter"],
     mutationFn: (body: createKloterParams) =>
       kloterService.createKloter({
@@ -588,7 +589,7 @@ const KloterForm = () => {
         ),
       }),
     onSuccess: (data) => {
-      if (!data) {
+          if (!data) {
         queryClient.invalidateQueries({ queryKey: ["kloters"] });
         notification.success({
           message: "Katalog telah berhasil dibuat.",
@@ -1658,7 +1659,7 @@ const KloterForm = () => {
               disabled={
                 (isEditing && disabledForm == false) || isPendingUpdateKloter
               }
-              loading={isPendingUpdateKloter}
+              loading={isEditing ? isPendingUpdateKloter : isPendingCreateKloter}
               onClick={() => {
                 if (isEditing) {
                   const status = kloterStatus
@@ -1684,7 +1685,7 @@ const KloterForm = () => {
                       });
                     },
                   });
-                } else {
+                  } else {
                   form.submit();
                 }
               }}
@@ -1725,7 +1726,13 @@ const KloterForm = () => {
             <Input addonBefore="Rp" />
           </Form.Item>
           <div className="flex justify-end">
-            <Button type="primary" htmlType="submit" className="w-[100px]">
+            <Button
+              type="primary"
+              htmlType="submit"
+              className="w-[100px]"
+              loading={pendingSlotCreate}
+              disabled={pendingSlotCreate}
+            >
               Simpan
             </Button>
           </div>
@@ -1820,7 +1827,13 @@ const KloterForm = () => {
             </table>
           </div>
           <div className="flex justify-end mt-4">
-            <Button type="primary" htmlType="submit" className="w-[100px]">
+            <Button
+              type="primary"
+              htmlType="submit"
+              className="w-[100px]"
+              loading={isPendingUpdateKloter}
+              disabled={isPendingUpdateKloter}
+            >
               Simpan
             </Button>
           </div>
