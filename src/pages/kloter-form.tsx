@@ -109,7 +109,7 @@ const slotColumnsForDescendingCatalog = (props: {
     ),
   },
   {
-    title: "Kontribusi",
+    title: "Iuran",
     dataIndex: "contribution",
     key: "contribution",
     render: (val) => <div>Rp{numberWithCommas(val)}</div>,
@@ -228,7 +228,7 @@ const slotColumnsForRandomCatalog = (props: {
   //   ),
   // },
   // {
-  //   title: "Kontribusi",
+  //   title: "Iuran",
   //   dataIndex: "contribution",
   //   key: "contribution",
   //   render: (val) => <div>Rp{numberWithCommas(val)}</div>,
@@ -347,7 +347,7 @@ const memberColumnsForRandomCatalog = (props: {
     ),
   },
   // {
-  //   title: "Kontribusi",
+  //   title: "Iuran",
   //   dataIndex: "contribution",
   //   key: "contribution",
   //   render: (val) => <div>Rp{numberWithCommas(val)}</div>,
@@ -466,7 +466,7 @@ const winnerColumnsForRandomCatalog = (props: {
     ),
   },
   // {
-  //   title: "Kontribusi",
+  //   title: "Iuran",
   //   dataIndex: "contribution",
   //   key: "contribution",
   //   render: (val) => <div>Rp{numberWithCommas(val)}</div>,
@@ -578,7 +578,8 @@ const KloterForm = () => {
   const [requestFeeModalVisible, setRequestFeeModalVisible] = useState(false);
   const queryClient = useQueryClient();
 
-  const { mutate: mutateKloterCreate } = useMutation({
+  const { mutate: mutateKloterCreate, isPending: isPendingCreateKloter } =
+    useMutation({
     mutationKey: ["createKloter"],
     mutationFn: (body: createKloterParams) =>
       kloterService.createKloter({
@@ -588,7 +589,7 @@ const KloterForm = () => {
         ),
       }),
     onSuccess: (data) => {
-      if (!data) {
+          if (!data) {
         queryClient.invalidateQueries({ queryKey: ["kloters"] });
         notification.success({
           message: "Katalog telah berhasil dibuat.",
@@ -738,6 +739,19 @@ const KloterForm = () => {
     setKloterStatus("");
   }, [detailKloter]);
 
+  useEffect(() => {
+    if (slotModal && detailSlot && detailSlot.length > 0 && detailKloter) {
+      const lastSlot = detailSlot[detailSlot.length - 1];
+      const cycleDay = detailKloter.cycleDay || 0;
+      const newPayoutAt = dayjs(lastSlot.payoutAt).add(cycleDay, "day");
+
+      formAddSlot.setFieldsValue({
+        payoutAt: newPayoutAt,
+        contribution: lastSlot.contribution,
+      });
+    }
+  }, [slotModal, detailSlot, detailKloter]);
+
   const requestSlotCount = useMemo(() => {
     if (!detailKloter) return 0;
     const count = (detailKloter.capacity || 4) - 4;
@@ -875,7 +889,7 @@ const KloterForm = () => {
   // udh coba create slot, pas get slot by id, bener return yg baru dibuat td
   // method patch kena cors
   // di list slot blm ada nama
-  // di list kloter blm ada kontribusi
+  // di list kloter blm ada Iuran
   // di form, status bawah apa aja
   return (
     <>
@@ -1241,7 +1255,7 @@ const KloterForm = () => {
                   icon={<SettingOutlined />}
                   iconPosition="start"
                 >
-                  Request Fee
+                  Biaya Layanan
                 </Button>
                 <Upload
                   beforeUpload={(file: File) => {
@@ -1282,7 +1296,7 @@ const KloterForm = () => {
                       val ? "mengaktifkan" : "menonaktifkan"
                     } pencairan?`,
                     content:
-                      "Dengan mengaktifkan pencairan, kontribusi pada slot ini akan diproses untuk dicairkan.",
+                      "Dengan mengaktifkan pencairan, Iuran pada slot ini akan diproses untuk dicairkan.",
                     okButtonProps: constants.okButtonProps,
                     cancelButtonProps: constants.cancelButtonProps,
                     okText: val ? "Aktifkan" : "Nonaktifkan",
@@ -1388,7 +1402,7 @@ const KloterForm = () => {
                           val ? "mengaktifkan" : "menonaktifkan"
                         } pencairan?`,
                         content:
-                          "Dengan mengaktifkan pencairan, kontribusi pada slot ini akan diproses untuk dicairkan.",
+                          "Dengan mengaktifkan pencairan, Iuran pada slot ini akan diproses untuk dicairkan.",
                         okButtonProps: constants.okButtonProps,
                         cancelButtonProps: constants.cancelButtonProps,
                         okText: val ? "Aktifkan" : "Nonaktifkan",
@@ -1457,7 +1471,7 @@ const KloterForm = () => {
                         val ? "mengaktifkan" : "menonaktifkan"
                       } pencairan?`,
                       content:
-                        "Dengan mengaktifkan pencairan, kontribusi pada slot ini akan diproses untuk dicairkan.",
+                        "Dengan mengaktifkan pencairan, Iuran pada slot ini akan diproses untuk dicairkan.",
                       okButtonProps: constants.okButtonProps,
                       cancelButtonProps: constants.cancelButtonProps,
                       okText: val ? "Aktifkan" : "Nonaktifkan",
@@ -1539,7 +1553,7 @@ const KloterForm = () => {
                           val ? "mengaktifkan" : "menonaktifkan"
                         } pencairan?`,
                         content:
-                          "Dengan mengaktifkan pencairan, kontribusi pada slot ini akan diproses untuk dicairkan.",
+                          "Dengan mengaktifkan pencairan, Iuran pada slot ini akan diproses untuk dicairkan.",
                         okButtonProps: constants.okButtonProps,
                         cancelButtonProps: constants.cancelButtonProps,
                         okText: val ? "Aktifkan" : "Nonaktifkan",
@@ -1645,7 +1659,7 @@ const KloterForm = () => {
               disabled={
                 (isEditing && disabledForm == false) || isPendingUpdateKloter
               }
-              loading={isPendingUpdateKloter}
+              loading={isEditing ? isPendingUpdateKloter : isPendingCreateKloter}
               onClick={() => {
                 if (isEditing) {
                   const status = kloterStatus
@@ -1671,7 +1685,7 @@ const KloterForm = () => {
                       });
                     },
                   });
-                } else {
+                  } else {
                   form.submit();
                 }
               }}
@@ -1705,14 +1719,20 @@ const KloterForm = () => {
             />
           </Form.Item>
           <Form.Item
-            label="Kontribusi"
+            label="Iuran"
             name="contribution"
             rules={[{ required: true }]}
           >
             <Input addonBefore="Rp" />
           </Form.Item>
           <div className="flex justify-end">
-            <Button type="primary" htmlType="submit" className="w-[100px]">
+            <Button
+              type="primary"
+              htmlType="submit"
+              className="w-[100px]"
+              loading={pendingSlotCreate}
+              disabled={pendingSlotCreate}
+            >
               Simpan
             </Button>
           </div>
@@ -1807,7 +1827,13 @@ const KloterForm = () => {
             </table>
           </div>
           <div className="flex justify-end mt-4">
-            <Button type="primary" htmlType="submit" className="w-[100px]">
+            <Button
+              type="primary"
+              htmlType="submit"
+              className="w-[100px]"
+              loading={isPendingUpdateKloter}
+              disabled={isPendingUpdateKloter}
+            >
               Simpan
             </Button>
           </div>

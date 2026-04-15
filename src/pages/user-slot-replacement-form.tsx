@@ -142,12 +142,15 @@ const UserSlotReplacementForm = () => {
   }, [selectedSlot, form]);
 
   useEffect(() => {
-    userSlotReplacementService.getFee(oldUserId).then((res) => {
+    if (!oldUserId || !catalogId) {
+      return;
+    }
+    userSlotReplacementService.getFee(oldUserId, catalogId!).then((res) => {
       form.setFieldsValue({
         fee: res.fee,
       });
     });
-  }, [oldUserId, form]);
+  }, [oldUserId, catalogId, form]);
 
   const showConfirm = (
     values: createUserSlotReplacementParams,

@@ -115,7 +115,7 @@ const columns = (props: {
     render: (val) => <div>Rp{numberWithCommas(val)}</div>,
   },
   {
-    title: "Kontribusi",
+    title: "Iuran",
     dataIndex: "contribution",
     key: "contribution",
     width: 200,

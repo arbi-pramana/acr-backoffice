@@ -33,7 +33,7 @@ const installmentColumns = (props: {
     render: (value: string) => <div>{dayjs(value).format("DD-MM-YYYY")}</div>,
   },
   {
-    title: "Jumlah Kontribusi",
+    title: "Jumlah Iuran",
     dataIndex: "totalAmount",
     key: "total-amount-installment",
     render: (value: string) => <div>Rp{numberWithCommas(parseInt(value))}</div>,
@@ -228,7 +228,7 @@ const AccountInstallments = () => {
             </div>
             <div className="flex justify-between">
               <span className="text-gray-700 font-medium">
-                Total Kontribusi Anda:
+                Total Iuran Anda:
               </span>
               <span className="text-black font-semibold">
                 Rp{numberWithCommas(detailKloter.totalContribution)}
@@ -257,7 +257,7 @@ const AccountInstallments = () => {
       </div>
       <div className="p-4 m-4 bg-white rounded-md">
         <div className="font-semibold text-lg mb-4">
-          List kontribusi pembayaran
+          List Iuran pembayaran
         </div>
         <Divider />
         <Table
