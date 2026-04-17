@@ -121,6 +121,35 @@ const InvoiceGetForm = () => {
     },
   });
 
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDelete = () => {
+    if (!detailInvoiceGet) return;
+
+    Modal.confirm({
+      title: "Apakah anda yakin ingin menghapus ini?",
+      content: "Data akan dihapus permanen.",
+      okText: "Hapus",
+      cancelText: "Batal",
+      centered: true,
+      okButtonProps: constants.okButtonProps,
+      cancelButtonProps: constants.cancelButtonProps,
+      onOk: async () => {
+        try {
+          setIsDeleting(true);
+          await invoiceGetService.deleteInvoiceGetById(detailInvoiceGet.id);
+          queryClient.invalidateQueries({ queryKey: ["invoiceGets"] });
+          notification.success({ message: "InvoiceGet berhasil dihapus." });
+          navigate(`/dashboard?tab=invoiceGet`);
+        } catch (err) {
+          notification.error({ message: "Gagal menghapus invoice." });
+        } finally {
+          setIsDeleting(false);
+        }
+      },
+    });
+  };
+
   const {
     data: detailInvoiceGet,
     isLoading: loadingDetailInvoiceGet,
@@ -272,12 +301,23 @@ const InvoiceGetForm = () => {
             <div className="font-semibold text-xl">Buat Invoice Get</div>
             {isEditing &&
               (disabledForm ? (
-                <Button
-                  type="primary"
-                  onClick={() => setDisabledForm(!disabledForm)}
-                >
-                  Edit
-                </Button>
+                <div className="flex gap-3">
+                  <Button
+                    type="primary"
+                    onClick={() => setDisabledForm(!disabledForm)}
+                  >
+                    Edit
+                  </Button>
+                  {detailInvoiceGet?.status !== "COMPLETED" && (
+                    <Button
+                      danger
+                      onClick={handleDelete}
+                      loading={isDeleting}
+                    >
+                      Delete
+                    </Button>
+                  )}
+                </div>
               ) : (
                 <div className="flex gap-3">
                   <Button onClick={() => setDisabledForm(true)}>Cancel</Button>
