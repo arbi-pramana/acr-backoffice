@@ -246,19 +246,34 @@ const VoucherForm = () => {
                       const isPercentage =
                         getFieldValue("type") === "percentage";
                       return (
-                        <Form.Item
-                          label="Nilai"
-                          name="value"
-                          rules={[{ required: true }]}
-                        >
-                          <Input
-                            disabled={disabledForm}
-                            placeholder="Nilai"
-                            data-testid="value"
-                            addonBefore={isPercentage ? undefined : "Rp"}
-                            addonAfter={isPercentage ? "%" : undefined}
-                          />
-                        </Form.Item>
+                        <>
+                          <Form.Item
+                            label="Nilai"
+                            name="value"
+                            rules={[{ required: true }]}
+                          >
+                            <Input
+                              disabled={disabledForm}
+                              placeholder="Nilai"
+                              data-testid="value"
+                              addonBefore={isPercentage ? undefined : "Rp"}
+                              addonAfter={isPercentage ? "%" : undefined}
+                            />
+                          </Form.Item>
+                          {isPercentage && (
+                            <Form.Item
+                              label="Maksimal Jumlah"
+                              name="maxAmount"
+                            >
+                              <Input
+                                disabled={disabledForm}
+                                placeholder="Maksimal Jumlah"
+                                data-testid="maxAmount"
+                                addonBefore="Rp"
+                              />
+                            </Form.Item>
+                          )}
+                        </>
                       );
                     }}
                   </Form.Item>

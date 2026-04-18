@@ -37,6 +37,7 @@ export type Voucher = {
   type: VoucherType;
   transactionTypes: string[];
   value: number;
+  maxAmount?: number;
   quota: number;
   quotaUsed: number;
   startDate: string | null;
