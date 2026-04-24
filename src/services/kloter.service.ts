@@ -72,4 +72,22 @@ export const kloterService = {
     });
     return data;
   },
+
+  async sendWinningEmail(params: {
+    email: string;
+    name: string;
+    catalogDetails: string;
+    paidAt: string;
+  }) {
+    const body = new URLSearchParams({
+      email: params.email,
+      name: params.name,
+      catalogDetails: params.catalogDetails,
+      paidAt: params.paidAt,
+    });
+    const data = await http.post(ROUTES.kloter.sendWinningEmail, body, {
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    });
+    return data;
+  },
 };

@@ -43,6 +43,7 @@ export const ROUTES = {
     create: `/${version}/backoffice/catalogs`,
     uploadCatalogCSV: `/${version}/backoffice/catalogs/csv`,
     setWinner: (id: number) => `/${version}/backoffice/catalogs/${id}/winner`,
+    sendWinningEmail: `/${version}/catalogs/send-winning-email`,
   },
   voucher: {
     list: `/${version}/vouchers`,

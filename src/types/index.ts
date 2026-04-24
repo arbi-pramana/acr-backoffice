@@ -165,6 +165,7 @@ export type Slot = {
   userId: number;
   uuid: string;
   name: string;
+  email?: string;
   catalogId: number;
   payoutAt: string;
   contribution: number;

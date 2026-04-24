@@ -6,6 +6,7 @@ import {
   DatabaseOutlined,
   EditOutlined,
   InfoCircleFilled,
+  MailOutlined,
   SettingOutlined,
   UserOutlined,
 } from "@ant-design/icons";
@@ -42,6 +43,7 @@ import { useDebounce } from "../hooks/use-debounce";
 import { useRandomCatalogLogic } from "../hooks/use-random-catalog-logic";
 import { kloterService } from "../services/kloter.service";
 import { slotService } from "../services/slot.service";
+import { accountService } from "../services/account.service";
 import {
   createKloterParams,
   createSlotParams,
@@ -437,6 +439,8 @@ const winnerColumnsForRandomCatalog = (props: {
   updatePayout: (id: number, val: boolean) => void;
   updateEnableSlotRequest: (record: Slot, val: boolean) => void;
   setDetailFromSlot: (val: Slot) => void;
+  sendEmail: (record: Slot) => void;
+  sendingEmailSlotId: number | null;
 }): TableColumnsType<Slot> => [
   // {
   //   title: "Urutan",
@@ -533,20 +537,23 @@ const winnerColumnsForRandomCatalog = (props: {
       />
     ),
   },
-  // {
-  //   title: "Action",
-  //   dataIndex: "action",
-  //   key: "action",
-  //   width: 100,
-  //   align: "end",
-  //   render: (_, record) => (
-  //     <Space>
-  //       {record.id ? (
-  //         <Button onClick={() => props.removeModal(record.id)}>Hapus</Button>
-  //       ) : null}
-  //     </Space>
-  //   ),
-  // },
+  {
+    title: "Aksi",
+    dataIndex: "action",
+    key: "winner-action",
+    width: 60,
+    align: "center",
+    render: (_, record) =>
+      record.id ? (
+        <Button
+          icon={<MailOutlined />}
+          size="small"
+          loading={props.sendingEmailSlotId === record.id}
+          disabled={props.sendingEmailSlotId === record.id}
+          onClick={() => props.sendEmail(record)}
+        />
+      ) : null,
+  },
 ];
 
 function generateDefaultRequestFeeSetings(capacity: number) {
@@ -576,6 +583,8 @@ const KloterForm = () => {
   const [kloterStatus, setKloterStatus] = useState("");
   const [updatedKloterDetail, setUpdatedKloterDetail] = useState(false);
   const [requestFeeModalVisible, setRequestFeeModalVisible] = useState(false);
+  const [sendEmailModalSlot, setSendEmailModalSlot] = useState<Slot | null>(null);
+  const [sendingEmailSlotId, setSendingEmailSlotId] = useState<number | null>(null);
   const queryClient = useQueryClient();
 
   const { mutate: mutateKloterCreate, isPending: isPendingCreateKloter } =
@@ -868,6 +877,35 @@ const KloterForm = () => {
       queryClient.invalidateQueries({ queryKey: ["slot", params.id] });
       notification.success({
         message: "Pemenang berhasil dipilih",
+      });
+    },
+  });
+
+  const { mutate: mutateSendWinningEmail } = useMutation({
+    mutationKey: ["sendWinningEmail"],
+    mutationFn: async (slot: Slot) => {
+      const account = await accountService.getAccountById(
+        String(slot.userId),
+      );
+      return kloterService.sendWinningEmail({
+        email: account.email ?? "",
+        name: account.fullName ?? slot.name ?? "",
+        catalogDetails: detailKloter?.title ?? "",
+        paidAt: slot.payoutAt
+          ? new Date(slot.payoutAt).toISOString().split("T")[0]
+          : "",
+      });
+    },
+    onMutate: (slot) => {
+      setSendingEmailSlotId(slot.id);
+    },
+    onSettled: () => {
+      setSendingEmailSlotId(null);
+    },
+    onSuccess: (_data, slot) => {
+      notification.success({
+        message: "Email berhasil dikirim",
+        description: `Email telah dikirim kepada ${slot.name ?? "pemenang"}.`,
       });
     },
   });
@@ -1547,6 +1585,8 @@ const KloterForm = () => {
                     setSlotModal,
                     removeModal,
                     setDetailFromSlot,
+                    sendEmail: (record) => setSendEmailModalSlot(record),
+                    sendingEmailSlotId,
                     updatePayout: (id, val) =>
                       Modal.confirm({
                         title: `Yakin ingin ${
@@ -1602,6 +1642,27 @@ const KloterForm = () => {
             </div>
           </div>
         ) : null}
+        <Modal
+          open={!!sendEmailModalSlot}
+          onCancel={() => setSendEmailModalSlot(null)}
+          title="Kirim Email Pemenang"
+          okText="Kirim"
+          cancelText="Batal"
+          okButtonProps={constants.okButtonProps}
+          cancelButtonProps={constants.cancelButtonProps}
+          centered
+          onOk={() => {
+            if (!sendEmailModalSlot) return;
+            const slot = sendEmailModalSlot;
+            setSendEmailModalSlot(null);
+            mutateSendWinningEmail(slot);
+          }}
+        >
+          <p>
+            Apakah kamu yakin ingin mengirim email kepada{" "}
+            <strong>{sendEmailModalSlot?.name ?? "pemenang ini"}</strong>?
+          </p>
+        </Modal>
         <div
           className={`bg-white p-6 rounded-lg flex flex-col ${
             isEditing ? "justify-between sticky" : "justify-end fixed"
