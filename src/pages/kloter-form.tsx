@@ -82,6 +82,8 @@ const slotColumnsForDescendingCatalog = (props: {
   updatePayout: (id: number, val: boolean) => void;
   updateEnableSlotRequest: (record: Slot, val: boolean) => void;
   setDetailFromSlot: (val: Slot) => void;
+  sendEmail: (record: Slot) => void;
+  sendingEmailSlotId: number | null;
 }): TableColumnsType<Slot> => [
   {
     title: "Urutan",
@@ -182,15 +184,23 @@ const slotColumnsForDescendingCatalog = (props: {
     title: "Action",
     dataIndex: "action",
     key: "action",
-    width: 100,
+    width: 130,
     align: "end",
-    render: (_, record) => (
-      <Space>
-        {record.id ? (
+    render: (_, record) =>
+      record.id ? (
+        <Space>
+          {record.userId ? (
+            <Button
+              icon={<MailOutlined />}
+              size="small"
+              loading={props.sendingEmailSlotId === record.id}
+              disabled={props.sendingEmailSlotId === record.id}
+              onClick={() => props.sendEmail(record)}
+            />
+          ) : null}
           <Button onClick={() => props.removeModal(record.id)}>Hapus</Button>
-        ) : null}
-      </Space>
-    ),
+        </Space>
+      ) : null,
   },
 ];
 
@@ -201,6 +211,8 @@ const slotColumnsForRandomCatalog = (props: {
   updatePayout: (id: number, val: boolean) => void;
   updateEnableSlotRequest: (record: Slot, val: boolean) => void;
   setDetailFromSlot: (val: Slot) => void;
+  sendEmail: (record: Slot) => void;
+  sendingEmailSlotId: number | null;
 }): TableColumnsType<Slot> => [
   {
     title: "Urutan",
@@ -301,15 +313,23 @@ const slotColumnsForRandomCatalog = (props: {
     title: "Action",
     dataIndex: "action",
     key: "action",
-    width: 100,
+    width: 130,
     align: "end",
-    render: (_, record) => (
-      <Space>
-        {record.id ? (
+    render: (_, record) =>
+      record.id ? (
+        <Space>
+          {record.userId ? (
+            <Button
+              icon={<MailOutlined />}
+              size="small"
+              loading={props.sendingEmailSlotId === record.id}
+              disabled={props.sendingEmailSlotId === record.id}
+              onClick={() => props.sendEmail(record)}
+            />
+          ) : null}
           <Button onClick={() => props.removeModal(record.id)}>Hapus</Button>
-        ) : null}
-      </Space>
-    ),
+        </Space>
+      ) : null,
   },
 ];
 
@@ -544,7 +564,7 @@ const winnerColumnsForRandomCatalog = (props: {
     width: 60,
     align: "center",
     render: (_, record) =>
-      record.id ? (
+      record.id && record.userId ? (
         <Button
           icon={<MailOutlined />}
           size="small"
@@ -1328,6 +1348,8 @@ const KloterForm = () => {
                 setSlotModal,
                 removeModal,
                 setDetailFromSlot,
+                sendEmail: (record) => setSendEmailModalSlot(record),
+                sendingEmailSlotId,
                 updatePayout: (id, val) =>
                   Modal.confirm({
                     title: `Yakin ingin ${
@@ -1434,6 +1456,8 @@ const KloterForm = () => {
                     setSlotModal,
                     removeModal,
                     setDetailFromSlot,
+                    sendEmail: (record) => setSendEmailModalSlot(record),
+                    sendingEmailSlotId,
                     updatePayout: (id, val) =>
                       Modal.confirm({
                         title: `Yakin ingin ${
