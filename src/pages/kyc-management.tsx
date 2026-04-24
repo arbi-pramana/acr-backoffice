@@ -162,7 +162,8 @@ const KYCManagement = () => {
   const handleExport = async () => {
     try {
       setLoadingExport(true);
-      const response = await kycService.exportKycs(params);
+      const { page, size, ...filters } = params;
+      const response = await kycService.exportKycs(filters);
       const filename = `kycs_${dayjs().format("YYYYMMDD_HHmmss")}.csv`;
 
       // normalize to Blob
