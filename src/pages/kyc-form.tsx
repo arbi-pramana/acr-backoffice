@@ -123,6 +123,59 @@ const KYCForm = () => {
     },
   });
 
+  const { mutate: mutateUpdateRawOcr, isPending: pendingUpdateRawOcr } =
+    useMutation({
+      mutationFn: (payload: { key: string; value: string }) =>
+        kycService.updateRawOcr(id ?? "", payload),
+      mutationKey: ["kyc-update-raw-ocr", id],
+      onSuccess: () => {
+        notification.success({ message: "Raw OCR data updated successfully" });
+        refetchKYC();
+      },
+      onError: (error: any) => {
+        notification.error({
+          message: "Failed to update raw OCR",
+          description: error.message,
+        });
+        console.error("Raw OCR update error:", error);
+      },
+    });
+
+  const rawOcrFieldMap: Record<string, { ocrData: (m: any) => any; key: string }> = {
+    gender: {
+      ocrData: (m: any) => m?.gender?.data,
+      key: "gender",
+    },
+    bloodGroup: {
+      ocrData: (m: any) => m?.bloodGroup?.data,
+      key: "bloodGroup",
+    },
+    "idCardAddress.state": {
+      ocrData: (m: any) => m?.idCardAddress?.state?.data,
+      key: "idCardAddress.state",
+    },
+    "idCardAddress.city": {
+      ocrData: (m: any) => m?.idCardAddress?.city?.data,
+      key: "idCardAddress.city",
+    },
+    "idCardAddress.district": {
+      ocrData: (m: any) => m?.idCardAddress?.district?.data,
+      key: "idCardAddress.district",
+    },
+    religion: {
+      ocrData: (m: any) => m?.religion?.data,
+      key: "religion",
+    },
+    maritalStatus: {
+      ocrData: (m: any) => m?.maritalStatus?.data,
+      key: "maritalStatus",
+    },
+    occupation: {
+      ocrData: (m: any) => m?.occupation?.data,
+      key: "occupation",
+    },
+  };
+
   const getBackground = () => {
     if (step == 1) {
       if (kyc?.statusLevelOne === "REJECTED") return "bg-danger-500";
@@ -303,6 +356,7 @@ const KYCForm = () => {
                         label=""
                         value={kyc?.idCardNumber}
                         isMatch={kycMatch?.idCardNumber?.isMatch}
+                        ocrData={kycMatch?.idCardNumber?.data}
                       />
                     </div>
                   </Form.Item>
@@ -312,6 +366,7 @@ const KYCForm = () => {
                         label=""
                         value={kyc?.fullName}
                         isMatch={kycMatch?.fullName?.isMatch}
+                        ocrData={kycMatch?.fullName?.data}
                       />
                     </div>
                   </Form.Item>
@@ -321,6 +376,7 @@ const KYCForm = () => {
                         label=""
                         value={kyc?.placeOfBirth}
                         isMatch={kycMatch?.placeOfBirth?.isMatch}
+                        ocrData={kycMatch?.placeOfBirth?.data}
                       />
                     </div>
                   </Form.Item>
@@ -330,6 +386,7 @@ const KYCForm = () => {
                         label=""
                         value={kyc?.dateOfBirth}
                         isMatch={kycMatch?.dateOfBirth?.isMatch}
+                        ocrData={kycMatch?.dateOfBirth?.data}
                       />
                     </div>
                   </Form.Item>
@@ -347,7 +404,20 @@ const KYCForm = () => {
                           formKYC1.setFieldValue("gender", val);
                         }}
                       />
-                      <Switch value={kycMatch?.gender?.isMatch} />
+                      <Switch
+                        value={kycMatch?.gender?.isMatch}
+                        onClick={() => {
+                          const ocrValue = rawOcrFieldMap.gender.ocrData(kycMatch);
+                          if (ocrValue) {
+                            mutateUpdateRawOcr({
+                              key: rawOcrFieldMap.gender.key,
+                              value: ocrValue.toString(),
+                            });
+                          } else {
+                            notification.warning({ message: "No OCR data for Gender" });
+                          }
+                        }}
+                      />
                     </div>
                   </Form.Item>
                   <Form.Item label="Golongan Darah" name={["bloodGroup"]}>
@@ -365,7 +435,20 @@ const KYCForm = () => {
                           formKYC1.setFieldValue("bloodGroup", val);
                         }}
                       />
-                      <Switch value={kycMatch?.bloodGroup?.isMatch} />
+                      <Switch
+                        value={kycMatch?.bloodGroup?.isMatch}
+                        onClick={() => {
+                          const ocrValue = rawOcrFieldMap.bloodGroup.ocrData(kycMatch);
+                          if (ocrValue) {
+                            mutateUpdateRawOcr({
+                              key: rawOcrFieldMap.bloodGroup.key,
+                              value: ocrValue.toString(),
+                            });
+                          } else {
+                            notification.warning({ message: "No OCR data for Blood Group" });
+                          }
+                        }}
+                      />
                     </div>
                   </Form.Item>
                   <Form.Item
@@ -377,6 +460,7 @@ const KYCForm = () => {
                         label=""
                         value={kyc?.idCardAddress?.line}
                         isMatch={kycMatch?.idCardAddress?.line?.isMatch}
+                        ocrData={kycMatch?.idCardAddress?.line?.data}
                       />
                     </div>
                   </Form.Item>
@@ -388,6 +472,7 @@ const KYCForm = () => {
                         label=""
                         value={kyc?.idCardAddress?.rtNumber}
                         isMatch={kycMatch?.idCardAddress?.rtNumber?.isMatch}
+                        ocrData={kycMatch?.idCardAddress?.rtNumber?.data}
                       />
                     </div>
                   </Form.Item>
@@ -397,6 +482,7 @@ const KYCForm = () => {
                         label=""
                         value={kyc?.idCardAddress?.rwNumber}
                         isMatch={kycMatch?.idCardAddress?.rwNumber?.isMatch}
+                        ocrData={kycMatch?.idCardAddress?.rwNumber?.data}
                       />
                     </div>
                   </Form.Item>
@@ -413,7 +499,20 @@ const KYCForm = () => {
                         options={provinceJson}
                       />
                     </Form.Item>
-                    <Switch value={kycMatch?.idCardAddress?.state?.isMatch} />
+                    <Switch
+                      value={kycMatch?.idCardAddress?.state?.isMatch}
+                      onClick={() => {
+                        const ocrValue = rawOcrFieldMap["idCardAddress.state"].ocrData(kycMatch);
+                        if (ocrValue) {
+                          mutateUpdateRawOcr({
+                            key: rawOcrFieldMap["idCardAddress.state"].key,
+                            value: ocrValue.toString(),
+                          });
+                        } else {
+                          notification.warning({ message: "No OCR data for Province" });
+                        }
+                      }}
+                    />
                   </div>
                   <div className="flex items-center gap-3 mt-2">
                     <Form.Item
@@ -428,7 +527,20 @@ const KYCForm = () => {
                         options={filteredIdCardCitiesKYC1}
                       />
                     </Form.Item>
-                    <Switch value={kycMatch?.idCardAddress?.city?.isMatch} />
+                    <Switch
+                      value={kycMatch?.idCardAddress?.city?.isMatch}
+                      onClick={() => {
+                        const ocrValue = rawOcrFieldMap["idCardAddress.city"].ocrData(kycMatch);
+                        if (ocrValue) {
+                          mutateUpdateRawOcr({
+                            key: rawOcrFieldMap["idCardAddress.city"].key,
+                            value: ocrValue.toString(),
+                          });
+                        } else {
+                          notification.warning({ message: "No OCR data for City" });
+                        }
+                      }}
+                    />
                   </div>
                   <div className="flex items-center gap-3 mt-2">
                     <Form.Item
@@ -446,6 +558,17 @@ const KYCForm = () => {
                     </Form.Item>
                     <Switch
                       value={kycMatch?.idCardAddress?.district?.isMatch}
+                      onClick={() => {
+                        const ocrValue = rawOcrFieldMap["idCardAddress.district"].ocrData(kycMatch);
+                        if (ocrValue) {
+                          mutateUpdateRawOcr({
+                            key: rawOcrFieldMap["idCardAddress.district"].key,
+                            value: ocrValue.toString(),
+                          });
+                        } else {
+                          notification.warning({ message: "No OCR data for District" });
+                        }
+                      }}
                     />
                   </div>
                   <Form.Item
@@ -457,6 +580,7 @@ const KYCForm = () => {
                         label=""
                         value={kyc?.idCardAddress?.subdistrict}
                         isMatch={kycMatch?.idCardAddress?.subdistrict?.isMatch}
+                        ocrData={kycMatch?.idCardAddress?.subdistrict?.data}
                       />
                     </div>
                   </Form.Item>
@@ -478,7 +602,20 @@ const KYCForm = () => {
                           formKYC1.setFieldValue("religion", val);
                         }}
                       />
-                      <Switch value={kycMatch?.religion?.isMatch} />
+                      <Switch
+                        value={kycMatch?.religion?.isMatch}
+                        onClick={() => {
+                          const ocrValue = rawOcrFieldMap.religion.ocrData(kycMatch);
+                          if (ocrValue) {
+                            mutateUpdateRawOcr({
+                              key: rawOcrFieldMap.religion.key,
+                              value: ocrValue.toString(),
+                            });
+                          } else {
+                            notification.warning({ message: "No OCR data for Religion" });
+                          }
+                        }}
+                      />
                     </div>
                   </Form.Item>
                   <Form.Item label="Status" name={["maritalStatus"]}>
@@ -496,7 +633,20 @@ const KYCForm = () => {
                           formKYC1.setFieldValue("maritalStatus", val);
                         }}
                       />
-                      <Switch value={kycMatch?.maritalStatus?.isMatch} />
+                      <Switch
+                        value={kycMatch?.maritalStatus?.isMatch}
+                        onClick={() => {
+                          const ocrValue = rawOcrFieldMap.maritalStatus.ocrData(kycMatch);
+                          if (ocrValue) {
+                            mutateUpdateRawOcr({
+                              key: rawOcrFieldMap.maritalStatus.key,
+                              value: ocrValue.toString(),
+                            });
+                          } else {
+                            notification.warning({ message: "No OCR data for Marital Status" });
+                          }
+                        }}
+                      />
                     </div>
                   </Form.Item>
                   <Form.Item label="Pekerjaan" name={["occupation"]}>
@@ -526,7 +676,20 @@ const KYCForm = () => {
                           formKYC1.setFieldValue("occupation", val);
                         }}
                       />
-                      <Switch value={kycMatch?.occupation?.isMatch} />
+                      <Switch
+                        value={kycMatch?.occupation?.isMatch}
+                        onClick={() => {
+                          const ocrValue = rawOcrFieldMap.occupation.ocrData(kycMatch);
+                          if (ocrValue) {
+                            mutateUpdateRawOcr({
+                              key: rawOcrFieldMap.occupation.key,
+                              value: ocrValue.toString(),
+                            });
+                          } else {
+                            notification.warning({ message: "No OCR data for Occupation" });
+                          }
+                        }}
+                      />
                     </div>
                   </Form.Item>
                 </div>
@@ -701,7 +864,8 @@ const KYCForm = () => {
                 <InputMatch
                   label="Nama Pemilik Rekening"
                   value={kyc?.bank?.holderName}
-                  isMatch={kycMatch?.bank?.holderName.isMatch}
+                  isMatch={kycMatch?.bank?.holderName?.isMatch}
+                  ocrData={kycMatch?.bank?.holderName?.data}
                 />
               </div>
             </Form.Item>
@@ -996,12 +1160,14 @@ const KYCForm = () => {
             loading={
               pendingUpdateStatus ||
               pendingUpdateLevelOne ||
-              pendingUpdateLevelTwo
+              pendingUpdateLevelTwo ||
+              pendingUpdateRawOcr
             }
             disabled={
               pendingUpdateStatus ||
               pendingUpdateLevelOne ||
               pendingUpdateLevelTwo ||
+              pendingUpdateRawOcr ||
               (step == 2 && kyc?.statusLevelTwo == null)
             }
             onClick={() => handleSubmit()}

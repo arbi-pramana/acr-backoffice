@@ -5,17 +5,24 @@ export const InputMatch = ({
   value,
   isMatch = false,
   label,
+  ocrData,
 }: {
   label: string;
   value?: string;
   isMatch?: boolean;
+  ocrData?: string;
 }) => {
   return (
     <>
       <label className="text-sm font-medium">{label}</label>
       <div className="flex items-center gap-3 mt-2">
         <Input defaultValue={value} className="w-full" disabled={isMatch} />
-        <Switch value={isMatch} />
+        <Switch
+          value={isMatch}
+          onClick={() => {
+            if (ocrData) alert(`ocrField = ${ocrData}`);
+          }}
+        />
       </div>
     </>
   );

@@ -36,6 +36,10 @@ export const kycService = {
     const data = await http.post(ROUTES.kyc.sendNotifRejectLevelOne(id));
     return data;
   },
+  async updateRawOcr(id: string, param: { key: string; value: string }) {
+    const data = await http.patch(ROUTES.kyc.rawOcr(id), param);
+    return data;
+  },
   async exportKycs(params: unknown): Promise<string> {
     const data = await http.get(ROUTES.kyc.export, {
       params,
