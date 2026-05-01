@@ -5,12 +5,12 @@ export const InputMatch = ({
   value,
   isMatch = false,
   label,
-  ocrData,
+  onCheck,
 }: {
   label: string;
   value?: string;
   isMatch?: boolean;
-  ocrData?: string;
+  onCheck?: (isMatch: boolean, value?: string) => void;
 }) => {
   return (
     <>
@@ -20,7 +20,7 @@ export const InputMatch = ({
         <Switch
           value={isMatch}
           onClick={() => {
-            if (ocrData) alert(`ocrField = ${ocrData}`);
+            onCheck?.(!isMatch, value);
           }}
         />
       </div>
