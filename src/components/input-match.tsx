@@ -5,12 +5,14 @@ export const InputMatch = ({
   value,
   isMatch = false,
   label,
+  ocrData,
   onCheck,
 }: {
   label: string;
   value?: string;
   isMatch?: boolean;
-  onCheck?: (isMatch: boolean, value?: string) => void;
+  ocrData?: string;
+  onCheck?: (isMatch: boolean, value?: string, ocrData?: string) => void;
 }) => {
   return (
     <>
@@ -19,9 +21,9 @@ export const InputMatch = ({
         <Input defaultValue={value} className="w-full" disabled={isMatch} />
         <Switch
           value={isMatch}
-          onClick={() => {
-            onCheck?.(!isMatch, value);
-          }}
+onClick={() => {
+             onCheck?.(!isMatch, value, ocrData);
+           }}
         />
       </div>
     </>
