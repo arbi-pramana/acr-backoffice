@@ -94,7 +94,7 @@ const UserSlotReplacementForm = () => {
         return;
       }
       queryClient.invalidateQueries({
-        queryKey: ["userSlotReplacement", params.code],
+        queryKey: ["userSlotReplacement", params.id],
       });
       setDisabledForm(true);
 
@@ -115,19 +115,46 @@ const UserSlotReplacementForm = () => {
   });
 
   const {
+    mutate: mutateUserSlotReplacementDelete,
+    isPending: isPendingDeleteUserSlotReplacement,
+  } = useMutation({
+    mutationKey: ["deleteUserSlotReplacement"],
+    mutationFn: (userSlotReplacementId: number) => {
+      return userSlotReplacementService.deleteById(userSlotReplacementId);
+    },
+    onSuccess: (data) => {
+      if (data.status && data.status.toString().startsWith("5")) {
+        return;
+      }
+
+      queryClient.invalidateQueries({ queryKey: ["userSlotReplacements"] });
+      notification.success({
+        message: "User slot replacement berhasil dihapus.",
+      });
+      navigate(`/dashboard?tab=userSlotReplacement`);
+    },
+  });
+
+  const {
     data: detailUserSlotReplacement,
     isLoading: loadingDetailUserSlotReplacement,
   } = useQuery({
-    queryKey: ["userSlotReplacement", params.code],
+    queryKey: ["userSlotReplacement", params.id],
     queryFn: () => userSlotReplacementService.getUserSlotReplacementById(id),
     enabled: isEditing,
     staleTime: 1000 * 60 * 3, // 3 minutes
   });
-  if (detailUserSlotReplacement) {
+
+  useEffect(() => {
+    if (!detailUserSlotReplacement) {
+      return;
+    }
+
     form.setFieldsValue({
       ...detailUserSlotReplacement,
     });
-  }
+    setCatalogId(detailUserSlotReplacement.catalogId);
+  }, [detailUserSlotReplacement, form]);
 
   const slotId = Form.useWatch("slotId", form);
   const oldUserId = Form.useWatch("oldUserId", form);
@@ -136,6 +163,10 @@ const UserSlotReplacementForm = () => {
   }, [slotId, slotOptions]);
 
   useEffect(() => {
+    if (!selectedSlot) {
+      return;
+    }
+
     form.setFieldsValue({
       oldUserId: selectedSlot?.userId,
     });
@@ -194,6 +225,31 @@ const UserSlotReplacementForm = () => {
     }
   };
 
+  const showDeleteConfirm = () => {
+    if (!detailUserSlotReplacement) {
+      return;
+    }
+
+    Modal.confirm({
+      title: "Apakah anda yakin ingin menghapus data user slot replacement ini?",
+      content: "Data yang dihapus tidak dapat dikembalikan.",
+      okText: "Hapus",
+      cancelText: "Batal",
+      icon: null,
+      centered: true,
+      okButtonProps: {
+        ...constants.okButtonProps,
+        danger: true,
+        loading: isPendingDeleteUserSlotReplacement,
+      },
+      cancelButtonProps: constants.cancelButtonProps,
+      onOk() {
+        mutateUserSlotReplacementDelete(detailUserSlotReplacement.id);
+      },
+      onCancel() {},
+    });
+  };
+
   return (
     <>
       <div className="bg-[#F9F9F9] min-h-screen">
@@ -216,12 +272,24 @@ const UserSlotReplacementForm = () => {
             <div className="font-semibold text-xl">User Slot Replacement</div>
             {isEditing &&
               (disabledForm ? (
-                <Button
-                  type="primary"
-                  onClick={() => setDisabledForm(!disabledForm)}
-                >
-                  Edit
-                </Button>
+                <div className="flex gap-3">
+                  {detailUserSlotReplacement?.status === "WAITING_PAYMENT" && (
+                    <Button
+                      danger
+                      onClick={showDeleteConfirm}
+                      loading={isPendingDeleteUserSlotReplacement}
+                      disabled={isPendingDeleteUserSlotReplacement}
+                    >
+                      Delete
+                    </Button>
+                  )}
+                  <Button
+                    type="primary"
+                    onClick={() => setDisabledForm(!disabledForm)}
+                  >
+                    Edit
+                  </Button>
+                </div>
               ) : (
                 <div className="flex gap-3">
                   <Button onClick={() => setDisabledForm(true)}>Cancel</Button>

@@ -56,6 +56,7 @@ export const ROUTES = {
   userSlotReplacement: {
     list: `/${version}/user-slot-replacements`,
     byId: (id: number) => `${version}/user-slot-replacements/` + id,
+    deleteById: (id: number) => `${version}/user-slot-replacements/` + id,
     dashboard: `/${version}/user-slot-replacements/dashboard`,
     updateById: (id: number) => `/${version}/user-slot-replacements/` + id,
     create: `/${version}/user-slot-replacements`,

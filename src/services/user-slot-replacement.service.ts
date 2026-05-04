@@ -55,4 +55,8 @@ export const userSlotReplacementService = {
     const data = await http.post(ROUTES.userSlotReplacement.approveById(id));
     return data;
   },
+  async deleteById(id: number) {
+    const data = await http.delete(ROUTES.userSlotReplacement.deleteById(id));
+    return data;
+  },
 };
