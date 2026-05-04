@@ -42,6 +42,7 @@ const KYCForm = () => {
   const [selectedFile, setSelectedFile] = useState("");
   const [statusReason, setStatusReason] = useState("");
   const [step, setStep] = useState(0);
+  const [ocrOverrides, setOcrOverrides] = useState<Record<string, boolean>>({});
 
   const {
     data: kyc,
@@ -54,7 +55,7 @@ const KYCForm = () => {
   });
   // const step = kyc?.statusLevelOne == "APPROVED" ? 2 : 1;
 
-  const { data: kycMatch, isLoading: loadingKycMatch } = useQuery({
+  const { data: kycMatch, isLoading: loadingKycMatch, refetch: refetchKycMatch } = useQuery({
     queryFn: () => kycService.getKycByIdMatch(id ?? ""),
     enabled: id !== null,
     queryKey: ["kyc-match", id],
@@ -122,6 +123,40 @@ const KYCForm = () => {
       }
     },
   });
+
+  const { mutate: mutateUpdateRawOcr } = useMutation({
+    mutationFn: (param: Record<string, unknown>) =>
+      kycService.updateRawOcr(id ?? "", param),
+    mutationKey: ["kyc-update-raw-ocr", id],
+    onSuccess: (_, variables) => {
+      notification.success({ message: "Data OCR berhasil diperbarui" });
+      console.log("[OCR updated]", variables);
+      const overrides: Record<string, boolean> = {};
+      for (const key of Object.keys(variables)) {
+        overrides[key] = variables[key] !== null;
+      }
+      setOcrOverrides((prev) => ({ ...prev, ...overrides }));
+      refetchKycMatch();
+    },
+    onError: (_, variables) => {
+      notification.error({ message: "Gagal memperbarui data OCR" });
+      const revert: Record<string, boolean> = {};
+      for (const key of Object.keys(variables)) {
+        revert[key] = false;
+      }
+      setOcrOverrides((prev) => ({ ...prev, ...revert }));
+      refetchKycMatch();
+    },
+  });
+
+  const handleOcrSwitch = (
+    ocrField: string,
+    formField: string | string[],
+    checked: boolean
+  ) => {
+    const value = checked ? formKYC1.getFieldValue(formField) : null;
+    mutateUpdateRawOcr({ [ocrField]: value });
+  };
 
   const getBackground = () => {
     if (step == 1) {
@@ -303,6 +338,9 @@ const KYCForm = () => {
                         label=""
                         value={kyc?.idCardNumber}
                         isMatch={kycMatch?.idCardNumber?.isMatch}
+                        onChange={(checked) =>
+                          handleOcrSwitch("idNumber", "idCardNumber", checked)
+                        }
                       />
                     </div>
                   </Form.Item>
@@ -312,6 +350,9 @@ const KYCForm = () => {
                         label=""
                         value={kyc?.fullName}
                         isMatch={kycMatch?.fullName?.isMatch}
+                        onChange={(checked) =>
+                          handleOcrSwitch("name", "fullName", checked)
+                        }
                       />
                     </div>
                   </Form.Item>
@@ -321,6 +362,13 @@ const KYCForm = () => {
                         label=""
                         value={kyc?.placeOfBirth}
                         isMatch={kycMatch?.placeOfBirth?.isMatch}
+                        onChange={(checked) => {
+                          const place = formKYC1.getFieldValue("placeOfBirth");
+                          const date = formKYC1.getFieldValue("dateOfBirth");
+                          mutateUpdateRawOcr({
+                            birthPlaceBirthday: checked ? `${place ?? ""}, ${date ?? ""}` : null,
+                          });
+                        }}
                       />
                     </div>
                   </Form.Item>
@@ -330,6 +378,13 @@ const KYCForm = () => {
                         label=""
                         value={kyc?.dateOfBirth}
                         isMatch={kycMatch?.dateOfBirth?.isMatch}
+                        onChange={(checked) => {
+                          const place = formKYC1.getFieldValue("placeOfBirth");
+                          const date = formKYC1.getFieldValue("dateOfBirth");
+                          mutateUpdateRawOcr({
+                            birthPlaceBirthday: checked ? `${place ?? ""}, ${date ?? ""}` : null,
+                          });
+                        }}
                       />
                     </div>
                   </Form.Item>
@@ -342,12 +397,16 @@ const KYCForm = () => {
                           { value: "Lainnya", label: "Lainnya" },
                         ]}
                         defaultValue={kyc?.gender}
-                        disabled={kycMatch?.gender?.isMatch}
                         onChange={(val) => {
                           formKYC1.setFieldValue("gender", val);
                         }}
                       />
-                      <Switch value={kycMatch?.gender?.isMatch} />
+                      <Switch
+                        value={kycMatch?.gender?.isMatch}
+                        onChange={(checked) =>
+                          handleOcrSwitch("gender", "gender", checked)
+                        }
+                      />
                     </div>
                   </Form.Item>
                   <Form.Item label="Golongan Darah" name={["bloodGroup"]}>
@@ -360,12 +419,16 @@ const KYCForm = () => {
                           { value: "O", label: "O" },
                         ]}
                         defaultValue={kyc?.bloodGroup}
-                        disabled={kycMatch?.bloodGroup?.isMatch}
                         onChange={(val) => {
                           formKYC1.setFieldValue("bloodGroup", val);
                         }}
                       />
-                      <Switch value={kycMatch?.bloodGroup?.isMatch} />
+                      <Switch
+                        value={kycMatch?.bloodGroup?.isMatch}
+                        onChange={(checked) =>
+                          handleOcrSwitch("bloodGroup", "bloodGroup", checked)
+                        }
+                      />
                     </div>
                   </Form.Item>
                   <Form.Item
@@ -377,6 +440,13 @@ const KYCForm = () => {
                         label=""
                         value={kyc?.idCardAddress?.line}
                         isMatch={kycMatch?.idCardAddress?.line?.isMatch}
+                        onChange={(checked) =>
+                          handleOcrSwitch(
+                            "address",
+                            ["idCardAddress", "line"],
+                            checked
+                          )
+                        }
                       />
                     </div>
                   </Form.Item>
@@ -388,6 +458,11 @@ const KYCForm = () => {
                         label=""
                         value={kyc?.idCardAddress?.rtNumber}
                         isMatch={kycMatch?.idCardAddress?.rtNumber?.isMatch}
+                        onChange={(checked) => {
+                          const rt = formKYC1.getFieldValue(["idCardAddress", "rtNumber"]);
+                          const rw = formKYC1.getFieldValue(["idCardAddress", "rwNumber"]);
+                          mutateUpdateRawOcr({ rtrw: checked ? `${rt ?? ""}/${rw ?? ""}` : null });
+                        }}
                       />
                     </div>
                   </Form.Item>
@@ -397,6 +472,11 @@ const KYCForm = () => {
                         label=""
                         value={kyc?.idCardAddress?.rwNumber}
                         isMatch={kycMatch?.idCardAddress?.rwNumber?.isMatch}
+                        onChange={(checked) => {
+                          const rt = formKYC1.getFieldValue(["idCardAddress", "rtNumber"]);
+                          const rw = formKYC1.getFieldValue(["idCardAddress", "rwNumber"]);
+                          mutateUpdateRawOcr({ rtrw: checked ? `${rt ?? ""}/${rw ?? ""}` : null });
+                        }}
                       />
                     </div>
                   </Form.Item>
@@ -409,11 +489,19 @@ const KYCForm = () => {
                       <Select
                         optionFilterProp="label"
                         showSearch
-                        disabled={kycMatch?.idCardAddress?.state?.isMatch}
                         options={provinceJson}
                       />
                     </Form.Item>
-                    <Switch value={kycMatch?.idCardAddress?.state?.isMatch} />
+                    <Switch
+                      value={kycMatch?.idCardAddress?.state?.isMatch}
+                      onChange={(checked) =>
+                        handleOcrSwitch(
+                          "province",
+                          ["idCardAddress", "state"],
+                          checked
+                        )
+                      }
+                    />
                   </div>
                   <div className="flex items-center gap-3 mt-2">
                     <Form.Item
@@ -424,11 +512,19 @@ const KYCForm = () => {
                       <Select
                         optionFilterProp="label"
                         showSearch
-                        disabled={kycMatch?.idCardAddress?.city?.isMatch}
                         options={filteredIdCardCitiesKYC1}
                       />
                     </Form.Item>
-                    <Switch value={kycMatch?.idCardAddress?.city?.isMatch} />
+                    <Switch
+                      value={kycMatch?.idCardAddress?.city?.isMatch}
+                      onChange={(checked) =>
+                        handleOcrSwitch(
+                          "city",
+                          ["idCardAddress", "city"],
+                          checked
+                        )
+                      }
+                    />
                   </div>
                   <div className="flex items-center gap-3 mt-2">
                     <Form.Item
@@ -439,13 +535,19 @@ const KYCForm = () => {
                       <Select
                         optionFilterProp="label"
                         showSearch
-                        disabled={kycMatch?.idCardAddress?.district?.isMatch}
                         options={filteredIdCardDistrictsKYC1}
                         value={selectedIdCardDistrictKYC1}
                       />
                     </Form.Item>
                     <Switch
                       value={kycMatch?.idCardAddress?.district?.isMatch}
+                      onChange={(checked) =>
+                        handleOcrSwitch(
+                          "district",
+                          ["idCardAddress", "district"],
+                          checked
+                        )
+                      }
                     />
                   </div>
                   <Form.Item
@@ -457,6 +559,13 @@ const KYCForm = () => {
                         label=""
                         value={kyc?.idCardAddress?.subdistrict}
                         isMatch={kycMatch?.idCardAddress?.subdistrict?.isMatch}
+                        onChange={(checked) =>
+                          handleOcrSwitch(
+                            "village",
+                            ["idCardAddress", "subdistrict"],
+                            checked
+                          )
+                        }
                       />
                     </div>
                   </Form.Item>
@@ -473,12 +582,16 @@ const KYCForm = () => {
                           { value: "Lainnya", label: "Lainnya" },
                         ]}
                         defaultValue={kyc?.religion}
-                        disabled={kycMatch?.religion?.isMatch}
                         onChange={(val) => {
                           formKYC1.setFieldValue("religion", val);
                         }}
                       />
-                      <Switch value={kycMatch?.religion?.isMatch} />
+                      <Switch
+                        value={kycMatch?.religion?.isMatch}
+                        onChange={(checked) =>
+                          handleOcrSwitch("religion", "religion", checked)
+                        }
+                      />
                     </div>
                   </Form.Item>
                   <Form.Item label="Status" name={["maritalStatus"]}>
@@ -490,13 +603,21 @@ const KYCForm = () => {
                           { value: "Bercerai", label: "Bercerai" },
                           { value: "Lainnya", label: "Lainnya" },
                         ]}
-                        defaultValue={kyc?.maritalStatus}
-                        disabled={kycMatch?.maritalStatus?.isMatch}
+                        value={formKYC1.getFieldValue("maritalStatus")}
                         onChange={(val) => {
                           formKYC1.setFieldValue("maritalStatus", val);
                         }}
                       />
-                      <Switch value={kycMatch?.maritalStatus?.isMatch} />
+                      <Switch
+                        value={kycMatch?.maritalStatus?.isMatch || ocrOverrides['maritalStatus']}
+                        onChange={(checked) =>
+                          handleOcrSwitch(
+                            "maritalStatus",
+                            "maritalStatus",
+                            checked
+                          )
+                        }
+                      />
                     </div>
                   </Form.Item>
                   <Form.Item label="Pekerjaan" name={["occupation"]}>
@@ -521,12 +642,16 @@ const KYCForm = () => {
                           { label: "Lainnya", value: "Lainnya" },
                         ]}
                         defaultValue={kyc?.occupation}
-                        disabled={kycMatch?.occupation?.isMatch}
                         onChange={(val) => {
                           formKYC1.setFieldValue("occupation", val);
                         }}
                       />
-                      <Switch value={kycMatch?.occupation?.isMatch} />
+                      <Switch
+                        value={kycMatch?.occupation?.isMatch}
+                        onChange={(checked) =>
+                          handleOcrSwitch("occupation", "occupation", checked)
+                        }
+                      />
                     </div>
                   </Form.Item>
                 </div>
@@ -971,7 +1096,7 @@ const KYCForm = () => {
           </div>
         </div>
 
-        {step == 1 ? <KYCStep1 /> : <KYCStep2 />}
+        {step == 1 ? KYCStep1() : KYCStep2()}
 
         <div className="bg-white p-4 rounded-lg flex justify-between items-center w-full sticky bottom-0 mt-3">
           <div className="flex items-center gap-4">
