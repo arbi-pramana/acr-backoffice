@@ -52,6 +52,7 @@ export const ROUTES = {
     byCode: (code: string) => `${version}/vouchers/` + code,
     dashboard: `/${version}/vouchers/dashboard`,
     updateById: (id: number) => `/${version}/vouchers/` + id,
+    deleteById: (id: number) => `/${version}/vouchers/` + id,
     create: `/${version}/vouchers`,
     uploadCatalogCSV: `/${version}/vouchers/csv`,
   },

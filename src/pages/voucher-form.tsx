@@ -49,6 +49,17 @@ const VoucherForm = () => {
     },
   });
 
+  const { mutate: mutateVoucherDelete, isPending: isPendingDeleteVoucher } =
+    useMutation({
+      mutationKey: ["deleteVoucher"],
+      mutationFn: (id: number) => voucherService.deleteVoucherById(id),
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["vouchers"] });
+        notification.success({ message: "Voucher berhasil dihapus." });
+        navigate(`/dashboard?tab=voucher`);
+      },
+    });
+
   const { mutate: mutateVoucherUpdate, isPending: isPendingUpdateVoucher } =
     useMutation({
       mutationKey: ["updateVoucher"],
@@ -156,12 +167,37 @@ const VoucherForm = () => {
             <div className="font-semibold text-xl">Buat Voucher</div>
             {isEditing &&
               (disabledForm ? (
-                <Button
-                  type="primary"
-                  onClick={() => setDisabledForm(!disabledForm)}
-                >
-                  Edit
-                </Button>
+                <div className="flex gap-3">
+                  {(detailVoucher?.quotaUsed ?? 1) === 0 && (
+                    <Button
+                      danger
+                      loading={isPendingDeleteVoucher}
+                      disabled={isPendingDeleteVoucher}
+                      onClick={() =>
+                        Modal.confirm({
+                          title: "Hapus Voucher",
+                          content: "Apakah anda yakin ingin menghapus voucher ini?",
+                          okText: "Hapus",
+                          cancelText: "Batal",
+                          centered: true,
+                          okButtonProps: { danger: true },
+                          icon: null,
+                          onOk() {
+                            mutateVoucherDelete(detailVoucher!.id);
+                          },
+                        })
+                      }
+                    >
+                      Hapus
+                    </Button>
+                  )}
+                  <Button
+                    type="primary"
+                    onClick={() => setDisabledForm(!disabledForm)}
+                  >
+                    Edit
+                  </Button>
+                </div>
               ) : !disabledForm ? (
                 <div className="flex gap-3">
                   <Button onClick={() => setDisabledForm(true)}>Cancel</Button>
@@ -196,7 +232,7 @@ const VoucherForm = () => {
                     rules={[{ required: true }]}
                   >
                     <Input
-                      disabled={disabledForm}
+                      disabled={disabledForm || (isEditing && (detailVoucher?.quotaUsed ?? 0) >= 1)}
                       placeholder="Kode Voucher"
                       data-testid="code"
                     />
