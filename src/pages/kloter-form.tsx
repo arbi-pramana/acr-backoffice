@@ -8,6 +8,7 @@ import {
   InfoCircleFilled,
   MailOutlined,
   SettingOutlined,
+  SyncOutlined,
   UserOutlined,
 } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -37,7 +38,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import Chip from "../components/chip";
 import WinnerPickerModal from "../components/winner-picker-modal";
 import { constants } from "../helper/constant";
-import { httpWithoutInterceptor } from "../helper/http";
+import http, { httpWithoutInterceptor } from "../helper/http";
+import { ROUTES } from "../routes/api";
 import { numberWithCommas } from "../helper/number-with-commas";
 import { useDebounce } from "../hooks/use-debounce";
 import { useRandomCatalogLogic } from "../hooks/use-random-catalog-logic";
@@ -707,6 +709,28 @@ const KloterForm = () => {
       },
     });
 
+  const {
+    mutate: mutateRefreshInstallment,
+    isPending: pendingRefreshInstallment,
+  } = useMutation({
+    mutationKey: ["refreshInstallment", params.id],
+    mutationFn: () =>
+      http.post(
+        ROUTES.kloter.refreshInstallment(parseInt(params.id ?? "0")),
+      ),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["slot", params.id] });
+      notification.success({
+        message: "Installment berhasil di-refresh",
+      });
+    },
+    onError: (error: AxiosError<{ message: string }>) => {
+      notification.error({
+        message: error.response?.data?.message ?? "Gagal refresh installment",
+      });
+    },
+  });
+
   const { mutate: mutateUploadSlotCSV, isPending: pendingUploadSlotCSV } =
     useMutation({
       mutationKey: ["uploadSlotCSV", params.id],
@@ -1309,6 +1333,27 @@ const KloterForm = () => {
             <div className="flex justify-between mb-4">
               <div className="font-semibold text-xl mb-4">Daftar Slot</div>
               <div className="flex gap-3">
+                {startDateLocked && (
+                  <Button
+                    loading={pendingRefreshInstallment}
+                    disabled={pendingRefreshInstallment}
+                    icon={<SyncOutlined />}
+                    iconPosition="start"
+                    onClick={() =>
+                      Modal.confirm({
+                        title: "Refresh Installment",
+                        content:
+                          "Apakah kamu yakin ingin recalculate payoutAt dan dueAt untuk semua slot & installment?",
+                        okText: "Ya",
+                        cancelText: "Tidak",
+                        centered: true,
+                        onOk: () => mutateRefreshInstallment(),
+                      })
+                    }
+                  >
+                    Refresh Installment
+                  </Button>
+                )}
                 <Button
                   onClick={() => setRequestFeeModalVisible(true)}
                   icon={<SettingOutlined />}
