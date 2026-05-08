@@ -106,11 +106,11 @@ const columns = (props: {
     dataIndex: "id",
     render: (id, record) => (
       <div className="flex gap-2">
-        {record.status === "WAITING_PAYMENT" && (
+        {/* {record.status === "WAITING_PAYMENT" && (
           <Button type="primary" onClick={() => props.onApprove(id)}>
             Approve
           </Button>
-        )}
+        )} */}
         <Button
           type="default"
           onClick={() => props.navigate("/user-slot-replacement-form/" + id)}
