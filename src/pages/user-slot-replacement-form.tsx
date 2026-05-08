@@ -12,7 +12,7 @@ import {
   Select,
   Spin,
 } from "antd";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { constants } from "../helper/constant";
 import { accountService } from "../services/account.service";
@@ -32,6 +32,7 @@ const UserSlotReplacementForm = () => {
   const [form] = Form.useForm();
   const [catalogId, setCatalogId] = useState<number | null>(null);
   const [disabledForm, setDisabledForm] = useState(isEditing);
+  const isInitialLoad = useRef(isEditing);
   const [
     updatedUserSlotReplacementDetail,
     setUpdatedUserSlotReplacementDetail,
@@ -154,6 +155,7 @@ const UserSlotReplacementForm = () => {
       ...detailUserSlotReplacement,
     });
     setCatalogId(detailUserSlotReplacement.catalogId);
+    isInitialLoad.current = false;
   }, [detailUserSlotReplacement, form]);
 
   const slotId = Form.useWatch("slotId", form);
@@ -173,7 +175,7 @@ const UserSlotReplacementForm = () => {
   }, [selectedSlot, form]);
 
   useEffect(() => {
-    if (!oldUserId || !catalogId) {
+    if (!oldUserId || !catalogId || isEditing) {
       return;
     }
     userSlotReplacementService.getFee(oldUserId, catalogId!).then((res) => {
