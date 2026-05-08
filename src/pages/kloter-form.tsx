@@ -597,6 +597,7 @@ const KloterForm = () => {
   const [form] = Form.useForm();
   const [formRequestFee] = Form.useForm();
   const [formAddSlot] = Form.useForm();
+  const startDateLocked = Form.useWatch("startDateLocked", form);
   const [slotModal, setSlotModal] = useState(false);
   const [detailFromSlot, setDetailFromSlot] = useState<null | Slot>(null);
   const [disabledForm, setDisabledForm] = useState(isEditing);
@@ -1082,7 +1083,7 @@ const KloterForm = () => {
                     ]}
                   >
                     <Input
-                      disabled={disabledForm}
+                      disabled={disabledForm || !!startDateLocked}
                       placeholder="Slot"
                       data-testid="capacity"
                     />
@@ -1103,7 +1104,7 @@ const KloterForm = () => {
                     ]}
                   >
                     <Input
-                      disabled={disabledForm}
+                      disabled={disabledForm || !!startDateLocked}
                       placeholder="Rotasi"
                       data-testid="cycleDay"
                     />
@@ -1120,7 +1121,7 @@ const KloterForm = () => {
                           <DatePicker
                             placeholder="Awal Periode"
                             style={{ width: "100%" }}
-                            disabled={disabledForm}
+                            disabled={disabledForm || !!startDateLocked}
                             data-testid="estimateStartDate"
                           />
                         </Form.Item>
@@ -1153,7 +1154,7 @@ const KloterForm = () => {
                           <DatePicker
                             placeholder="Akhir Periode"
                             style={{ width: "100%" }}
-                            disabled={disabledForm}
+                            disabled={disabledForm || !!startDateLocked}
                             data-testid="estimateEndDate"
                           />
                         </Form.Item>
@@ -1169,7 +1170,7 @@ const KloterForm = () => {
                           <DatePicker
                             placeholder="Awal Periode"
                             style={{ width: "100%" }}
-                            disabled={disabledForm}
+                            disabled={disabledForm || !!startDateLocked}
                             data-testid="startAt"
                           />
                         </Form.Item>
@@ -1179,7 +1180,7 @@ const KloterForm = () => {
                           <DatePicker
                             placeholder="Akhir Periode"
                             style={{ width: "100%" }}
-                            disabled={disabledForm}
+                            disabled={disabledForm || !!startDateLocked}
                             data-testid="endAt"
                           />
                         </Form.Item>
@@ -1238,7 +1239,7 @@ const KloterForm = () => {
                     <DatePicker
                       showTime
                       style={{ width: "100%" }}
-                      disabled={disabledForm}
+                      disabled={disabledForm || !!startDateLocked}
                       data-testid="availableAt"
                     />
                   </Form.Item>
