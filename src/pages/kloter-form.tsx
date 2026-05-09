@@ -86,6 +86,7 @@ const slotColumnsForDescendingCatalog = (props: {
   setDetailFromSlot: (val: Slot) => void;
   sendEmail: (record: Slot) => void;
   sendingEmailSlotId: number | null;
+  startDateLocked?: boolean;
 }): TableColumnsType<Slot> => [
   {
     title: "Urutan",
@@ -97,7 +98,7 @@ const slotColumnsForDescendingCatalog = (props: {
     title: "Tanggal Pencairan",
     dataIndex: "payoutAt",
     key: "payoutAt",
-    render: (_, record) => <PayoutDateColumn record={record} />,
+    render: (_, record) => <PayoutDateColumn record={record} startDateLocked={props.startDateLocked} />,
   },
   {
     title: "Nama",
@@ -215,6 +216,7 @@ const slotColumnsForRandomCatalog = (props: {
   setDetailFromSlot: (val: Slot) => void;
   sendEmail: (record: Slot) => void;
   sendingEmailSlotId: number | null;
+  startDateLocked?: boolean;
 }): TableColumnsType<Slot> => [
   {
     title: "Urutan",
@@ -226,7 +228,7 @@ const slotColumnsForRandomCatalog = (props: {
     title: "Tanggal Kocokan",
     dataIndex: "payoutAt",
     key: "payoutAt",
-    render: (_, record) => <PayoutDateColumn record={record} />,
+    render: (_, record) => <PayoutDateColumn record={record} startDateLocked={props.startDateLocked} />,
   },
   // {
   //   title: "Nama",
@@ -1437,6 +1439,7 @@ const KloterForm = () => {
                       });
                     },
                   }),
+                startDateLocked,
               })}
               loading={
                 loadSlot ||
@@ -1545,6 +1548,7 @@ const KloterForm = () => {
                           });
                         },
                       }),
+                    startDateLocked,
                   })}
                   loading={
                     loadSlot ||
@@ -1974,7 +1978,7 @@ const KloterForm = () => {
   );
 };
 
-const PayoutDateColumn = ({ record }: { record: Slot }) => {
+const PayoutDateColumn = ({ record, startDateLocked }: { record: Slot; startDateLocked?: boolean }) => {
   const [open, setOpen] = useState(false);
   const [dateValue, setDateValue] = useState<string | null>(null);
   const queryClient = useQueryClient();
@@ -2011,7 +2015,7 @@ const PayoutDateColumn = ({ record }: { record: Slot }) => {
       <span className="whitespace-nowrap">
         {record.payoutAt ? dayjs(record.payoutAt).format("DD MMM YYYY") : "-"}
       </span>
-      {dateValue && (
+      {dateValue && !startDateLocked && (
         <Popover
           open={open}
           onOpenChange={(open) => setOpen(open)}
