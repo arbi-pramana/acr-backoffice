@@ -9,11 +9,13 @@ import Chip from "../components/chip";
 import Pagination from "../components/pagination";
 import { numberWithCommas } from "../helper/number-with-commas";
 import { userSlotReplacementService } from "../services/user-slot-replacement.service";
+import { generalService } from "../services/general.service";
 import { UserSlotReplacement } from "../types";
 
 const columns = (props: {
   navigate: (val: string) => void;
   onApprove: (id: number) => void;
+  currentUserEmail?: string;
 }): ColumnsType<UserSlotReplacement> => [
   {
     title: "ID",
@@ -104,13 +106,14 @@ const columns = (props: {
     key: "action",
     fixed: "right",
     dataIndex: "id",
-    render: (id, _record) => (
+    render: (id, record) => (
       <div className="flex gap-2">
-        {/* {record.status === "WAITING_PAYMENT" && (
-          <Button type="primary" onClick={() => props.onApprove(id)}>
-            Approve
-          </Button>
-        )} */}
+        {record.status === "WAITING_PAYMENT" &&
+          props.currentUserEmail === "admin@acrdigital.id" && (
+            <Button type="primary" onClick={() => props.onApprove(id)}>
+              Approve
+            </Button>
+          )}
         <Button
           type="default"
           onClick={() => props.navigate("/user-slot-replacement-form/" + id)}
@@ -129,6 +132,11 @@ const UserSlotReplacementManagement = () => {
     size: 10,
     search: "",
     sort: "createdAt,DESC",
+  });
+
+  const { data: account } = useQuery({
+    queryKey: ["account"],
+    queryFn: () => generalService.getAccount(),
   });
 
   const {
@@ -210,7 +218,11 @@ const UserSlotReplacementManagement = () => {
       </div>
       <Table
         scroll={{ x: "max-content", y: "auto" }}
-        columns={columns({ navigate, onApprove: handleApprove })}
+        columns={columns({
+          navigate,
+          onApprove: handleApprove,
+          currentUserEmail: account?.email,
+        })}
         dataSource={userSlotReplacements?.content ?? []}
         pagination={false}
         loading={loadingUserSlotReplacement}
