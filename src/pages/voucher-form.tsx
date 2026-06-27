@@ -386,11 +386,11 @@ const VoucherForm = () => {
                 <div className="mt-6">
                   <Divider />
                   <div className="font-semibold text-lg mb-3">
-                    Pengguna Voucher ({(detailVoucher as { totalLogs?: number })?.totalLogs ?? 0})
+                    Pengguna Voucher ({(detailVoucher as { logs?: VoucherLog[] })?.logs?.filter((log) => log.status === "PAID").length ?? 0})
                   </div>
                   <Table
                     dataSource={
-                      (detailVoucher as { logs?: VoucherLog[] })?.logs || []
+                      (detailVoucher as { logs?: VoucherLog[] })?.logs?.filter((log) => log.status === "PAID") || []
                     }
                     columns={[
                       {
