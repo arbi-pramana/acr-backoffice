@@ -23,6 +23,7 @@ import { voucherService } from "../services/voucher.service";
 import {
   createVoucherParams,
   updateVoucherByIdParams,
+  VoucherLog,
 } from "../types";
 
 const VoucherForm = () => {
@@ -385,34 +386,31 @@ const VoucherForm = () => {
                 <div className="mt-6">
                   <Divider />
                   <div className="font-semibold text-lg mb-3">
-                    Pengguna Voucher ({(detailVoucher as { users?: Array<{ id: number; username: string; email: string; mobile: string }> })?.users ? (detailVoucher as { users?: Array<{ id: number; username: string; email: string; mobile: string }> })?.users?.length : 0})
+                    Pengguna Voucher ({(detailVoucher as { logs?: VoucherLog[] })?.logs?.filter((log) => log.status === "PAID").length ?? 0})
                   </div>
                   <Table
                     dataSource={
-                      (detailVoucher as {
-                        users?: {
-                          id: number;
-                          username: string;
-                          email: string;
-                          mobile: string;
-                        }[];
-                      })?.users || []
+                      (detailVoucher as { logs?: VoucherLog[] })?.logs?.filter((log) => log.status === "PAID") || []
                     }
                     columns={[
                       {
-                        title: "Username",
-                        dataIndex: "username",
-                        key: "username",
+                        title: "Tanggal",
+                        dataIndex: "usedAt",
+                        key: "usedAt",
+                        render: (value: string) =>
+                          value ? dayjs(value).format("DD/MM/YYYY HH:mm") : "-",
+                      },
+                      {
+                        title: "Nama",
+                        dataIndex: "userName",
+                        key: "userName",
+                        render: (value: string | null | undefined) => value || "-",
                       },
                       {
                         title: "Email",
-                        dataIndex: "email",
-                        key: "email",
-                      },
-                      {
-                        title: "Phone Number",
-                        dataIndex: "mobile",
-                        key: "mobile",
+                        dataIndex: "userEmail",
+                        key: "userEmail",
+                        render: (value: string | null | undefined) => value || "-",
                       },
                     ]}
                     rowKey="id"
