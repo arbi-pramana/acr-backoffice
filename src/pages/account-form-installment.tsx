@@ -7,7 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Button, Divider, Modal, Result, Spin, Table } from "antd";
 import { ColumnsType } from "antd/es/table";
 import dayjs from "dayjs";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Chip from "../components/chip";
 import { copyToClipboard } from "../helper/copy-to-clipboard";
@@ -19,7 +19,6 @@ import { AccountCatalog, AccountInstallment } from "../types";
 const installmentColumns = (props: {
   setDetailPayout: (id: AccountInstallment) => void;
   setDetailPayment: (id: AccountInstallment) => void;
-  feePerInstallment: number;
 }): ColumnsType<AccountInstallment> => [
   {
     title: "Urutan",
@@ -37,10 +36,9 @@ const installmentColumns = (props: {
     title: "Jumlah Iuran",
     dataIndex: "totalAmount",
     key: "total-amount-installment",
-    render: (value: string, _, index) => {
+    render: (value: string) => {
       const amount = parseInt(value);
-      const adjusted = index < 5 ? amount + props.feePerInstallment : amount;
-      return <div>Rp{numberWithCommas(adjusted)}</div>;
+      return <div>Rp{numberWithCommas(amount)}</div>;
     },
   },
   {
@@ -193,30 +191,6 @@ const AccountInstallments = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [accountCatalog]);
 
-  const feePerInstallment = useMemo(() => {
-    if (!detailKloterFromAPI?.requestFeeSettings || !detailKloter) return 0;
-
-    try {
-      const settings: { no: number; percentage: number }[] = JSON.parse(
-        detailKloterFromAPI.requestFeeSettings
-      );
-      let total = 0;
-
-      for (const slot of detailKloter.slots) {
-        const feeSetting = settings.find((s) => s.no === slot.number);
-        if (feeSetting) {
-          const percentage = Number(feeSetting.percentage);
-          total += Math.round(detailKloter.payout * percentage / 100 / 5);
-        }
-      }
-
-      return total;
-    } catch (error) {
-      console.error("Failed to parse requestFeeSettings:", error);
-      return 0;
-    }
-  }, [detailKloterFromAPI, detailKloter]);
-
   if (!detailKloter) return null;
 
   return (
@@ -295,7 +269,6 @@ const AccountInstallments = () => {
               setDetailPayout(record),
             setDetailPayment: (record: AccountInstallment) =>
               setDetailPayment(record),
-            feePerInstallment,
           })}
           key={`installment-table-${params.id}-${detailKloter.catalogId}`}
           dataSource={accountInstallment}
