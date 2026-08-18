@@ -107,6 +107,7 @@ const KYCForm = () => {
             message: "KYC level 2 successfully updated",
           });
           refetchKYC();
+          refetchKycMatch();
         }
       },
     });
@@ -156,6 +157,14 @@ const KYCForm = () => {
   ) => {
     const value = checked ? formKYC1.getFieldValue(formField) : null;
     mutateUpdateRawOcr({ [ocrField]: value });
+  };
+
+  const handleBankHolderNameMatch = (checked: boolean) => {
+    const value = checked
+      ? (formKYC2.getFieldValue(["bank", "holderName"]) ??
+        kyc?.bank?.holderName)
+      : null;
+    mutateUpdateLevelTwo({ bankHolderName: value });
   };
 
   const getBackground = () => {
@@ -827,6 +836,7 @@ const KYCForm = () => {
                   label="Nama Pemilik Rekening"
                   value={kyc?.bank?.holderName}
                   isMatch={kycMatch?.bank?.holderName.isMatch}
+                  onChange={handleBankHolderNameMatch}
                 />
               </div>
             </Form.Item>
