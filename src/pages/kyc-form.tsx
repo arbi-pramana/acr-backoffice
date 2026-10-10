@@ -159,12 +159,8 @@ const KYCForm = () => {
     mutateUpdateRawOcr({ [ocrField]: value });
   };
 
-  const handleBankHolderNameMatch = (checked: boolean) => {
-    const value = checked
-      ? (formKYC2.getFieldValue(["bank", "holderName"]) ??
-        kyc?.bank?.holderName)
-      : null;
-    mutateUpdateLevelTwo({ bankHolderName: value });
+  const handleBankConfirmation = (checked: boolean) => {
+    mutateUpdateLevelTwo({ bankConfirmed: checked });
   };
 
   const getBackground = () => {
@@ -835,8 +831,8 @@ const KYCForm = () => {
                 <InputMatch
                   label="Nama Pemilik Rekening"
                   value={kyc?.bank?.holderName}
-                  isMatch={kycMatch?.bank?.holderName.isMatch}
-                  onChange={handleBankHolderNameMatch}
+                  isMatch={kyc?.bank?.status === "SUCCESS"}
+                  onChange={handleBankConfirmation}
                 />
               </div>
             </Form.Item>
