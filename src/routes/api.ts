@@ -32,33 +32,42 @@ export const ROUTES = {
       `${version}/backoffice/kycs/level-two/` + id,
     sendNotifRejectLevelOne: (id: string) =>
       `${version}/notifications/kyc-one-rejected/` + id,
+    updateRawOcr: (id: string) =>
+      `/${version}/backoffice/kycs/raw-ocr/` + id,
     export: `/${version}/backoffice/kycs/export`,
   },
   kloter: {
     list: `/${version}/backoffice/catalogs`,
     byId: (id: number) => `${version}/backoffice/catalogs/` + id,
+    byGroupId: (groupId: string) => `${version}/slots/public/` + groupId,
     dashboard: `/${version}/backoffice/catalogs/dashboard`,
     updateById: (id: number) => `/${version}/backoffice/catalogs/` + id,
     create: `/${version}/backoffice/catalogs`,
     uploadCatalogCSV: `/${version}/backoffice/catalogs/csv`,
+    setWinner: (id: number) => `/${version}/backoffice/catalogs/${id}/winner`,
+    sendWinningEmail: `/${version}/catalogs/send-winning-email`,
+    refreshInstallment: (id: number) => `/${version}/backoffice/catalogs/${id}/refresh-installments`,
   },
   voucher: {
     list: `/${version}/vouchers`,
     byCode: (code: string) => `${version}/vouchers/` + code,
     dashboard: `/${version}/vouchers/dashboard`,
     updateById: (id: number) => `/${version}/vouchers/` + id,
+    deleteById: (id: number) => `/${version}/vouchers/` + id,
     create: `/${version}/vouchers`,
     uploadCatalogCSV: `/${version}/vouchers/csv`,
   },
   userSlotReplacement: {
     list: `/${version}/user-slot-replacements`,
     byId: (id: number) => `${version}/user-slot-replacements/` + id,
+    deleteById: (id: number) => `${version}/user-slot-replacements/` + id,
     dashboard: `/${version}/user-slot-replacements/dashboard`,
     updateById: (id: number) => `/${version}/user-slot-replacements/` + id,
     create: `/${version}/user-slot-replacements`,
     uploadCatalogCSV: `/${version}/user-slot-replacements/csv`,
     fee: `/${version}/user-slot-replacements/fee`,
-    approveById: (id: number) => `/${version}/user-slot-replacements/` + id + "/approve",
+    approveById: (id: number) =>
+      `/${version}/user-slot-replacements/` + id + "/approve",
   },
   invoiceGet: {
     list: `/${version}/invoice-gets`,

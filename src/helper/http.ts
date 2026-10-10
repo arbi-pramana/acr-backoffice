@@ -20,7 +20,7 @@ http.interceptors.response.use(
   },
   (error) => {
     if (
-      error.response.status === 401 &&
+      error.response?.status === 401 &&
       window.location.pathname !== "/login"
     ) {
       notification.error({ message: "Session expired, please relogin" });
@@ -28,11 +28,17 @@ http.interceptors.response.use(
       window.location.href = "/login";
     }
 
-    const errorMessage = getErrorMessage(error.response.data);
+    const errorMessage = getErrorMessage(error.response?.data);
     notification.error({ message: errorMessage });
 
-    return error;
-  }
+    return Promise.reject(error);
+  },
 );
+
+const httpWithoutInterceptor = axios.create({
+  baseURL: import.meta.env.VITE_APP_BASE_URL,
+});
+
+export { httpWithoutInterceptor };
 
 export default http;

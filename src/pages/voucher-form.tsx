@@ -13,13 +13,18 @@ import {
   Select,
   Spin,
   Switch,
+  Table,
 } from "antd";
 import dayjs from "dayjs";
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { constants } from "../helper/constant";
 import { voucherService } from "../services/voucher.service";
-import { createVoucherParams, updateVoucherByIdParams } from "../types";
+import {
+  createVoucherParams,
+  updateVoucherByIdParams,
+  VoucherLog,
+} from "../types";
 
 const VoucherForm = () => {
   const navigate = useNavigate();
@@ -44,6 +49,17 @@ const VoucherForm = () => {
       }
     },
   });
+
+  const { mutate: mutateVoucherDelete, isPending: isPendingDeleteVoucher } =
+    useMutation({
+      mutationKey: ["deleteVoucher"],
+      mutationFn: (id: number) => voucherService.deleteVoucherById(id),
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["vouchers"] });
+        notification.success({ message: "Voucher berhasil dihapus." });
+        navigate(`/dashboard?tab=voucher`);
+      },
+    });
 
   const { mutate: mutateVoucherUpdate, isPending: isPendingUpdateVoucher } =
     useMutation({
@@ -81,6 +97,7 @@ const VoucherForm = () => {
     enabled: isEditing,
     staleTime: 1000 * 60 * 3, // 3 minutes
   });
+  
   if (detailVoucher) {
     form.setFieldsValue({
       ...detailVoucher,
@@ -129,7 +146,7 @@ const VoucherForm = () => {
   // udh coba create slot, pas get slot by id, bener return yg baru dibuat td
   // method patch kena cors
   // di list slot blm ada nama
-  // di list voucher blm ada kontribusi
+  // di list voucher blm ada Iuran
   // di form, status bawah apa aja
   return (
     <>
@@ -151,12 +168,37 @@ const VoucherForm = () => {
             <div className="font-semibold text-xl">Buat Voucher</div>
             {isEditing &&
               (disabledForm ? (
-                <Button
-                  type="primary"
-                  onClick={() => setDisabledForm(!disabledForm)}
-                >
-                  Edit
-                </Button>
+                <div className="flex gap-3">
+                  {(detailVoucher?.quotaUsed ?? 1) === 0 && (
+                    <Button
+                      danger
+                      loading={isPendingDeleteVoucher}
+                      disabled={isPendingDeleteVoucher}
+                      onClick={() =>
+                        Modal.confirm({
+                          title: "Hapus Voucher",
+                          content: "Apakah anda yakin ingin menghapus voucher ini?",
+                          okText: "Hapus",
+                          cancelText: "Batal",
+                          centered: true,
+                          okButtonProps: { danger: true },
+                          icon: null,
+                          onOk() {
+                            mutateVoucherDelete(detailVoucher!.id);
+                          },
+                        })
+                      }
+                    >
+                      Hapus
+                    </Button>
+                  )}
+                  <Button
+                    type="primary"
+                    onClick={() => setDisabledForm(!disabledForm)}
+                  >
+                    Edit
+                  </Button>
+                </div>
               ) : !disabledForm ? (
                 <div className="flex gap-3">
                   <Button onClick={() => setDisabledForm(true)}>Cancel</Button>
@@ -191,7 +233,7 @@ const VoucherForm = () => {
                     rules={[{ required: true }]}
                   >
                     <Input
-                      disabled={disabledForm}
+                      disabled={disabledForm || (isEditing && (detailVoucher?.quotaUsed ?? 0) >= 1)}
                       placeholder="Kode Voucher"
                       data-testid="code"
                     />
@@ -241,19 +283,34 @@ const VoucherForm = () => {
                       const isPercentage =
                         getFieldValue("type") === "percentage";
                       return (
-                        <Form.Item
-                          label="Nilai"
-                          name="value"
-                          rules={[{ required: true }]}
-                        >
-                          <Input
-                            disabled={disabledForm}
-                            placeholder="Nilai"
-                            data-testid="value"
-                            addonBefore={isPercentage ? undefined : "Rp"}
-                            addonAfter={isPercentage ? "%" : undefined}
-                          />
-                        </Form.Item>
+                        <>
+                          <Form.Item
+                            label="Nilai"
+                            name="value"
+                            rules={[{ required: true }]}
+                          >
+                            <Input
+                              disabled={disabledForm}
+                              placeholder="Nilai"
+                              data-testid="value"
+                              addonBefore={isPercentage ? undefined : "Rp"}
+                              addonAfter={isPercentage ? "%" : undefined}
+                            />
+                          </Form.Item>
+                          {isPercentage && (
+                            <Form.Item
+                              label="Maksimal Jumlah"
+                              name="maxAmount"
+                            >
+                              <Input
+                                disabled={disabledForm}
+                                placeholder="Maksimal Jumlah"
+                                data-testid="maxAmount"
+                                addonBefore="Rp"
+                              />
+                            </Form.Item>
+                          )}
+                        </>
                       );
                     }}
                   </Form.Item>
@@ -325,6 +382,41 @@ const VoucherForm = () => {
                   </Form.Item>
                 </Col>
               </Row>
+              {isEditing && (
+                <div className="mt-6">
+                  <Divider />
+                  <div className="font-semibold text-lg mb-3">
+                    Pengguna Voucher ({(detailVoucher as { logs?: VoucherLog[] })?.logs?.filter((log) => log.status === "PAID").length ?? 0})
+                  </div>
+                  <Table
+                    dataSource={
+                      (detailVoucher as { logs?: VoucherLog[] })?.logs?.filter((log) => log.status === "PAID") || []
+                    }
+                    columns={[
+                      {
+                        title: "Tanggal",
+                        dataIndex: "usedAt",
+                        key: "usedAt",
+                        render: (value: string) =>
+                          value ? dayjs(value).format("DD/MM/YYYY HH:mm") : "-",
+                      },
+                      {
+                        title: "Nama",
+                        dataIndex: "userName",
+                        key: "userName",
+                        render: (value: string | null | undefined) => value || "-",
+                      },
+                      {
+                        title: "Email",
+                        dataIndex: "userEmail",
+                        key: "userEmail",
+                        render: (value: string | null | undefined) => value || "-",
+                      },
+                    ]}
+                    rowKey="id"
+                  />
+                </div>
+              )}
             </Form>
           )}
         </div>

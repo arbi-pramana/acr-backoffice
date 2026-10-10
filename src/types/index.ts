@@ -23,6 +23,7 @@ export type Kloter = {
   payout: number;
   adminFee: number;
   status: string;
+  catalogType: string;
   requestFeeSettings: string;
 };
 
@@ -36,6 +37,7 @@ export type Voucher = {
   type: VoucherType;
   transactionTypes: string[];
   value: number;
+  maxAmount?: number;
   quota: number;
   quotaUsed: number;
   startDate: string | null;
@@ -43,6 +45,8 @@ export type Voucher = {
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
+  logs?: VoucherLog[];
+  totalLogs?: number;
 };
 
 export type createVoucherParams = Omit<
@@ -50,6 +54,22 @@ export type createVoucherParams = Omit<
   "id" | "createdAt" | "updatedAt" | "quotaUsed"
 >;
 export type updateVoucherByIdParams = { id: number; body: Partial<Voucher> };
+
+export type VoucherLog = {
+  id: number;
+  voucherCode: string;
+  voucherId: number | null;
+  installmentId: number | null;
+  slotUserId: number | null;
+  userId: number | null;
+  userEmail?: string | null;
+  userName?: string | null;
+  transactionType: string | null;
+  amount: number | null;
+  status: string;
+  usedAt: string;
+  createdAt: string;
+};
 
 export type VoucherDashboard = {
   totalVouchers: number;
@@ -163,12 +183,17 @@ export type Slot = {
   userId: number;
   uuid: string;
   name: string;
+  email?: string;
   catalogId: number;
   payoutAt: string;
   contribution: number;
   status: string;
   isPayoutAllowed: boolean;
   enableSlotRequest: boolean;
+  winningAt: string | null;
+  hasRequested: boolean;
+  slotUserId: number | null;
+  sequence: number;
 };
 
 export type createSlotParams = Omit<
@@ -405,7 +430,7 @@ export type AccountCatalog = {
       payoutStatus: string;
       payoutAt: string;
       isPayoutReady: true;
-    }
+    },
   ];
   startAt: string;
   endAt: string;
@@ -423,7 +448,7 @@ export type AccountInstallment = {
     {
       id: number;
       amount: number;
-    }
+    },
   ];
   rotationStatus: string;
   installmentStatus: string;

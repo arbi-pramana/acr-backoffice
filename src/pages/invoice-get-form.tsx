@@ -121,6 +121,35 @@ const InvoiceGetForm = () => {
     },
   });
 
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDelete = () => {
+    if (!detailInvoiceGet) return;
+
+    Modal.confirm({
+      title: "Apakah anda yakin ingin menghapus ini?",
+      content: "Data akan dihapus permanen.",
+      okText: "Hapus",
+      cancelText: "Batal",
+      centered: true,
+      okButtonProps: constants.okButtonProps,
+      cancelButtonProps: constants.cancelButtonProps,
+      onOk: async () => {
+        try {
+          setIsDeleting(true);
+          await invoiceGetService.deleteInvoiceGetById(detailInvoiceGet.id);
+          queryClient.invalidateQueries({ queryKey: ["invoiceGets"] });
+          notification.success({ message: "InvoiceGet berhasil dihapus." });
+          navigate(`/dashboard?tab=invoiceGet`);
+        } catch (err) {
+          notification.error({ message: "Gagal menghapus invoice." });
+        } finally {
+          setIsDeleting(false);
+        }
+      },
+    });
+  };
+
   const {
     data: detailInvoiceGet,
     isLoading: loadingDetailInvoiceGet,
@@ -203,29 +232,33 @@ const InvoiceGetForm = () => {
     async (catalogId: number, slotId: number) => {
       const slot = slotOptions?.find((s) => s.id === slotId);
       const userId = slot?.userId;
-      if (userId) {
+      if (userId && !isEditing) {
         const result = await accountService.getAccountInstallment(
           userId.toString(),
-          catalogId
+          catalogId,
         );
         form.setFieldValue(
           "amount",
-          result.reduce((acc, curr) => acc + curr.remainingAmount, 0)
+          result.reduce((acc, curr) => acc + curr.remainingAmount, 0),
         );
+      } else {
+        form.setFieldValue("amount", detailInvoiceGet?.amount || 0);
       }
     },
-    [slotOptions, form]
+    [slotOptions, form, isEditing, detailInvoiceGet],
   );
 
   const updateAmountForFinalDeposit = useCallback(
     (catalogId: number) => {
       const catalog = kloterOptions?.find((k) => k.id === catalogId);
-      if (catalog?.payout) {
+      if (catalog?.payout && !isEditing) {
         const amount = catalog.payout * 0.1;
         form.setFieldValue("amount", Math.round(amount));
+      } else {
+        form.setFieldValue("amount", detailInvoiceGet?.amount || 0);
       }
     },
-    [kloterOptions, form]
+    [kloterOptions, form, isEditing, detailInvoiceGet],
   );
 
   useEffect(() => {
@@ -234,10 +267,13 @@ const InvoiceGetForm = () => {
     } else if (typeValue === "FINAL_DEPOSIT" && catalogIdValue) {
       updateAmountForFinalDeposit(catalogIdValue);
     } else {
-      form.setFieldValue("amount", 0);
+      if (!isEditing) {
+        form.setFieldValue("amount", 0);
+      }
     }
   }, [
     catalogIdValue,
+    isEditing,
     typeValue,
     slotIdValue,
     form,
@@ -265,12 +301,23 @@ const InvoiceGetForm = () => {
             <div className="font-semibold text-xl">Buat Invoice Get</div>
             {isEditing &&
               (disabledForm ? (
-                <Button
-                  type="primary"
-                  onClick={() => setDisabledForm(!disabledForm)}
-                >
-                  Edit
-                </Button>
+                <div className="flex gap-3">
+                  <Button
+                    type="primary"
+                    onClick={() => setDisabledForm(!disabledForm)}
+                  >
+                    Edit
+                  </Button>
+                  {detailInvoiceGet?.status !== "COMPLETED" && (
+                    <Button
+                      danger
+                      onClick={handleDelete}
+                      loading={isDeleting}
+                    >
+                      Delete
+                    </Button>
+                  )}
+                </div>
               ) : (
                 <div className="flex gap-3">
                   <Button onClick={() => setDisabledForm(true)}>Cancel</Button>

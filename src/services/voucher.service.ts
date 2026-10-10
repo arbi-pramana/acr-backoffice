@@ -44,6 +44,10 @@ export const voucherService = {
     const data = await http.post(ROUTES.voucher.create, body);
     return data;
   },
+  async deleteVoucherById(id: number) {
+    const data = await http.delete(ROUTES.voucher.deleteById(id));
+    return data;
+  },
   async uploadCSV(body: File) {
     const formData = new FormData();
     formData.append("file", body);

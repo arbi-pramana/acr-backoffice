@@ -37,4 +37,8 @@ export const invoiceGetService = {
     const data = await http.post(ROUTES.invoiceGet.uploadCatalogCSV, formData);
     return data;
   },
+  async deleteInvoiceGetById(id: number) {
+    const data = await http.delete(ROUTES.invoiceGet.updateById(id));
+    return data;
+  },
 };

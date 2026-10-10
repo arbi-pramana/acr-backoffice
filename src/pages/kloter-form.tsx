@@ -6,7 +6,9 @@ import {
   DatabaseOutlined,
   EditOutlined,
   InfoCircleFilled,
+  MailOutlined,
   SettingOutlined,
+  SyncOutlined,
   UserOutlined,
 } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -29,14 +31,21 @@ import {
   TableColumnsType,
   Upload,
 } from "antd";
+import { AxiosError } from "axios";
 import dayjs from "dayjs";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Chip from "../components/chip";
+import WinnerPickerModal from "../components/winner-picker-modal";
 import { constants } from "../helper/constant";
+import http, { httpWithoutInterceptor } from "../helper/http";
+import { ROUTES } from "../routes/api";
 import { numberWithCommas } from "../helper/number-with-commas";
+import { useDebounce } from "../hooks/use-debounce";
+import { useRandomCatalogLogic } from "../hooks/use-random-catalog-logic";
 import { kloterService } from "../services/kloter.service";
 import { slotService } from "../services/slot.service";
+import { accountService } from "../services/account.service";
 import {
   createKloterParams,
   createSlotParams,
@@ -68,12 +77,16 @@ const emptySlotItem = {
   isPayoutAllowed: false,
 };
 
-const columnsSlot = (props: {
+const slotColumnsForDescendingCatalog = (props: {
+  capacity?: number;
   setSlotModal: (val: boolean) => void;
   removeModal: (id: number) => void;
   updatePayout: (id: number, val: boolean) => void;
   updateEnableSlotRequest: (record: Slot, val: boolean) => void;
   setDetailFromSlot: (val: Slot) => void;
+  sendEmail: (record: Slot) => void;
+  sendingEmailSlotId: number | null;
+  startDateLocked?: boolean;
 }): TableColumnsType<Slot> => [
   {
     title: "Urutan",
@@ -85,7 +98,7 @@ const columnsSlot = (props: {
     title: "Tanggal Pencairan",
     dataIndex: "payoutAt",
     key: "payoutAt",
-    render: (_, record) => <PayoutDateColumn record={record} />,
+    render: (_, record) => <PayoutDateColumn record={record} startDateLocked={props.startDateLocked} />,
   },
   {
     title: "Nama",
@@ -103,7 +116,7 @@ const columnsSlot = (props: {
     ),
   },
   {
-    title: "Kontribusi",
+    title: "Iuran",
     dataIndex: "contribution",
     key: "contribution",
     render: (val) => <div>Rp{numberWithCommas(val)}</div>,
@@ -146,13 +159,15 @@ const columnsSlot = (props: {
     key: "enableSlotRequest",
     width: 130,
     align: "center",
-    render: (val, record) => (
-      <Switch
-        value={val}
-        disabled={record.id === 0}
-        onClick={(val) => props.updateEnableSlotRequest(record, val)}
-      />
-    ),
+    render: (val, record, index) =>
+      props.capacity &&
+      index < props.capacity - 4 && (
+        <Switch
+          value={val}
+          disabled={record.id === 0}
+          onClick={(val) => props.updateEnableSlotRequest(record, val)}
+        />
+      ),
   },
   {
     title: "Aksi Pencairan",
@@ -172,22 +187,396 @@ const columnsSlot = (props: {
     title: "Action",
     dataIndex: "action",
     key: "action",
-    width: 100,
+    width: 130,
     align: "end",
-    render: (_, record) => (
-      <Space>
-        {record.id ? (
+    render: (_, record) =>
+      record.id ? (
+        <Space>
+          {record.userId ? (
+            <Button
+              icon={<MailOutlined />}
+              size="small"
+              loading={props.sendingEmailSlotId === record.id}
+              disabled={props.sendingEmailSlotId === record.id}
+              onClick={() => props.sendEmail(record)}
+            />
+          ) : null}
           <Button onClick={() => props.removeModal(record.id)}>Hapus</Button>
-        ) : null}
-        <Button
-          type="primary"
-          onClick={() => props.setSlotModal(true)}
-          data-testid="add-slot"
-        >
-          Isi Data
-        </Button>
-      </Space>
+        </Space>
+      ) : null,
+  },
+];
+
+const slotColumnsForRandomCatalog = (props: {
+  capacity?: number;
+  setSlotModal: (val: boolean) => void;
+  removeModal: (id: number) => void;
+  updatePayout: (id: number, val: boolean) => void;
+  updateEnableSlotRequest: (record: Slot, val: boolean) => void;
+  setDetailFromSlot: (val: Slot) => void;
+  sendEmail: (record: Slot) => void;
+  sendingEmailSlotId: number | null;
+  startDateLocked?: boolean;
+}): TableColumnsType<Slot> => [
+  {
+    title: "Urutan",
+    dataIndex: "id",
+    key: "id",
+    render: (val, _record, index) => <div>{val ? index + 1 : "-"}</div>,
+  },
+  {
+    title: "Tanggal Kocokan",
+    dataIndex: "payoutAt",
+    key: "payoutAt",
+    render: (_, record) => <PayoutDateColumn record={record} startDateLocked={props.startDateLocked} />,
+  },
+  // {
+  //   title: "Nama",
+  //   dataIndex: "name",
+  //   key: "name",
+  //   render: (val, record) => (
+  //     <div
+  //       className={`text-primary-500 font-semibold ${
+  //         record.userId ? "cursor-pointer" : ""
+  //       }`}
+  //       onClick={() => record.userId && props.setDetailFromSlot(record)}
+  //     >
+  //       {val ?? "-"}
+  //     </div>
+  //   ),
+  // },
+  // {
+  //   title: "Iuran",
+  //   dataIndex: "contribution",
+  //   key: "contribution",
+  //   render: (val) => <div>Rp{numberWithCommas(val)}</div>,
+  // },
+  // {
+  //   title: "Status",
+  //   dataIndex: "status",
+  //   key: "status",
+  //   render: (_, record) =>
+  //     record.status === "OPEN" ? (
+  //       <Chip label="Tersedia" variant="success" />
+  //     ) : record.status === "BOOKED" ? (
+  //       <Chip label="Dipesan" variant="warning" />
+  //     ) : record.status === "FILLED" ? (
+  //       <Chip label="Terisi" variant="primary" />
+  //     ) : record.status === "CLOSED" ? (
+  //       <Chip label="Selesai" variant="info" />
+  //     ) : (
+  //       "-"
+  //     ),
+  // },
+  // {
+  //   title: "Status Pembayaran",
+  //   dataIndex: "installmentStatus",
+  //   key: "installment-status-installment",
+  //   render: (value: string) =>
+  //     value == "PAID" ? (
+  //       <Chip variant="success" label="Sudah Lunas" />
+  //     ) : value == "OVERDUE" ? (
+  //       <Chip variant="danger" label="Menunggak" />
+  //     ) : value == "UNPAID" ? (
+  //       <Chip variant="warning" label="Belum Dibayar" />
+  //     ) : value == "PARTIALLY_PAID" ? (
+  //       <Chip variant="primary" label="Bayar Sebagian" />
+  //     ) : null,
+  // },
+  {
+    title: "Slot Request",
+    dataIndex: "enableSlotRequest",
+    key: "enableSlotRequest",
+    width: 130,
+    align: "center",
+    render: (val, record, index) =>
+      props.capacity &&
+      index < props.capacity - 4 && (
+        <Switch
+          value={val}
+          disabled={record.id === 0}
+          onClick={(val) => props.updateEnableSlotRequest(record, val)}
+        />
+      ),
+  },
+  // {
+  //   title: "Aksi Pencairan",
+  //   dataIndex: "isPayoutAllowed",
+  //   key: "isPayoutAllowed",
+  //   width: 130,
+  //   align: "center",
+  //   render: (val, record) => (
+  //     <Switch
+  //       value={val}
+  //       disabled={record.id === 0}
+  //       onClick={(val) => props.updatePayout(record.id, val)}
+  //     />
+  //   ),
+  // },
+  {
+    title: "Action",
+    dataIndex: "action",
+    key: "action",
+    width: 130,
+    align: "end",
+    render: (_, record) =>
+      record.id ? (
+        <Space>
+          {record.userId ? (
+            <Button
+              icon={<MailOutlined />}
+              size="small"
+              loading={props.sendingEmailSlotId === record.id}
+              disabled={props.sendingEmailSlotId === record.id}
+              onClick={() => props.sendEmail(record)}
+            />
+          ) : null}
+          <Button onClick={() => props.removeModal(record.id)}>Hapus</Button>
+        </Space>
+      ) : null,
+  },
+];
+
+const memberColumnsForRandomCatalog = (props: {
+  capacity?: number;
+  setSlotModal: (val: boolean) => void;
+  removeModal: (id: number) => void;
+  updatePayout: (id: number, val: boolean) => void;
+  updateEnableSlotRequest: (record: Slot, val: boolean) => void;
+  setDetailFromSlot: (val: Slot) => void;
+}): TableColumnsType<Slot> => [
+  // {
+  //   title: "Urutan",
+  //   dataIndex: "id",
+  //   key: "id",
+  //   render: (val, _record, index) => <div>{val ? index + 1 : "-"}</div>,
+  // },
+  // {
+  //   title: "Tanggal Pencairan",
+  //   dataIndex: "payoutAt",
+  //   key: "payoutAt",
+  //   render: (_, record) => <PayoutDateColumn record={record} />,
+  // },
+  {
+    title: "Nama",
+    dataIndex: "name",
+    key: "name",
+    render: (val, record) => (
+      <div
+        className={`text-primary-500 font-semibold ${
+          record.userId ? "cursor-pointer" : ""
+        }`}
+        onClick={() => record.userId && props.setDetailFromSlot(record)}
+      >
+        {val ?? "-"}
+      </div>
     ),
+  },
+  // {
+  //   title: "Iuran",
+  //   dataIndex: "contribution",
+  //   key: "contribution",
+  //   render: (val) => <div>Rp{numberWithCommas(val)}</div>,
+  // },
+  // {
+  //   title: "Status",
+  //   dataIndex: "status",
+  //   key: "status",
+  //   render: (_, record) =>
+  //     record.status === "OPEN" ? (
+  //       <Chip label="Tersedia" variant="success" />
+  //     ) : record.status === "BOOKED" ? (
+  //       <Chip label="Dipesan" variant="warning" />
+  //     ) : record.status === "FILLED" ? (
+  //       <Chip label="Terisi" variant="primary" />
+  //     ) : record.status === "CLOSED" ? (
+  //       <Chip label="Selesai" variant="info" />
+  //     ) : (
+  //       "-"
+  //     ),
+  // },
+  {
+    title: "Status Pembayaran",
+    dataIndex: "installmentStatus",
+    key: "installment-status-installment",
+    render: (value: string) =>
+      value == "PAID" ? (
+        <Chip variant="success" label="Sudah Lunas" />
+      ) : value == "OVERDUE" ? (
+        <Chip variant="danger" label="Menunggak" />
+      ) : value == "UNPAID" ? (
+        <Chip variant="warning" label="Belum Dibayar" />
+      ) : value == "PARTIALLY_PAID" ? (
+        <Chip variant="primary" label="Bayar Sebagian" />
+      ) : null,
+  },
+  // {
+  //   title: "Slot Request",
+  //   dataIndex: "enableSlotRequest",
+  //   key: "enableSlotRequest",
+  //   width: 130,
+  //   align: "center",
+  //   render: (val, record, index) =>
+  //     props.capacity &&
+  //     index < props.capacity - 4 && (
+  //       <Switch
+  //         value={val}
+  //         disabled={record.id === 0}
+  //         onClick={(val) => props.updateEnableSlotRequest(record, val)}
+  //       />
+  //     ),
+  // },
+  // {
+  //   title: "Aksi Pencairan",
+  //   dataIndex: "isPayoutAllowed",
+  //   key: "isPayoutAllowed",
+  //   width: 130,
+  //   align: "center",
+  //   render: (val, record) => (
+  //     <Switch
+  //       value={val}
+  //       disabled={record.id === 0}
+  //       onClick={(val) => props.updatePayout(record.id, val)}
+  //     />
+  //   ),
+  // },
+  // {
+  //   title: "Action",
+  //   dataIndex: "action",
+  //   key: "action",
+  //   width: 100,
+  //   align: "end",
+  //   render: (_, record) => (
+  //     <Space>
+  //       {record.id ? (
+  //         <Button onClick={() => props.removeModal(record.id)}>Hapus</Button>
+  //       ) : null}
+  //     </Space>
+  //   ),
+  // },
+];
+
+const winnerColumnsForRandomCatalog = (props: {
+  capacity?: number;
+  setSlotModal: (val: boolean) => void;
+  removeModal: (id: number) => void;
+  updatePayout: (id: number, val: boolean) => void;
+  updateEnableSlotRequest: (record: Slot, val: boolean) => void;
+  setDetailFromSlot: (val: Slot) => void;
+  sendEmail: (record: Slot) => void;
+  sendingEmailSlotId: number | null;
+}): TableColumnsType<Slot> => [
+  // {
+  //   title: "Urutan",
+  //   dataIndex: "id",
+  //   key: "id",
+  //   render: (val, _record, index) => <div>{val ? index + 1 : "-"}</div>,
+  // },
+  // {
+  //   title: "Tanggal Pencairan",
+  //   dataIndex: "payoutAt",
+  //   key: "payoutAt",
+  //   render: (_, record) => <PayoutDateColumn record={record} />,
+  // },
+  {
+    title: "Nama",
+    dataIndex: "name",
+    key: "name",
+    render: (val, record) => (
+      <div
+        className={`text-primary-500 font-semibold ${
+          record.userId ? "cursor-pointer" : ""
+        }`}
+        onClick={() => record.userId && props.setDetailFromSlot(record)}
+      >
+        {val ?? "-"}
+      </div>
+    ),
+  },
+  // {
+  //   title: "Iuran",
+  //   dataIndex: "contribution",
+  //   key: "contribution",
+  //   render: (val) => <div>Rp{numberWithCommas(val)}</div>,
+  // },
+  // {
+  //   title: "Status",
+  //   dataIndex: "status",
+  //   key: "status",
+  //   render: (_, record) =>
+  //     record.status === "OPEN" ? (
+  //       <Chip label="Tersedia" variant="success" />
+  //     ) : record.status === "BOOKED" ? (
+  //       <Chip label="Dipesan" variant="warning" />
+  //     ) : record.status === "FILLED" ? (
+  //       <Chip label="Terisi" variant="primary" />
+  //     ) : record.status === "CLOSED" ? (
+  //       <Chip label="Selesai" variant="info" />
+  //     ) : (
+  //       "-"
+  //     ),
+  // },
+  // {
+  //   title: "Status Pembayaran",
+  //   dataIndex: "installmentStatus",
+  //   key: "installment-status-installment",
+  //   render: (value: string) =>
+  //     value == "PAID" ? (
+  //       <Chip variant="success" label="Sudah Lunas" />
+  //     ) : value == "OVERDUE" ? (
+  //       <Chip variant="danger" label="Menunggak" />
+  //     ) : value == "UNPAID" ? (
+  //       <Chip variant="warning" label="Belum Dibayar" />
+  //     ) : value == "PARTIALLY_PAID" ? (
+  //       <Chip variant="primary" label="Bayar Sebagian" />
+  //     ) : null,
+  // },
+  // {
+  //   title: "Slot Request",
+  //   dataIndex: "enableSlotRequest",
+  //   key: "enableSlotRequest",
+  //   width: 130,
+  //   align: "center",
+  //   render: (val, record, index) =>
+  //     props.capacity &&
+  //     index < props.capacity - 4 && (
+  //       <Switch
+  //         value={val}
+  //         disabled={record.id === 0}
+  //         onClick={(val) => props.updateEnableSlotRequest(record, val)}
+  //       />
+  //     ),
+  // },
+  {
+    title: "Pencairan",
+    dataIndex: "isPayoutAllowed",
+    key: "isPayoutAllowed",
+    width: 130,
+    align: "center",
+    render: (val, record) => (
+      <Switch
+        value={val}
+        disabled={record.id === 0}
+        onClick={(val) => props.updatePayout(record.id, val)}
+      />
+    ),
+  },
+  {
+    title: "Aksi",
+    dataIndex: "action",
+    key: "winner-action",
+    width: 60,
+    align: "center",
+    render: (_, record) =>
+      record.id && record.userId ? (
+        <Button
+          icon={<MailOutlined />}
+          size="small"
+          loading={props.sendingEmailSlotId === record.id}
+          disabled={props.sendingEmailSlotId === record.id}
+          onClick={() => props.sendEmail(record)}
+        />
+      ) : null,
   },
 ];
 
@@ -212,25 +601,29 @@ const KloterForm = () => {
   const [form] = Form.useForm();
   const [formRequestFee] = Form.useForm();
   const [formAddSlot] = Form.useForm();
+  const startDateLocked = Form.useWatch("startDateLocked", form);
   const [slotModal, setSlotModal] = useState(false);
   const [detailFromSlot, setDetailFromSlot] = useState<null | Slot>(null);
   const [disabledForm, setDisabledForm] = useState(isEditing);
   const [kloterStatus, setKloterStatus] = useState("");
   const [updatedKloterDetail, setUpdatedKloterDetail] = useState(false);
   const [requestFeeModalVisible, setRequestFeeModalVisible] = useState(false);
+  const [sendEmailModalSlot, setSendEmailModalSlot] = useState<Slot | null>(null);
+  const [sendingEmailSlotId, setSendingEmailSlotId] = useState<number | null>(null);
   const queryClient = useQueryClient();
 
-  const { mutate: mutateKloterCreate } = useMutation({
+  const { mutate: mutateKloterCreate, isPending: isPendingCreateKloter } =
+    useMutation({
     mutationKey: ["createKloter"],
     mutationFn: (body: createKloterParams) =>
       kloterService.createKloter({
         ...body,
         requestFeeSettings: JSON.stringify(
-          generateDefaultRequestFeeSetings(body.capacity)
+          generateDefaultRequestFeeSetings(body.capacity),
         ),
       }),
     onSuccess: (data) => {
-      if (!data) {
+          if (!data) {
         queryClient.invalidateQueries({ queryKey: ["kloters"] });
         notification.success({
           message: "Katalog telah berhasil dibuat.",
@@ -318,6 +711,28 @@ const KloterForm = () => {
       },
     });
 
+  const {
+    mutate: mutateRefreshInstallment,
+    isPending: pendingRefreshInstallment,
+  } = useMutation({
+    mutationKey: ["refreshInstallment", params.id],
+    mutationFn: () =>
+      http.post(
+        ROUTES.kloter.refreshInstallment(parseInt(params.id ?? "0")),
+      ),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["slot", params.id] });
+      notification.success({
+        message: "Installment berhasil di-refresh",
+      });
+    },
+    onError: (error: AxiosError<{ message: string }>) => {
+      notification.error({
+        message: error.response?.data?.message ?? "Gagal refresh installment",
+      });
+    },
+  });
+
   const { mutate: mutateUploadSlotCSV, isPending: pendingUploadSlotCSV } =
     useMutation({
       mutationKey: ["uploadSlotCSV", params.id],
@@ -344,6 +759,10 @@ const KloterForm = () => {
     enabled: isEditing,
   });
 
+  const catalogId = useMemo(() => parseInt(params.id ?? "0"), [params.id]);
+  const [openWinnerPicker, setOpenWinnerPicker] = useState(false);
+  const { registeredSlots, winnerSlots } = useRandomCatalogLogic(detailSlot);
+
   const {
     data: detailKloter,
     isLoading: loadingDetailKloter,
@@ -367,14 +786,31 @@ const KloterForm = () => {
     }
   }, [detailKloter, form, formRequestFee]);
 
+  const isRandomCatalog = useMemo(() => {
+    return detailKloter && detailKloter.catalogType === "RANDOM";
+  }, [detailKloter]);
+
   // reset value in select so it always refer value from api after refetch
   useEffect(() => {
     setKloterStatus("");
   }, [detailKloter]);
 
+  useEffect(() => {
+    if (slotModal && detailSlot && detailSlot.length > 0 && detailKloter) {
+      const lastSlot = detailSlot[detailSlot.length - 1];
+      const cycleDay = detailKloter.cycleDay || 0;
+      const newPayoutAt = dayjs(lastSlot.payoutAt).add(cycleDay, "day");
+
+      formAddSlot.setFieldsValue({
+        payoutAt: newPayoutAt,
+        contribution: lastSlot.contribution,
+      });
+    }
+  }, [slotModal, detailSlot, detailKloter]);
+
   const requestSlotCount = useMemo(() => {
     if (!detailKloter) return 0;
-    const count = (detailKloter.capacity || 5) - 5;
+    const count = (detailKloter.capacity || 4) - 4;
     return count > 0 ? count : 0;
   }, [detailKloter]);
 
@@ -388,6 +824,12 @@ const KloterForm = () => {
       }
     }
   }, [requestFeeModalVisible, detailKloter, formRequestFee]);
+
+  const checkGroupId = async (value: string) => {
+    return httpWithoutInterceptor.get(`/v1/catalogs/public/${value}`);
+  };
+
+  const debouncedCheckGroupId = useDebounce(checkGroupId, 500);
 
   const showConfirm = (values: createKloterParams, isEditing: boolean) => {
     if (!isEditing) {
@@ -467,12 +909,72 @@ const KloterForm = () => {
     });
   };
 
+  const { mutateAsync: mutateSubmitWinner } = useMutation({
+    mutationFn: (data: {
+      slotIdTo: number;
+      catalogId: number;
+      slotIdFrom: number;
+    }) =>
+      kloterService.setWinner({
+        kloterId: data.catalogId,
+        slotIdTo: data.slotIdTo,
+        slotIdFrom: data.slotIdFrom,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["slot", params.id] });
+      notification.success({
+        message: "Pemenang berhasil dipilih",
+      });
+    },
+  });
+
+  const { mutate: mutateSendWinningEmail } = useMutation({
+    mutationKey: ["sendWinningEmail"],
+    mutationFn: async (slot: Slot) => {
+      const account = await accountService.getAccountById(
+        String(slot.userId),
+      );
+      return kloterService.sendWinningEmail({
+        email: account.email ?? "",
+        name: account.fullName ?? slot.name ?? "",
+        catalogDetails: detailKloter?.title ?? "",
+        paidAt: slot.payoutAt
+          ? new Date(slot.payoutAt).toISOString().split("T")[0]
+          : "",
+      });
+    },
+    onMutate: (slot) => {
+      setSendingEmailSlotId(slot.id);
+    },
+    onSettled: () => {
+      setSendingEmailSlotId(null);
+    },
+    onSuccess: (_data, slot) => {
+      notification.success({
+        message: "Email berhasil dikirim",
+        description: `Email telah dikirim kepada ${slot.name ?? "pemenang"}.`,
+      });
+    },
+  });
+
+  const submitWinner = async (selectedSlot: Slot, winner: Slot) => {
+    const catalogId = detailKloter?.id;
+    if (!catalogId) return;
+
+    await mutateSubmitWinner({
+      slotIdFrom: selectedSlot.id,
+      slotIdTo: winner.id,
+      catalogId,
+    });
+    setOpenWinnerPicker(false);
+  };
+
   // groupId dpt drmn, status isi apa
   // list slot itu gmn? soalnya abis create catalog, get slot by id, return array kosong
   // udh coba create slot, pas get slot by id, bener return yg baru dibuat td
   // method patch kena cors
   // di list slot blm ada nama
-  // di list kloter blm ada kontribusi
+  // di list kloter blm ada Iuran
   // di form, status bawah apa aja
   return (
     <>
@@ -544,7 +1046,46 @@ const KloterForm = () => {
                   <Form.Item
                     label="Group ID"
                     name="groupId"
-                    rules={[{ required: true }]}
+                    rules={[
+                      { required: true },
+                      {
+                        validator: async (_, value) => {
+                          if (!value) return Promise.resolve();
+
+                          try {
+                            const result = await debouncedCheckGroupId(value);
+                            if (isEditing) {
+                              const data = result.data;
+                              if (data.id == parseInt(params.id || "0")) {
+                                return Promise.resolve();
+                              } else {
+                                return Promise.reject(
+                                  "Group ID sudah digunakan.",
+                                );
+                              }
+                            } else {
+                              return Promise.reject(
+                                new Error("Group ID sudah digunakan."),
+                              );
+                            }
+                          } catch (error: unknown) {
+                            if (
+                              error instanceof AxiosError &&
+                              error.response &&
+                              error.response.status === 404
+                            ) {
+                              return Promise.resolve();
+                            } else {
+                              return Promise.reject(
+                                new Error(
+                                  "Terjadi kesalahan saat memeriksa Group ID.",
+                                ),
+                              );
+                            }
+                          }
+                        },
+                      },
+                    ]}
                   >
                     <Input
                       disabled={disabledForm}
@@ -568,7 +1109,7 @@ const KloterForm = () => {
                     ]}
                   >
                     <Input
-                      disabled={disabledForm}
+                      disabled={disabledForm || !!startDateLocked}
                       placeholder="Slot"
                       data-testid="capacity"
                     />
@@ -589,7 +1130,7 @@ const KloterForm = () => {
                     ]}
                   >
                     <Input
-                      disabled={disabledForm}
+                      disabled={disabledForm || !!startDateLocked}
                       placeholder="Rotasi"
                       data-testid="cycleDay"
                     />
@@ -606,7 +1147,7 @@ const KloterForm = () => {
                           <DatePicker
                             placeholder="Awal Periode"
                             style={{ width: "100%" }}
-                            disabled={disabledForm}
+                            disabled={disabledForm || !!startDateLocked}
                             data-testid="estimateStartDate"
                           />
                         </Form.Item>
@@ -629,8 +1170,8 @@ const KloterForm = () => {
                                 }
                                 return Promise.reject(
                                   new Error(
-                                    "Tanggal akhir harus setelah tanggal awal"
-                                  )
+                                    "Tanggal akhir harus setelah tanggal awal",
+                                  ),
                                 );
                               },
                             }),
@@ -639,7 +1180,7 @@ const KloterForm = () => {
                           <DatePicker
                             placeholder="Akhir Periode"
                             style={{ width: "100%" }}
-                            disabled={disabledForm}
+                            disabled={disabledForm || !!startDateLocked}
                             data-testid="estimateEndDate"
                           />
                         </Form.Item>
@@ -655,7 +1196,7 @@ const KloterForm = () => {
                           <DatePicker
                             placeholder="Awal Periode"
                             style={{ width: "100%" }}
-                            disabled={disabledForm}
+                            disabled={disabledForm || !!startDateLocked}
                             data-testid="startAt"
                           />
                         </Form.Item>
@@ -665,7 +1206,7 @@ const KloterForm = () => {
                           <DatePicker
                             placeholder="Akhir Periode"
                             style={{ width: "100%" }}
-                            disabled={disabledForm}
+                            disabled={disabledForm || !!startDateLocked}
                             data-testid="endAt"
                           />
                         </Form.Item>
@@ -724,7 +1265,7 @@ const KloterForm = () => {
                     <DatePicker
                       showTime
                       style={{ width: "100%" }}
-                      disabled={disabledForm}
+                      disabled={disabledForm || !!startDateLocked}
                       data-testid="availableAt"
                     />
                   </Form.Item>
@@ -789,17 +1330,38 @@ const KloterForm = () => {
           </div>
         )} */}
 
-        {isEditing && detailKloter && detailSlot ? (
+        {isEditing && !isRandomCatalog && detailKloter && detailSlot && (
           <div className="p-6 m-6 rounded-md bg-white">
             <div className="flex justify-between mb-4">
               <div className="font-semibold text-xl mb-4">Daftar Slot</div>
               <div className="flex gap-3">
+                {startDateLocked && (
+                  <Button
+                    loading={pendingRefreshInstallment}
+                    disabled={pendingRefreshInstallment}
+                    icon={<SyncOutlined />}
+                    iconPosition="start"
+                    onClick={() =>
+                      Modal.confirm({
+                        title: "Refresh Installment",
+                        content:
+                          "Apakah kamu yakin ingin recalculate payoutAt dan dueAt untuk semua slot & installment?",
+                        okText: "Ya",
+                        cancelText: "Tidak",
+                        centered: true,
+                        onOk: () => mutateRefreshInstallment(),
+                      })
+                    }
+                  >
+                    Refresh Installment
+                  </Button>
+                )}
                 <Button
                   onClick={() => setRequestFeeModalVisible(true)}
                   icon={<SettingOutlined />}
                   iconPosition="start"
                 >
-                  Request Fee
+                  Biaya Layanan
                 </Button>
                 <Upload
                   beforeUpload={(file: File) => {
@@ -819,20 +1381,30 @@ const KloterForm = () => {
                     Import CSV
                   </Button>
                 </Upload>
+                <Button
+                  type="primary"
+                  onClick={() => setSlotModal(true)}
+                  data-testid="add-slot"
+                >
+                  Isi Data
+                </Button>
               </div>
             </div>
             <Table
-              columns={columnsSlot({
+              columns={slotColumnsForDescendingCatalog({
+                capacity: detailKloter.capacity,
                 setSlotModal,
                 removeModal,
                 setDetailFromSlot,
+                sendEmail: (record) => setSendEmailModalSlot(record),
+                sendingEmailSlotId,
                 updatePayout: (id, val) =>
                   Modal.confirm({
                     title: `Yakin ingin ${
                       val ? "mengaktifkan" : "menonaktifkan"
                     } pencairan?`,
                     content:
-                      "Dengan mengaktifkan pencairan, kontribusi pada slot ini akan diproses untuk dicairkan.",
+                      "Dengan mengaktifkan pencairan, Iuran pada slot ini akan diproses untuk dicairkan.",
                     okButtonProps: constants.okButtonProps,
                     cancelButtonProps: constants.cancelButtonProps,
                     okText: val ? "Aktifkan" : "Nonaktifkan",
@@ -867,6 +1439,7 @@ const KloterForm = () => {
                       });
                     },
                   }),
+                startDateLocked,
               })}
               loading={
                 loadSlot ||
@@ -877,13 +1450,293 @@ const KloterForm = () => {
               dataSource={[
                 ...detailSlot,
                 ...Array(
-                  Math.abs(detailKloter.capacity - detailSlot.length)
+                  Math.abs(detailKloter.capacity - detailSlot.length),
                 ).fill(emptySlotItem),
               ]}
               pagination={false}
             />
           </div>
+        )}
+
+        {isEditing && isRandomCatalog && detailKloter && detailSlot ? (
+          <div className="grid grid-cols-1 md:grid-cols-3">
+            <div className="p-6 m-6 rounded-md bg-white">
+              <div className="flex flex-col md:flex-row justify-between mb-4">
+                <div className="font-semibold text-xl mb-4">Daftar Slot</div>
+                <div className="grid grid-cols-1 md:flex gap-3">
+                  <Button
+                    onClick={() => setRequestFeeModalVisible(true)}
+                    icon={<SettingOutlined />}
+                    iconPosition="start"
+                  >
+                    Request Fee
+                  </Button>
+                  <Upload
+                    beforeUpload={(file: File) => {
+                      mutateUploadSlotCSV(file);
+                      return false;
+                    }}
+                    maxCount={1}
+                    itemRender={() => null}
+                  >
+                    <Button
+                      // onClick={() => setSlotModal(true)}
+                      disabled={pendingUploadSlotCSV}
+                      loading={pendingUploadSlotCSV}
+                      icon={<CloudUploadOutlined />}
+                      iconPosition="start"
+                    >
+                      Import CSV
+                    </Button>
+                  </Upload>
+                  <Button
+                    type="primary"
+                    onClick={() => setSlotModal(true)}
+                    data-testid="add-slot"
+                  >
+                    Isi Data
+                  </Button>
+                </div>
+              </div>
+              <div className="overflow-auto">
+                <Table
+                  columns={slotColumnsForRandomCatalog({
+                    capacity: detailKloter.capacity,
+                    setSlotModal,
+                    removeModal,
+                    setDetailFromSlot,
+                    sendEmail: (record) => setSendEmailModalSlot(record),
+                    sendingEmailSlotId,
+                    updatePayout: (id, val) =>
+                      Modal.confirm({
+                        title: `Yakin ingin ${
+                          val ? "mengaktifkan" : "menonaktifkan"
+                        } pencairan?`,
+                        content:
+                          "Dengan mengaktifkan pencairan, Iuran pada slot ini akan diproses untuk dicairkan.",
+                        okButtonProps: constants.okButtonProps,
+                        cancelButtonProps: constants.cancelButtonProps,
+                        okText: val ? "Aktifkan" : "Nonaktifkan",
+                        cancelText: "Batal",
+                        onOk() {
+                          mutateSlotUpdate({
+                            id: id,
+                            body: {
+                              isPayoutAllowed: val,
+                            },
+                          });
+                        },
+                      }),
+                    updateEnableSlotRequest: (record, val) =>
+                      Modal.confirm({
+                        title: `Yakin ingin ${
+                          val ? "mengaktifkan" : "menonaktifkan"
+                        } slot request?`,
+                        content:
+                          "Dengan mengaktifkan slot request, user dapat melakukan request penambahan slot pada kloter ini.",
+                        okButtonProps: constants.okButtonProps,
+                        cancelButtonProps: constants.cancelButtonProps,
+                        okText: val ? "Aktifkan" : "Nonaktifkan",
+                        cancelText: "Batal",
+                        onOk() {
+                          mutateSlotUpdate({
+                            id: record.id,
+                            body: {
+                              enableSlotRequest: val,
+                              isPayoutAllowed: record.isPayoutAllowed,
+                            },
+                          });
+                        },
+                      }),
+                    startDateLocked,
+                  })}
+                  loading={
+                    loadSlot ||
+                    pendingSlotUpdate ||
+                    pendingSlotDelete ||
+                    pendingSlotCreate
+                  }
+                  dataSource={[
+                    ...detailSlot,
+                    ...Array(
+                      Math.abs(detailKloter.capacity - detailSlot.length),
+                    ).fill(emptySlotItem),
+                  ]}
+                  pagination={false}
+                />
+              </div>
+            </div>
+            <div className="p-6 m-6 rounded-md bg-white">
+              <div className="flex justify-between mb-4">
+                <div className="font-semibold text-xl mb-4">Daftar Peserta</div>
+                <div className="flex gap-3"></div>
+              </div>
+              <Table
+                columns={memberColumnsForRandomCatalog({
+                  capacity: detailKloter.capacity,
+                  setSlotModal,
+                  removeModal,
+                  setDetailFromSlot,
+                  updatePayout: (id, val) =>
+                    Modal.confirm({
+                      title: `Yakin ingin ${
+                        val ? "mengaktifkan" : "menonaktifkan"
+                      } pencairan?`,
+                      content:
+                        "Dengan mengaktifkan pencairan, Iuran pada slot ini akan diproses untuk dicairkan.",
+                      okButtonProps: constants.okButtonProps,
+                      cancelButtonProps: constants.cancelButtonProps,
+                      okText: val ? "Aktifkan" : "Nonaktifkan",
+                      cancelText: "Batal",
+                      onOk() {
+                        mutateSlotUpdate({
+                          id: id,
+                          body: {
+                            isPayoutAllowed: val,
+                          },
+                        });
+                      },
+                    }),
+                  updateEnableSlotRequest: (record, val) =>
+                    Modal.confirm({
+                      title: `Yakin ingin ${
+                        val ? "mengaktifkan" : "menonaktifkan"
+                      } slot request?`,
+                      content:
+                        "Dengan mengaktifkan slot request, user dapat melakukan request penambahan slot pada kloter ini.",
+                      okButtonProps: constants.okButtonProps,
+                      cancelButtonProps: constants.cancelButtonProps,
+                      okText: val ? "Aktifkan" : "Nonaktifkan",
+                      cancelText: "Batal",
+                      onOk() {
+                        mutateSlotUpdate({
+                          id: record.id,
+                          body: {
+                            enableSlotRequest: val,
+                            isPayoutAllowed: record.isPayoutAllowed,
+                          },
+                        });
+                      },
+                    }),
+                })}
+                loading={
+                  loadSlot ||
+                  pendingSlotUpdate ||
+                  pendingSlotDelete ||
+                  pendingSlotCreate
+                }
+                dataSource={[...registeredSlots]}
+                pagination={false}
+              />
+            </div>
+            <div className="flex flex-col gap-6 m-6">
+              <div className="p-6 flex-1 rounded-md bg-white">
+                <div className="flex justify-between mb-4">
+                  <div className="font-semibold text-xl mb-4">
+                    Daftar Pemenang
+                  </div>
+                  <div className="flex gap-3">
+                    <Button
+                      type="primary"
+                      onClick={() => setOpenWinnerPicker(true)}
+                    >
+                      Pilih Pemenang
+                    </Button>
+                    <WinnerPickerModal
+                      open={openWinnerPicker}
+                      onCancel={() => setOpenWinnerPicker(false)}
+                      catalogId={catalogId}
+                      slots={detailSlot}
+                      onSubmit={(selectedSlot, winner) =>
+                        submitWinner(selectedSlot, winner)
+                      }
+                    />
+                  </div>
+                </div>
+                <Table
+                  columns={winnerColumnsForRandomCatalog({
+                    capacity: detailKloter.capacity,
+                    setSlotModal,
+                    removeModal,
+                    setDetailFromSlot,
+                    sendEmail: (record) => setSendEmailModalSlot(record),
+                    sendingEmailSlotId,
+                    updatePayout: (id, val) =>
+                      Modal.confirm({
+                        title: `Yakin ingin ${
+                          val ? "mengaktifkan" : "menonaktifkan"
+                        } pencairan?`,
+                        content:
+                          "Dengan mengaktifkan pencairan, Iuran pada slot ini akan diproses untuk dicairkan.",
+                        okButtonProps: constants.okButtonProps,
+                        cancelButtonProps: constants.cancelButtonProps,
+                        okText: val ? "Aktifkan" : "Nonaktifkan",
+                        cancelText: "Batal",
+                        onOk() {
+                          mutateSlotUpdate({
+                            id: id,
+                            body: {
+                              isPayoutAllowed: val,
+                            },
+                          });
+                        },
+                      }),
+                    updateEnableSlotRequest: (record, val) =>
+                      Modal.confirm({
+                        title: `Yakin ingin ${
+                          val ? "mengaktifkan" : "menonaktifkan"
+                        } slot request?`,
+                        content:
+                          "Dengan mengaktifkan slot request, user dapat melakukan request penambahan slot pada kloter ini.",
+                        okButtonProps: constants.okButtonProps,
+                        cancelButtonProps: constants.cancelButtonProps,
+                        okText: val ? "Aktifkan" : "Nonaktifkan",
+                        cancelText: "Batal",
+                        onOk() {
+                          mutateSlotUpdate({
+                            id: record.id,
+                            body: {
+                              enableSlotRequest: val,
+                              isPayoutAllowed: record.isPayoutAllowed,
+                            },
+                          });
+                        },
+                      }),
+                  })}
+                  loading={
+                    loadSlot ||
+                    pendingSlotUpdate ||
+                    pendingSlotDelete ||
+                    pendingSlotCreate
+                  }
+                  dataSource={[...winnerSlots]}
+                  pagination={false}
+                />
+              </div>
+            </div>
+          </div>
         ) : null}
+        <Modal
+          open={!!sendEmailModalSlot}
+          onCancel={() => setSendEmailModalSlot(null)}
+          title="Kirim Email Pemenang"
+          okText="Kirim"
+          cancelText="Batal"
+          okButtonProps={constants.okButtonProps}
+          cancelButtonProps={constants.cancelButtonProps}
+          centered
+          onOk={() => {
+            if (!sendEmailModalSlot) return;
+            const slot = sendEmailModalSlot;
+            setSendEmailModalSlot(null);
+            mutateSendWinningEmail(slot);
+          }}
+        >
+          <p>
+            Apakah kamu yakin ingin mengirim email kepada{" "}
+            <strong>{sendEmailModalSlot?.name ?? "pemenang ini"}</strong>?
+          </p>
+        </Modal>
         <div
           className={`bg-white p-6 rounded-lg flex flex-col ${
             isEditing ? "justify-between sticky" : "justify-end fixed"
@@ -941,7 +1794,7 @@ const KloterForm = () => {
               disabled={
                 (isEditing && disabledForm == false) || isPendingUpdateKloter
               }
-              loading={isPendingUpdateKloter}
+              loading={isEditing ? isPendingUpdateKloter : isPendingCreateKloter}
               onClick={() => {
                 if (isEditing) {
                   const status = kloterStatus
@@ -960,14 +1813,14 @@ const KloterForm = () => {
                       mutateKloterUpdate({
                         body: {
                           status: kloterNextStatus.find(
-                            (v) => v.value == status
+                            (v) => v.value == status,
                           )?.value,
                         },
                         id: params.id ? parseInt(params.id) : 0,
                       });
                     },
                   });
-                } else {
+                  } else {
                   form.submit();
                 }
               }}
@@ -1001,14 +1854,20 @@ const KloterForm = () => {
             />
           </Form.Item>
           <Form.Item
-            label="Kontribusi"
+            label="Iuran"
             name="contribution"
             rules={[{ required: true }]}
           >
             <Input addonBefore="Rp" />
           </Form.Item>
           <div className="flex justify-end">
-            <Button type="primary" htmlType="submit" className="w-[100px]">
+            <Button
+              type="primary"
+              htmlType="submit"
+              className="w-[100px]"
+              loading={pendingSlotCreate}
+              disabled={pendingSlotCreate}
+            >
               Simpan
             </Button>
           </div>
@@ -1037,7 +1896,7 @@ const KloterForm = () => {
               className="flex items-center justify-between gap-4 mb-4 border rounded-lg p-2 border-gray-200 cursor-pointer hover:shadow-sm"
               onClick={() =>
                 navigate(
-                  `/account-form/${detailFromSlot.userId}/${detailFromSlot.catalogId}`
+                  `/account-form/${detailFromSlot.userId}/${detailFromSlot.catalogId}`,
                 )
               }
             >
@@ -1103,7 +1962,13 @@ const KloterForm = () => {
             </table>
           </div>
           <div className="flex justify-end mt-4">
-            <Button type="primary" htmlType="submit" className="w-[100px]">
+            <Button
+              type="primary"
+              htmlType="submit"
+              className="w-[100px]"
+              loading={isPendingUpdateKloter}
+              disabled={isPendingUpdateKloter}
+            >
               Simpan
             </Button>
           </div>
@@ -1113,7 +1978,7 @@ const KloterForm = () => {
   );
 };
 
-const PayoutDateColumn = ({ record }: { record: Slot }) => {
+const PayoutDateColumn = ({ record, startDateLocked }: { record: Slot; startDateLocked?: boolean }) => {
   const [open, setOpen] = useState(false);
   const [dateValue, setDateValue] = useState<string | null>(null);
   const queryClient = useQueryClient();
@@ -1147,10 +2012,10 @@ const PayoutDateColumn = ({ record }: { record: Slot }) => {
 
   return (
     <div className="flex items-center gap-2">
-      <span>
+      <span className="whitespace-nowrap">
         {record.payoutAt ? dayjs(record.payoutAt).format("DD MMM YYYY") : "-"}
       </span>
-      {dateValue && (
+      {dateValue && !startDateLocked && (
         <Popover
           open={open}
           onOpenChange={(open) => setOpen(open)}

@@ -43,15 +43,32 @@ const columns = (props: {
     dataIndex: "type",
     key: "type",
     render: (value) => (
-      <div>{value === "percentage" ? "Percentage" : "Fixed"}</div>
+      <div>
+        {value === "percentage" ? (
+          <Chip variant="warning" label="Percentage" />
+        ) : (
+          <Chip variant="default" label="Fixed" />
+        )}
+      </div>
     ),
   },
   {
     title: "Value",
     dataIndex: "value",
     key: "value",
-    width: 150,
-    render: (val) => <div>Rp{numberWithCommas(val)}</div>,
+    width: 180,
+    render: (val, record) => (
+      <div>
+        {record.type === "percentage"
+          ? `${val}%`
+          : `Rp${numberWithCommas(val)}`}
+        {record.maxAmount && record.type === "percentage" && (
+          <div className="text-gray-500 text-xs">
+            up to Rp{numberWithCommas(record.maxAmount)}
+          </div>
+        )}
+      </div>
+    ),
   },
   {
     title: "Quota",

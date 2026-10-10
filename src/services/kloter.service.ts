@@ -53,10 +53,41 @@ export const kloterService = {
     });
     return data;
   },
+
   async uploadCSV(body: File) {
     const formData = new FormData();
     formData.append("file", body);
     const data = await http.post(ROUTES.kloter.uploadCatalogCSV, formData);
+    return data;
+  },
+
+  async setWinner(params: {
+    kloterId: number;
+    slotIdTo: number;
+    slotIdFrom: number;
+  }) {
+    const data = await http.post(ROUTES.kloter.setWinner(params.kloterId), {
+      slotIdTo: params.slotIdTo,
+      slotIdFrom: params.slotIdFrom,
+    });
+    return data;
+  },
+
+  async sendWinningEmail(params: {
+    email: string;
+    name: string;
+    catalogDetails: string;
+    paidAt: string;
+  }) {
+    const body = new URLSearchParams({
+      email: params.email,
+      name: params.name,
+      catalogDetails: params.catalogDetails,
+      paidAt: params.paidAt,
+    });
+    const data = await http.post(ROUTES.kloter.sendWinningEmail, body, {
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    });
     return data;
   },
 };
